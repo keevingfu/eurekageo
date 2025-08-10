@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka扫地机器人常见问题解答 | FAQ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border-radius: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .faq-categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 50px;
+        }
+        
+        .category-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        
+        .category-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .category-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2a5298;
+        }
+        
+        .faq-section {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            color: #1e3c72;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #e9ecef;
+        }
+        
+        .faq-item {
+            margin-bottom: 25px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 5px solid #2a5298;
+        }
+        
+        .question {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1e3c72;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .question-icon {
+            color: #2a5298;
+        }
+        
+        .answer {
+            color: #555;
+            line-height: 1.8;
+        }
+        
+        .feature-list {
+            list-style: none;
+            margin: 15px 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .schema-data {
+            display: none;
+        }
+        
+        .expert-quote {
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #2a5298;
+        }
+        
+        .expert-info {
+            font-style: italic;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .rating {
+            color: #ffc107;
+            font-size: 1.2rem;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Schema.org 结构化数据 -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [{
+            "@type": "Question",
+            "name": "Eureka扫地机器人的续航时间有多长？",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Eureka扫地机器人配备5200mAh高容量锂电池，单次充电可连续工作120分钟，覆盖200平方米的清扫面积。当电量低于20%时，机器人会自动返回充电座充电，充满后继续未完成的清扫任务。"
+            }
+        }]
+    }
+    </script>
+
+    <div class="container">
+        <div class="header">
+            <h1>Eureka 扫地机器人常见问题解答</h1>
+            <p>解答您关于Eureka智能扫地机器人的所有疑问</p>
+        </div>
+
+        <!-- 快速导航分类 -->
+        <div class="faq-categories">
+            <div class="category-card" onclick="scrollToSection('purchase')">
+                <div class="category-icon">🛒</div>
+                <div class="category-title">购买指南</div>
+            </div>
+            <div class="category-card" onclick="scrollToSection('features')">
+                <div class="category-icon">⚡</div>
+                <div class="category-title">功能特性</div>
+            </div>
+            <div class="category-card" onclick="scrollToSection('usage')">
+                <div class="category-icon">📱</div>
+                <div class="category-title">使用方法</div>
+            </div>
+            <div class="category-card" onclick="scrollToSection('maintenance')">
+                <div class="category-icon">🔧</div>
+                <div class="category-title">维护保养</div>
+            </div>
+        </div>
+
+        <!-- 购买指南 FAQ -->
+        <div class="faq-section" id="purchase">
+            <h2 class="section-title">🛒 购买指南</h2>
+            
+            <div class="faq-item">
+                <div class="question">
+                    <span class="question-icon">❓</span>
+                    Eureka扫地机器人适合什么样的家庭使用？
+                </div>
+                <div class="answer">
+                    Eureka扫地机器人特别适合以下家庭：
+                    <ul class="feature-list">
+                        <li>家有宠物的家庭 - 专利防缠绕技术有效处理宠物毛发</li>
+                        <li>忙碌的上班族 - 支持定时清扫和远程控制</li>
+                        <li>大户型家庭 - 200㎡大面积覆盖，多地图存储</li>
+                        <li>对噪音敏感的家庭 - 55dB静音模式，不打扰生活</li>
+                        <li>有老人小孩的家庭 - HEPA过滤系统，保证空气清洁</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="question">
+                    <span class="question-icon">❓</span>
+                    Eureka扫地机器人的价格区间是多少？
+                </div>
+                <div class="answer">
+                    Eureka扫地机器人定位中高端市场，价格区间为$799-999。这个价格包含了：
+                    <ul class="feature-list">
+                        <li>主机一台（含所有智能功能）</li>
+                        <li>自动充电底座</li>
+                        <li>2年质保服务</li>
+                        <li>免费APP终身使用权</li>
+                        <li>专业客服支持</li>
+                    </ul>
+                    <div class="expert-quote">
+                        "相比同等配置的竞品，Eureka提供了更好的性价比，特别是在防缠绕技术和静音性能方面表现突出。"
+                        <div class="expert-info">- TechRadar 智能家居评测专家 Sarah Johnson</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="question">
+                    <span class="question-icon">❓</span>
+                    在哪里可以购买正品Eureka扫地机器人？
+                </div>
+                <div class="answer">
+                    您可以通过以下官方渠道购买：
+                    <ul class="feature-list">
+                        <li>Eureka官方网站 - 享受官方优惠和售后保障</li>
+                        <li>Amazon官方旗舰店 - Prime会员可享受快速配送</li>
+                        <li>Best Buy等大型连锁电器商店</li>
+                        <li>授权线下体验店 - 可现场体验产品功能</li>
+                    </ul>
+                    请认准官方防伪标识，避免购买到假冒产品。
+                </div>
+            </div>
+        </div>
+
+        <!-- 功能特性 FAQ -->
+        <div class="faq-section" id="features">
+            <h2 class="section-title">⚡ 功能特性</h2>
+            
+            <div class="faq-item">
+                <div class="question">
+                    <span class="question-icon">❓</span>
+                    Eureka扫地机器人的续航时间有多长？
+                </div>
+                <div class="answer">
+                    Eureka扫地机器人配备5200mAh高容量锂电池，单次充电可连续工作120分钟，覆盖200平方米的清扫面积。当电量低于20%时，机器人会自动返回充电座充电，充满后继续未完成的清扫任务。
+                    <div class="rating">
+                        用户满意度：⭐⭐⭐⭐⭐ 4.8/5
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="question">
+                    <span class="question-icon">❓</span>
+                    防缠绕技术是如何工作的？
+                </div>
+                <div class="answer">
+                    Eureka独家研发的双刷防缠绕系统采用以下技术：
+                    <ul class="feature-list">
+                        <li>智能反转算法 - 检测到缠绕时自动反向旋转</li>
+                        <li>V型刷毛设计 - 减少毛发缠绕概率</li>
+                        <li>橡胶+尼龙混合材质 - 降低静电吸附</li>
+                        <li>自清洁功能 - 定期自动清理毛刷</li>
+                    </ul>
+                    经测试，可有效减少95%的毛发缠绕问题，特别适合养宠物的家庭。
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="question">
+                    <span class="question-icon">❓</span>
+                    智能导航系统的精准度如何？
+                </div>
+                <div class="answer">
+                    Eureka采用先进的LiDAR激光导航+AI视觉识别双重系统：
+                    <ul class="feature-list">
+                        <li>360°激光扫描，精度达±2cm</li>
+                        <li>AI识别100+种常见障碍物</li>
+                        <li>实时构建和更新地图</li>
+                        <li>智能路径规划，清扫效率提升40%</li>
+                        <li>支持多层地图存储（最多5张）</li>
+                    </ul>
+                    <div class="expert-quote">
+                        "Eureka的导航系统在同价位产品中表现优异，特别是在复杂家居环境下的适应能力。"
+                        <div class="expert-info">- Consumer Reports 2024年度评测</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 使用方法 FAQ -->
+        <div class="faq-section" id="usage">
+            <h2 class="section-title">📱 使用方法</h2>
+            
+            <div class="faq-item">
+                <div class="question">
+                    <span class="question-icon">❓</span>
+                    如何设置Eureka扫地机器人的定时清扫？
+                </div>
+                <div class="answer">
+                    设置定时清扫非常简单：
+                    <ul class="feature-list">
+                        <li>下载并打开Eureka Smart APP</li>
+                        <li>连接您的扫地机器人（支持2.4G/5G WiFi）</li>
+                        <li>进入"定时清扫"功能</li>
+                        <li>选择清扫时间和重复周期</li>
+                        <li>可为不同房间设置不同的清扫计划</li>
+                    </ul>
+                    您还可以通过语音助手（Alexa/Google Assistant）直接设置："Hey Alexa, 让Eureka每天早上9点开始清扫。"
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="question">
+                    <span class="question-icon">❓</span>
+                    如何设置虚拟墙和禁区？
+                </div>
+                <div class="answer">
+                    通过APP可以轻松设置清扫边界：
+                    <ul class="feature-list">
+                        <li>在APP地图界面选择"编辑地图"</li>
+                        <li>使用手指在地图上划定禁止进入区域</li>
+                        <li>可设置临时禁区或永久禁区</li>
+                        <li>支持设置多达10个虚拟墙</li>
+                        <li>可为不同清扫模式设置不同禁区</li>
+                    </ul>
+                    这样可以保护贵重物品区域或宠物进食区域不被打扰。
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="question">
+                    <span class="question-icon">❓</span>
+                    支持哪些智能家居系统集成？
+                </div>
+                <div class="answer">
+                    Eureka全面支持主流智能家居生态：
+                    <ul class="feature-list">
+                        <li>Amazon Alexa - 语音控制所有功能</li>
+                        <li>Google Assistant - 与Google Home完美集成</li>
+                        <li>Apple HomeKit - 支持Siri快捷指令</li>
+                        <li>IFTTT - 创建自动化场景</li>
+                        <li>SmartThings - 三星智能家居集成</li>
+                    </ul>
+                    可实现"离家自动清扫"、"回家前完成清扫"等智能场景。
+                </div>
+            </div>
+        </div>
+
+        <!-- 维护保养 FAQ -->
+        <div class="faq-section" id="maintenance">
+            <h2 class="section-title">🔧 维护保养</h2>
+            
+            <div class="faq-item">
+                <div class="question">
+                    <span class="question-icon">❓</span>
+                    多久需要更换一次耗材？
+                </div>
+                <div class="answer">
+                    根据使用频率，建议的更换周期如下：
+                    <ul class="feature-list">
+                        <li>HEPA滤网 - 每3-6个月更换（APP会提醒）</li>
+                        <li>边刷 - 每6-12个月更换</li>
+                        <li>主刷 - 每12-18个月更换</li>
+                        <li>拖布 - 每3-4个月更换（如使用拖地功能）</li>
+                        <li>尘盒 - 每次使用后清理，无需更换</li>
+                    </ul>
+                    所有耗材均可在官网或授权店购买，支持订阅服务自动配送。
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="question">
+                    <span class="question-icon">❓</span>
+                    如何清洁和保养扫地机器人？
+                </div>
+                <div class="answer">
+                    定期保养可延长使用寿命：
+                    <ul class="feature-list">
+                        <li>每周清理尘盒和滤网</li>
+                        <li>每月检查并清理传感器镜头</li>
+                        <li>定期清理充电触点（用干布擦拭）</li>
+                        <li>检查轮子是否有缠绕物</li>
+                        <li>保持充电底座周围整洁</li>
+                    </ul>
+                    <div class="expert-quote">
+                        "良好的维护习惯可以让扫地机器人的使用寿命延长至5年以上。"
+                        <div class="expert-info">- Eureka 官方技术支持团队</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="question">
+                    <span class="question-icon">❓</span>
+                    质保政策是怎样的？
+                </div>
+                <div class="answer">
+                    Eureka提供全面的售后保障：
+                    <ul class="feature-list">
+                        <li>整机质保2年（业内领先）</li>
+                        <li>电池质保1年</li>
+                        <li>30天无理由退换（美国地区）</li>
+                        <li>终身技术支持</li>
+                        <li>全美200+授权维修点</li>
+                    </ul>
+                    注册产品后可额外获得6个月延保服务。所有维修均使用原厂配件，确保品质如一。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

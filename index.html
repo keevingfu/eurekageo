@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka GEO Management Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --success-color: #22c55e;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --sidebar-bg: #1e293b;
+            --sidebar-text: #cbd5e1;
+            --sidebar-hover: #334155;
+            --sidebar-active: #2563eb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--background);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .portal-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .nav-section {
+            padding: 20px 0;
+        }
+
+        .nav-section-title {
+            padding: 8px 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 12px 20px;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            position: relative;
+            font-size: 0.875rem;
+        }
+
+        .nav-item:hover {
+            background: var(--sidebar-hover);
+            color: #f1f5f9;
+        }
+
+        .nav-item.active {
+            background: var(--sidebar-active);
+            color: white;
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #60a5fa;
+        }
+
+        .nav-item-icon {
+            display: inline-block;
+            width: 20px;
+            margin-right: 12px;
+            text-align: center;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .top-bar {
+            background: var(--surface);
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .breadcrumb-separator {
+            color: #cbd5e1;
+        }
+
+        .current-page {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .iframe-container {
+            flex: 1;
+            padding: 0;
+            background: var(--background);
+            position: relative;
+        }
+
+        #contentFrame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+
+        /* Loading Spinner */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .welcome-icon {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            margin-bottom: 32px;
+            box-shadow: 0 20px 40px rgba(59, 130, 246, 0.2);
+        }
+
+        .welcome-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            max-width: 500px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            max-width: 800px;
+            width: 100%;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: var(--surface);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .feature-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                z-index: 1000;
+                transition: left 0.3s;
+            }
+
+            .sidebar.active {
+                left: 0;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="portal-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h1>
+                    <div class="logo">E</div>
+                    Eureka GEO
+                </h1>
+            </div>
+
+            <!-- Dashboard Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">Dashboard</div>
+                <a class="nav-item" onclick="loadPage('geo-des.html', 'Design Showcase')">
+                    <span class="nav-item-icon">🎨</span>
+                    Design Showcase
+                </a>
+                <a class="nav-item" onclick="loadPage('eureka-geo-system.html', 'System Monitor')">
+                    <span class="nav-item-icon">🖥️</span>
+                    System Monitor
+                </a>
+                <a class="nav-item" onclick="loadPage('eureka-geo-overview.html', 'Analytics Overview')">
+                    <span class="nav-item-icon">📈</span>
+                    Analytics Overview
+                </a>
+            </div>
+
+            <!-- Phase 1 Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">Phase 1: Foundation</div>
+                <a class="nav-item" onclick="loadPage('eureka-geo-phase1-guide.html', 'Phase 1 Guide')">
+                    <span class="nav-item-icon">📚</span>
+                    Phase 1 Guide
+                </a>
+                <a class="nav-item" onclick="loadPage('eureka-geo-phace1-checklist.html', 'Phase 1 Checklist')">
+                    <span class="nav-item-icon">✅</span>
+                    Phase 1 Checklist
+                </a>
+                <a class="nav-item" onclick="loadPage('eureka-geo-phace1-datacollection.html', 'Data Collection')">
+                    <span class="nav-item-icon">🗂️</span>
+                    Data Collection
+                </a>
+                <a class="nav-item" onclick="loadPage('eureka-geo-phace1-baseline01.html', 'Baseline Analysis')">
+                    <span class="nav-item-icon">📏</span>
+                    Baseline Analysis
+                </a>
+            </div>
+
+            <!-- Phase 2 Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">Phase 2: Optimization</div>
+                <a class="nav-item" onclick="loadPage('eureka-geo-phace2-faq-content.html', 'FAQ Content')">
+                    <span class="nav-item-icon">❓</span>
+                    FAQ Content
+                </a>
+                <a class="nav-item" onclick="loadPage('eureka-geo-phace2-comparison.html', 'Comparison Analysis')">
+                    <span class="nav-item-icon">🔄</span>
+                    Comparison Analysis
+                </a>
+                <a class="nav-item" onclick="loadPage('eureka-geo-phace2-eeat-optimization.html', 'E-E-A-T Optimization')">
+                    <span class="nav-item-icon">🎯</span>
+                    E-E-A-T Optimization
+                </a>
+                <a class="nav-item" onclick="loadPage('eureka-geo-phase2-report.html', 'Phase 2 Report')">
+                    <span class="nav-item-icon">📄</span>
+                    Phase 2 Report
+                </a>
+            </div>
+
+            <!-- Phase 3 Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">Phase 3: Expansion</div>
+                <a class="nav-item" onclick="loadPage('eureka-geo-phase3.html', 'Phase 3 Dashboard')">
+                    <span class="nav-item-icon">🚀</span>
+                    Phase 3 Dashboard
+                </a>
+                <a class="nav-item" onclick="loadPage('eureka-geo-phase3-report.html', 'Phase 3 Report')">
+                    <span class="nav-item-icon">📄</span>
+                    Phase 3 Report
+                </a>
+            </div>
+
+            <!-- Phase 4 Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">Phase 4: Continuous</div>
+                <a class="nav-item" onclick="loadPage('eureka-geo-phase4.html', 'Phase 4 Dashboard')">
+                    <span class="nav-item-icon">♾️</span>
+                    Phase 4 Dashboard
+                </a>
+                <a class="nav-item" onclick="loadPage('eureka-geo-phase4-report.html', 'Phase 4 Report')">
+                    <span class="nav-item-icon">📄</span>
+                    Phase 4 Report
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div class="breadcrumb">
+                    <span>Home</span>
+                    <span class="breadcrumb-separator">/</span>
+                    <span class="current-page" id="currentPage">Welcome</span>
+                </div>
+            </div>
+
+            <div class="iframe-container">
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                </div>
+                
+                <!-- Welcome Screen (shown when no page is selected) -->
+                <div class="welcome-screen" id="welcomeScreen">
+                    <div class="welcome-icon">🤖</div>
+                    <h1 class="welcome-title">Welcome to Eureka GEO Portal</h1>
+                    <p class="welcome-subtitle">
+                        Your comprehensive platform for Generative Engine Optimization. 
+                        Monitor, analyze, and optimize your brand's AI visibility across all major platforms.
+                    </p>
+
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">📊</div>
+                            <div class="feature-title">Real-time Analytics</div>
+                            <div class="feature-description">
+                                Track your brand mentions across ChatGPT, Perplexity, Gemini, and Claude
+                            </div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🎯</div>
+                            <div class="feature-title">Smart Optimization</div>
+                            <div class="feature-description">
+                                AI-powered content recommendations for maximum visibility
+                            </div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">📈</div>
+                            <div class="feature-title">Performance Tracking</div>
+                            <div class="feature-description">
+                                Monitor KPIs, conversion rates, and competitive positioning
+                            </div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🔄</div>
+                            <div class="feature-title">4-Phase Process</div>
+                            <div class="feature-description">
+                                Structured approach from foundation to continuous optimization
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- iFrame for content pages -->
+                <iframe id="contentFrame" style="display: none;"></iframe>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Set active navigation item
+        function setActiveNav(element) {
+            // Remove active class from all nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Add active class to clicked item
+            element.classList.add('active');
+        }
+
+        // Load page in iframe
+        function loadPage(url, pageName) {
+            const iframe = document.getElementById('contentFrame');
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            const loading = document.getElementById('loading');
+            const currentPage = document.getElementById('currentPage');
+            
+            // Update breadcrumb
+            currentPage.textContent = pageName;
+            
+            // Hide welcome screen and show iframe
+            welcomeScreen.style.display = 'none';
+            iframe.style.display = 'block';
+            loading.style.display = 'block';
+            
+            // Set active navigation
+            event.target.closest('.nav-item').classList.add('active');
+            
+            // Load the page
+            iframe.src = url;
+            
+            // Hide loading spinner when iframe loads
+            iframe.onload = function() {
+                loading.style.display = 'none';
+            };
+        }
+
+        // Handle navigation clicks
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                setActiveNav(this);
+            });
+        });
+
+        // Initialize - show welcome screen
+        window.onload = function() {
+            document.getElementById('welcomeScreen').style.display = 'flex';
+            document.getElementById('contentFrame').style.display = 'none';
+        };
+    </script>
+</body>
+</html>

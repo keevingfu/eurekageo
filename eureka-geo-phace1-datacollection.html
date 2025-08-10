@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka Robot - GEO项目第一步数据采集示范报告</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #3b82f6;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-light: #f9fafb;
+            --border-color: #e5e7eb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 60px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-30px, -30px) rotate(180deg); }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-meta {
+            display: flex;
+            gap: 30px;
+            margin-top: 30px;
+            position: relative;
+            z-index: 1;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        /* Navigation */
+        .nav-section {
+            background: white;
+            padding: 20px 40px;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            padding: 8px 0;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        /* Content */
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 50px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #f0f0f0;
+        }
+
+        .section-number {
+            background: var(--primary-gradient);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Status Cards */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .status-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+
+        .status-card.critical {
+            background: #fff5f5;
+            border-color: var(--danger-color);
+        }
+
+        .status-card.warning {
+            background: #fffbeb;
+            border-color: var(--warning-color);
+        }
+
+        .status-card.success {
+            background: #f0fdf4;
+            border-color: var(--success-color);
+        }
+
+        .status-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .status-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .status-value.zero {
+            color: var(--danger-color);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-critical {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        /* Tables */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 30px 0;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            color: var(--text-primary);
+        }
+
+        tr:hover {
+            background: var(--bg-light);
+            transition: background 0.3s ease;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .no-mention {
+            color: var(--danger-color);
+            font-weight: 600;
+        }
+
+        .rare-mention {
+            color: var(--warning-color);
+            font-weight: 600;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .chart-container h3 {
+            color: var(--text-primary);
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .chart {
+            width: 100%;
+            height: 400px;
+        }
+
+        /* Alert Boxes */
+        .alert {
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid var(--info-color);
+            color: #1e40af;
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--warning-color);
+            color: #92400e;
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger-color);
+            color: #991b1b;
+        }
+
+        .alert-icon {
+            font-size: 1.5rem;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-content strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        /* Process Steps */
+        .process-steps {
+            margin: 30px 0;
+        }
+
+        .step-card {
+            background: var(--bg-light);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .step-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .step-number {
+            background: var(--primary-gradient);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .step-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .step-content {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-left: 50px;
+        }
+
+        .step-content ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .step-content li {
+            margin: 8px 0;
+        }
+
+        /* Platform Cards */
+        .platform-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .platform-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .platform-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            border-color: #667eea;
+        }
+
+        .platform-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .platform-price {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .platform-features {
+            list-style: none;
+            padding: 0;
+        }
+
+        .platform-features li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            color: var(--text-secondary);
+        }
+
+        .platform-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        /* Action Items */
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .action-card {
+            background: linear-gradient(135deg, #667eea15, #764ba215);
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #667eea30;
+            transition: all 0.3s ease;
+        }
+
+        .action-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+        }
+
+        .action-number {
+            background: var(--primary-gradient);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .action-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .action-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--bg-light);
+            padding: 30px 40px;
+            text-align: center;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .platform-grid,
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+                Eureka Robot GEO 项目
+            </h1>
+            <p class="subtitle">第一步数据采集示范报告 - AI可见度基线评估</p>
+            <div class="header-meta">
+                <div class="meta-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="14" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span>报告日期：2025年8月</span>
+                </div>
+                <div class="meta-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11l3 3L22 4"></path>
+                        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
+                    </svg>
+                    <span>采集阶段：初始基线</span>
+                </div>
+                <div class="meta-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span>下次采集：7天后</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-section">
+            <div class="nav-links">
+                <a href="#background" class="nav-link active">背景目标</a>
+                <a href="#survey" class="nav-link">现场勘察</a>
+                <a href="#platform" class="nav-link">平台接入</a>
+                <a href="#metrics" class="nav-link">指标分析</a>
+                <a href="#actions" class="nav-link">行动建议</a>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Section 1: Background -->
+            <div id="background" class="section">
+                <div class="section-header">
+                    <div class="section-number">1</div>
+                    <h2 class="section-title">背景与目标</h2>
+                </div>
+
+                <div class="alert alert-danger">
+                    <span class="alert-icon">⚠️</span>
+                    <div class="alert-content">
+                        <strong>关键发现</strong>
+                        基线诊断显示，Eureka品牌在所有生成式AI平台的可见度为零，未被任何AI搜索引擎抓取或引用。这意味着品牌完全错失了AI搜索这一快速增长的流量渠道。
+                    </div>
+                </div>
+
+                <div class="status-grid">
+                    <div class="status-card critical">
+                        <div class="status-label">AI引用率</div>
+                        <div class="status-value zero">0%</div>
+                        <span class="status-badge badge-critical">零基线</span>
+                    </div>
+                    <div class="status-card critical">
+                        <div class="status-label">品牌提及</div>
+                        <div class="status-value zero">0次</div>
+                        <span class="status-badge badge-critical">无曝光</span>
+                    </div>
+                    <div class="status-card critical">
+                        <div class="status-label">平台覆盖</div>
+                        <div class="status-value zero">0/5</div>
+                        <span class="status-badge badge-critical">未覆盖</span>
+                    </div>
+                    <div class="status-card critical">
+                        <div class="status-label">竞品差距</div>
+                        <div class="status-value zero">-100%</div>
+                        <span class="status-badge badge-critical">完全落后</span>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3>AI平台品牌可见度对比</h3>
+                    <div id="visibilityChart" class="chart"></div>
+                </div>
+            </div>
+
+            <!-- Section 2: Search Survey -->
+            <div id="survey" class="section">
+                <div class="section-header">
+                    <div class="section-number">2</div>
+                    <h2 class="section-title">搜索引擎现场勘察（示范）</h2>
+                </div>
+
+                <p style="margin-bottom: 20px; color: var(--text-secondary);">
+                    通过对5个高频查询的搜索测试，评估Eureka品牌在扫地机器人相关主题下的整体可见度：
+                </p>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th width="35%">测试Prompt</th>
+                                <th width="45%">观察说明</th>
+                                <th width="20%">Eureka出现情况</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Best robot vacuum for pet hair</strong></td>
+                                <td>搜索结果主要为iRobot、Shark等品牌的评测文章与电商链接</td>
+                                <td class="no-mention">否</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Affordable robot vacuum models</strong></td>
+                                <td>展示各价位扫地机器人榜单，偶有提及Eureka入门款，但排名靠后</td>
+                                <td class="rare-mention">稀少</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Robot vacuum vs manual vacuum</strong></td>
+                                <td>以科普文章和论坛讨论为主，重点比较Roomba、Dyson等品牌</td>
+                                <td class="no-mention">否</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Robot vacuum warranty information</strong></td>
+                                <td>以保修政策、FAQ为主，涉及Neato和iRobot等知名品牌</td>
+                                <td class="no-mention">否</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Battery life of robot vacuums</strong></td>
+                                <td>出现多个测评站、对比文章，着重讨论Roborock、Dreame等品牌</td>
+                                <td class="no-mention">否</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="alert alert-warning">
+                    <span class="alert-icon">💡</span>
+                    <div class="alert-content">
+                        <strong>示范结论</strong>
+                        Eureka在扫地机器人相关主题下的搜索曝光率极低（<5%），仅在少数长尾价格查询中偶有出现。这印证了品牌在AI搜索和自然搜索中的存在感极弱。
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3>竞品提及率对比分析</h3>
+                    <div id="competitorChart" class="chart"></div>
+                </div>
+            </div>
+
+            <!-- Section 3: Platform Integration -->
+            <div id="platform" class="section">
+                <div class="section-header">
+                    <div class="section-number">3</div>
+                    <h2 class="section-title">监测平台接入指导</h2>
+                </div>
+
+                <h3 style="margin-bottom: 20px; color: var(--text-primary);">3.1 推荐监测平台</h3>
+                
+                <div class="platform-grid">
+                    <div class="platform-card">
+                        <div class="platform-name">Scrunch Monitor & Insights</div>
+                        <div class="platform-price">$300-500/月</div>
+                        <ul class="platform-features">
+                            <li>实时监测ChatGPT、Gemini、Perplexity等主流AI</li>
+                            <li>品牌曝光度评分（GEO Score）</li>
+                            <li>竞品对比分析（iRobot、Neato监测）</li>
+                            <li>错误信息和幻觉检测</li>
+                            <li>情感分析和引用源追踪</li>
+                            <li>客户平均获得40%引流增长（90天内）</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="platform-card">
+                        <div class="platform-name">Profound Answer Engine</div>
+                        <div class="platform-price">$499/月起</div>
+                        <ul class="platform-features">
+                            <li>专注生成式AI可见度分析</li>
+                            <li>支持ChatGPT、Google AI Overviews</li>
+                            <li>Agent Analytics与GA4集成</li>
+                            <li>SOC 2 Type II合规认证</li>
+                            <li>实时搜索量洞察</li>
+                            <li>优先级技术支持</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="platform-card">
+                        <div class="platform-name">AthenaHQ</div>
+                        <div class="platform-price">$295/月起</div>
+                        <ul class="platform-features">
+                            <li>每日提示词监测（3,500积分）</li>
+                            <li>竞品洞察和GEO优化建议</li>
+                            <li>内容缺口识别</li>
+                            <li>AI盲点检测</li>
+                            <li>GA4集成支持</li>
+                            <li>SoV分析与引文追踪</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3 style="margin: 30px 0 20px; color: var(--text-primary);">3.2 Prompt策略与配置</h3>
+                
+                <div class="process-steps">
+                    <div class="step-card">
+                        <div class="step-header">
+                            <div class="step-number">1</div>
+                            <div class="step-title">导入基线Prompt库</div>
+                        </div>
+                        <div class="step-content">
+                            使用dim_prompt表中的90条问题作为初始测试集，覆盖扫地机器人的功能、维护、对比和价格等主题。确保涵盖用户搜索的全生命周期。
+                        </div>
+                    </div>
+                    
+                    <div class="step-card">
+                        <div class="step-header">
+                            <div class="step-number">2</div>
+                            <div class="step-title">新增品牌相关查询</div>
+                        </div>
+                        <div class="step-content">
+                            补充包含品牌名称的直接查询：
+                            <ul>
+                                <li>"Eureka vs Roomba comparison"</li>
+                                <li>"Eureka E20 Plus review"</li>
+                                <li>"Is Eureka robot vacuum worth it?"</li>
+                                <li>"Eureka robot self-emptying features"</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="step-card">
+                        <div class="step-header">
+                            <div class="step-number">3</div>
+                            <div class="step-title">设置区域与用户画像</div>
+                        </div>
+                        <div class="step-content">
+                            配置测试维度：
+                            <ul>
+                                <li><strong>地区：</strong>北美（美国、加拿大）、欧洲（英国、德国、法国）</li>
+                                <li><strong>用户类型：</strong>初次购买者、宠物家庭、科技爱好者、预算敏感型</li>
+                                <li><strong>测试频率：</strong>每日1次（初期），后续根据数据波动调整</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="step-card">
+                        <div class="step-header">
+                            <div class="step-number">4</div>
+                            <div class="step-title">启用AI Bot追踪</div>
+                        </div>
+                        <div class="step-content">
+                            在监测平台中关联品牌域名，确保能够追踪：
+                            <ul>
+                                <li>AI bot对网站的访问频率</li>
+                                <li>被抓取的页面和内容</li>
+                                <li>引用的具体文本片段</li>
+                                <li>竞品对比中的排名位置</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 4: Metrics -->
+            <div id="metrics" class="section">
+                <div class="section-header">
+                    <div class="section-number">4</div>
+                    <h2 class="section-title">数据采集与指标计算</h2>
+                </div>
+
+                <div class="chart-container">
+                    <h3>预期指标提升曲线（6个月）</h3>
+                    <div id="projectionChart" class="chart"></div>
+                </div>
+
+                <div class="alert alert-info">
+                    <span class="alert-icon">📊</span>
+                    <div class="alert-content">
+                        <strong>关键指标公式</strong>
+                        <ul style="margin-top: 10px; list-style: none;">
+                            <li>• <strong>提及率</strong> = 包含品牌的AI回答数 ÷ 总测试查询数 × 100%</li>
+                            <li>• <strong>SoV</strong> = 品牌提及次数 ÷ 所有竞品总提及次数 × 100%</li>
+                            <li>• <strong>引用分数</strong> = Σ(1/排名位置) × 引用字数权重</li>
+                            <li>• <strong>平台覆盖率</strong> = 有品牌出现的平台数 ÷ 监测平台总数</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>指标名称</th>
+                                <th>当前基线</th>
+                                <th>30天目标</th>
+                                <th>90天目标</th>
+                                <th>6个月目标</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>AI引用率</strong></td>
+                                <td><span class="no-mention">0%</span></td>
+                                <td>0.5%</td>
+                                <td>2%</td>
+                                <td>5%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>品牌SoV</strong></td>
+                                <td><span class="no-mention">0%</span></td>
+                                <td>3%</td>
+                                <td>8%</td>
+                                <td>15%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>平台覆盖</strong></td>
+                                <td><span class="no-mention">0/5</span></td>
+                                <td>2/5</td>
+                                <td>4/5</td>
+                                <td>5/5</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CTR（AI→网站）</strong></td>
+                                <td><span class="no-mention">0%</span></td>
+                                <td>2%</td>
+                                <td>5%</td>
+                                <td>8%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>转化率</strong></td>
+                                <td><span class="no-mention">0%</span></td>
+                                <td>0.5%</td>
+                                <td>1.5%</td>
+                                <td>2.5%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Section 5: Actions -->
+            <div id="actions" class="section">
+                <div class="section-header">
+                    <div class="section-number">5</div>
+                    <h2 class="section-title">后续行动建议</h2>
+                </div>
+
+                <div class="alert alert-warning">
+                    <span class="alert-icon">⚡</span>
+                    <div class="alert-content">
+                        <strong>紧急行动</strong>
+                        鉴于Eureka在AI搜索中完全缺席，建议立即启动以下工作，抢占AI搜索这一快速增长的流量渠道。
+                    </div>
+                </div>
+
+                <div class="action-grid">
+                    <div class="action-card">
+                        <div class="action-number">1</div>
+                        <div class="action-title">立即注册监测平台</div>
+                        <div class="action-desc">
+                            完成Scrunch或Profound试用注册，进行域名认证，开始14天免费试用期的数据采集。
+                        </div>
+                    </div>
+                    
+                    <div class="action-card">
+                        <div class="action-number">2</div>
+                        <div class="action-title">上传Prompt清单</div>
+                        <div class="action-desc">
+                            导入90条基础查询+30条品牌相关查询，设置每日自动测试，获取初始基线数据。
+                        </div>
+                    </div>
+                    
+                    <div class="action-card">
+                        <div class="action-number">3</div>
+                        <div class="action-title">配置自动采集</div>
+                        <div class="action-desc">
+                            设置每日凌晨3点自动运行，首轮至少连续采集7天，确保数据稳定性。
+                        </div>
+                    </div>
+                    
+                    <div class="action-card">
+                        <div class="action-number">4</div>
+                        <div class="action-title">连接GA4追踪</div>
+                        <div class="action-desc">
+                            部署AI流量识别代码，配置自定义维度，追踪AI引流的点击和转化事件。
+                        </div>
+                    </div>
+                    
+                    <div class="action-card">
+                        <div class="action-number">5</div>
+                        <div class="action-title">Schema标记部署</div>
+                        <div class="action-desc">
+                            在前10个核心产品页面部署Product Schema，提高AI爬虫的内容理解度。
+                        </div>
+                    </div>
+                    
+                    <div class="action-card">
+                        <div class="action-number">6</div>
+                        <div class="action-title">创建FAQ内容</div>
+                        <div class="action-desc">
+                            快速发布20个高质量FAQ，采用问答格式，直接回应用户常见问题。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container" style="margin-top: 40px;">
+                    <h3>实施优先级矩阵</h3>
+                    <div id="priorityChart" class="chart"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>© 2025 Eureka Robot GEO Project</strong></p>
+            <p>第一步数据采集示范报告 - 建议立即行动，抢占AI搜索增长机遇</p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize all charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // 1. Visibility Comparison Chart
+            const visibilityChart = echarts.init(document.getElementById('visibilityChart'));
+            visibilityChart.setOption({
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                legend: {
+                    data: ['ChatGPT', 'Gemini', 'Perplexity', 'Claude', 'Bing Chat']
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['Eureka', 'iRobot', 'Neato', 'Roborock', 'Shark']
+                },
+                yAxis: {
+                    type: 'value',
+                    name: '可见度指数',
+                    max: 100
+                },
+                series: [
+                    {
+                        name: 'ChatGPT',
+                        type: 'bar',
+                        data: [0, 85, 70, 65, 45]
+                    },
+                    {
+                        name: 'Gemini',
+                        type: 'bar',
+                        data: [0, 80, 65, 70, 40]
+                    },
+                    {
+                        name: 'Perplexity',
+                        type: 'bar',
+                        data: [0, 75, 60, 60, 35]
+                    },
+                    {
+                        name: 'Claude',
+                        type: 'bar',
+                        data: [0, 70, 55, 55, 30]
+                    },
+                    {
+                        name: 'Bing Chat',
+                        type: 'bar',
+                        data: [0, 78, 62, 58, 38]
+                    }
+                ],
+                color: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe']
+            });
+
+            // 2. Competitor Mention Rate Chart
+            const competitorChart = echarts.init(document.getElementById('competitorChart'));
+            competitorChart.setOption({
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c}%'
+                },
+                series: [{
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: {
+                        borderRadius: 10,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: true,
+                        position: 'outside',
+                        formatter: '{b}\n{c}%'
+                    },
+                    data: [
+                        { value: 35, name: 'iRobot', itemStyle: { color: '#667eea' } },
+                        { value: 25, name: 'Roborock', itemStyle: { color: '#764ba2' } },
+                        { value: 20, name: 'Neato', itemStyle: { color: '#f093fb' } },
+                        { value: 15, name: 'Shark', itemStyle: { color: '#f5576c' } },
+                        { value: 3, name: '其他品牌', itemStyle: { color: '#4facfe' } },
+                        { value: 2, name: 'Eureka', itemStyle: { color: '#ef4444' } }
+                    ]
+                }]
+            });
+
+            // 3. Projection Chart
+            const projectionChart = echarts.init(document.getElementById('projectionChart'));
+            const months = ['基线', 'Month 1', 'Month 2', 'Month 3', 'Month 4', 'Month 5', 'Month 6'];
+            projectionChart.setOption({
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['AI引用率', '品牌SoV', 'CTR', '转化率']
+                },
+                xAxis: {
+                    type: 'category',
+                    data: months
+                },
+                yAxis: {
+                    type: 'value',
+                    name: '百分比(%)',
+                    max: 20
+                },
+                series: [
+                    {
+                        name: 'AI引用率',
+                        type: 'line',
+                        data: [0, 0.5, 1.2, 2.0, 3.0, 4.0, 5.0],
+                        smooth: true,
+                        lineStyle: { width: 3 },
+                        itemStyle: { color: '#667eea' }
+                    },
+                    {
+                        name: '品牌SoV',
+                        type: 'line',
+                        data: [0, 3, 5, 8, 11, 13, 15],
+                        smooth: true,
+                        lineStyle: { width: 3 },
+                        itemStyle: { color: '#764ba2' }
+                    },
+                    {
+                        name: 'CTR',
+                        type: 'line',
+                        data: [0, 2, 3.5, 5, 6.5, 7.5, 8],
+                        smooth: true,
+                        lineStyle: { width: 3 },
+                        itemStyle: { color: '#10b981' }
+                    },
+                    {
+                        name: '转化率',
+                        type: 'line',
+                        data: [0, 0.5, 0.8, 1.5, 2.0, 2.3, 2.5],
+                        smooth: true,
+                        lineStyle: { width: 3 },
+                        itemStyle: { color: '#f59e0b' }
+                    }
+                ]
+            });
+
+            // 4. Priority Matrix Chart
+            const priorityChart = echarts.init(document.getElementById('priorityChart'));
+            const priorityData = [
+                [3, 5, 100, '监测平台注册', '高'],
+                [4, 4, 80, 'Schema标记', '高'],
+                [2, 5, 90, 'Prompt配置', '高'],
+                [4, 3, 60, 'FAQ内容创建', '中'],
+                [3, 3, 50, 'GA4配置', '中'],
+                [2, 2, 30, '竞品分析', '低'],
+                [5, 2, 40, '多语言内容', '低']
+            ];
+            
+            priorityChart.setOption({
+                tooltip: {
+                    formatter: function(params) {
+                        return params.data[3] + '<br/>' +
+                               '影响度: ' + params.data[0] + '<br/>' +
+                               '紧急度: ' + params.data[1] + '<br/>' +
+                               '优先级: ' + params.data[4];
+                    }
+                },
+                xAxis: {
+                    type: 'value',
+                    name: '影响度',
+                    nameLocation: 'middle',
+                    nameGap: 30,
+                    max: 5,
+                    min: 0
+                },
+                yAxis: {
+                    type: 'value',
+                    name: '紧急度',
+                    nameLocation: 'middle',
+                    nameGap: 30,
+                    max: 5,
+                    min: 0
+                },
+                series: [{
+                    type: 'scatter',
+                    symbolSize: function(data) {
+                        return Math.sqrt(data[2]) * 5;
+                    },
+                    data: priorityData,
+                    label: {
+                        show: true,
+                        formatter: function(param) {
+                            return param.data[3];
+                        },
+                        position: 'top'
+                    },
+                    itemStyle: {
+                        color: function(params) {
+                            const priority = params.data[4];
+                            if (priority === '高') return '#ef4444';
+                            if (priority === '中') return '#f59e0b';
+                            return '#10b981';
+                        }
+                    }
+                }],
+                grid: {
+                    left: '10%',
+                    right: '10%',
+                    bottom: '10%',
+                    top: '10%',
+                    containLabel: true
+                }
+            });
+
+            // Resize charts on window resize
+            window.addEventListener('resize', function() {
+                visibilityChart.resize();
+                competitorChart.resize();
+                projectionChart.resize();
+                priorityChart.resize();
+            });
+        });
+
+        // Smooth scroll for navigation
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all links
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                // Add active class to clicked link
+                this.classList.add('active');
+                
+                // Smooth scroll to target
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

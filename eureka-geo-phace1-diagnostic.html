@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka GEO Project Diagnostic Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .dashboard-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 25px;
+            border-bottom: 4px solid #2a5298;
+        }
+        
+        .header h1 {
+            color: #1e3c72;
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+        
+        .header p {
+            color: #5a6c7d;
+            font-size: 1.2em;
+            font-weight: 400;
+        }
+        
+        .executive-summary {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border-left: 5px solid #2a5298;
+        }
+        
+        .executive-summary h3 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .executive-summary p {
+            color: #4a5568;
+            line-height: 1.7;
+            font-size: 1.05em;
+        }
+        
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 35px;
+        }
+        
+        .metric-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #2a5298;
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .metric-value {
+            font-size: 2.2em;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .metric-label {
+            font-size: 0.95em;
+            color: #718096;
+            font-weight: 500;
+        }
+        
+        .metric-change {
+            font-size: 0.85em;
+            color: #48bb78;
+            margin-top: 5px;
+        }
+        
+        .metric-change.negative {
+            color: #f56565;
+        }
+        
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .chart-container:hover {
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        }
+        
+        .chart-title {
+            font-size: 1.4em;
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .chart-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7em;
+            font-weight: 500;
+        }
+        
+        .chart {
+            width: 100%;
+            height: 380px;
+        }
+        
+        .insight-box {
+            background: linear-gradient(135deg, #f6f9fc 0%, #edf2f7 100%);
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+        
+        .insight-title {
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            font-size: 1.1em;
+        }
+        
+        .insight-title::before {
+            content: "💡";
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        
+        .insight-text {
+            color: #2d3748;
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+        
+        .recommendation {
+            background: white;
+            padding: 15px;
+            margin-top: 12px;
+            border-radius: 8px;
+            border-left: 3px solid #764ba2;
+        }
+        
+        .recommendation strong {
+            color: #764ba2;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-critical { background-color: #f56565; }
+        .status-warning { background-color: #ed8936; }
+        .status-moderate { background-color: #ecc94b; }
+        .status-good { background-color: #48bb78; }
+        
+        @media (max-width: 768px) {
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+        
+        .loading::after {
+            content: "Loading dashboard...";
+            animation: dots 1.5s infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: "Loading dashboard."; }
+            40% { content: "Loading dashboard.."; }
+            60%, 100% { content: "Loading dashboard..."; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>Eureka Robot Vacuum GEO Project Diagnostic Dashboard</h1>
+            <p>Strategic Readiness Assessment & Gap Analysis for Premium Market Entry</p>
+        </div>
+        
+        <div class="executive-summary">
+            <h3>Executive Summary</h3>
+            <p>
+                The diagnostic assessment reveals that Eureka faces a critical strategic inflection point with a narrow 6-12 month window to enter the premium robot vacuum market. 
+                While significant capability gaps exist across technology (TRL 2-4 vs. industry TRL 8-9), brand positioning, and digital channels, 
+                the combination of explosive market growth (projected 5x by 2030), potential tariff protection (125% on Chinese imports), 
+                and Eureka's American brand heritage creates a viable but challenging path to success. 
+                Success probability: 65% contingent on immediate action and flawless execution of the recommended "fast follower" strategy.
+            </p>
+        </div>
+        
+        <div class="metrics-row">
+            <div class="metric-card">
+                <div class="metric-value">$100M</div>
+                <div class="metric-label">Total Investment Required</div>
+                <div class="metric-change negative">88-115M range</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">24 mo</div>
+                <div class="metric-label">Time to Break-Even</div>
+                <div class="metric-change">Critical milestone</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">65%</div>
+                <div class="metric-label">Success Probability</div>
+                <div class="metric-change">With perfect execution</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">18-30 mo</div>
+                <div class="metric-label">Technology Gap</div>
+                <div class="metric-change negative">Severe lag in core tech</div>
+            </div>
+        </div>
+        
+        <div class="chart-grid">
+            <!-- Technology Readiness Gap Analysis -->
+            <div class="chart-container">
+                <div class="chart-title">
+                    Technology Readiness Level (TRL) Gap Analysis
+                    <span class="chart-badge">Critical</span>
+                </div>
+                <div id="tech-readiness" class="chart"></div>
+                <div class="insight-box">
+                    <div class="insight-title">Key Insight</div>
+                    <div class="insight-text">
+                        Eureka faces severe technology gaps in all critical areas, with LiDAR navigation and AI obstacle recognition showing 6-7 TRL level deficits. 
+                        The 18-30 month development timeline for core technologies exceeds the market opportunity window.
+                    </div>
+                    <div class="recommendation">
+                        <strong>Strategic Recommendation</strong>
+                        Pursue immediate technology licensing partnerships for LiDAR and AI capabilities while focusing internal R&D on differentiation features. 
+                        Budget $30-40M for technology acquisition to compress timeline from 30 to 12 months.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Competitive Capability Spider -->
+            <div class="chart-container">
+                <div class="chart-title">
+                    Competitive Capability Assessment
+                    <span class="chart-badge">Strategic</span>
+                </div>
+                <div id="competitive-spider" class="chart"></div>
+                <div class="insight-box">
+                    <div class="insight-title">Key Insight</div>
+                    <div class="insight-text">
+                        Eureka's competitive profile shows critical weaknesses in technology leadership and brand recognition for robot vacuums, 
+                        but maintains advantages in channel relationships and potential supply chain capabilities.
+                    </div>
+                    <div class="recommendation">
+                        <strong>Strategic Recommendation</strong>
+                        Leverage existing retail channel relationships as immediate go-to-market advantage while building technology and brand credibility through 
+                        strategic partnerships and aggressive marketing investment ($25-30M annually).
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Investment Timeline -->
+            <div class="chart-container full-width">
+                <div class="chart-title">
+                    Investment Requirements & ROI Timeline
+                    <span class="chart-badge">Financial</span>
+                </div>
+                <div id="investment-timeline" class="chart"></div>
+                <div class="insight-box">
+                    <div class="insight-title">Key Insight</div>
+                    <div class="insight-text">
+                        The investment profile shows heavy front-loading with 70% of capital deployed in the first 12 months. 
+                        Break-even at month 24 requires achieving 120,000 unit annual sales, representing approximately 2-3% market share.
+                    </div>
+                    <div class="recommendation">
+                        <strong>Strategic Recommendation</strong>
+                        Structure investment in three tranches with clear go/no-go gates: $50M initial (0-6 months), $35M expansion (6-12 months), 
+                        and $15-30M scaling (12-18 months) based on market traction metrics.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Risk Assessment Matrix -->
+            <div class="chart-container">
+                <div class="chart-title">
+                    Risk Assessment Matrix
+                    <span class="chart-badge">Risk Analysis</span>
+                </div>
+                <div id="risk-matrix" class="chart"></div>
+                <div class="insight-box">
+                    <div class="insight-title">Key Insight</div>
+                    <div class="insight-text">
+                        Three risks fall into the critical "high probability, high impact" quadrant: missing market window, 
+                        intensifying price competition, and team capability gaps. These represent existential threats to project success.
+                    </div>
+                    <div class="recommendation">
+                        <strong>Strategic Recommendation</strong>
+                        Establish dedicated crisis response protocols for critical risks. Hire external expertise immediately (10+ industry veterans), 
+                        accelerate decision-making with weekly steering committee reviews, and prepare defensive pricing strategies.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Channel Readiness -->
+            <div class="chart-container">
+                <div class="chart-title">
+                    Channel Readiness Assessment
+                    <span class="chart-badge">Go-to-Market</span>
+                </div>
+                <div id="channel-readiness" class="chart"></div>
+                <div class="insight-box">
+                    <div class="insight-title">Key Insight</div>
+                    <div class="insight-text">
+                        Critical gap in Amazon marketplace capabilities (0% readiness) represents the biggest go-to-market risk, 
+                        as Amazon commands 61% of online robot vacuum sales in North America.
+                    </div>
+                    <div class="recommendation">
+                        <strong>Strategic Recommendation</strong>
+                        Immediately hire Amazon marketplace specialists and allocate $10M for FBA setup, A+ content development, 
+                        and initial advertising campaigns. Target 40% of sales through Amazon within 12 months.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Regional Strategy Comparison -->
+            <div class="chart-container">
+                <div class="chart-title">
+                    Regional Market Priority Analysis
+                    <span class="chart-badge">Geographic</span>
+                </div>
+                <div id="regional-strategy" class="chart"></div>
+                <div class="insight-box">
+                    <div class="insight-title">Key Insight</div>
+                    <div class="insight-text">
+                        North American and European markets require fundamentally different product configurations and marketing approaches. 
+                        NA prioritizes smart home integration (90% importance) while EU focuses on energy efficiency (85% importance).
+                    </div>
+                    <div class="recommendation">
+                        <strong>Strategic Recommendation</strong>
+                        Develop dual product SKUs: NA version with advanced Alexa/Google integration, EU version with eco-mode and GDPR-compliant 
+                        data handling. Launch NA first (month 6) to establish base, then EU (month 18) after regulatory compliance.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Implementation Roadmap -->
+            <div class="chart-container full-width">
+                <div class="chart-title">
+                    Strategic Implementation Roadmap
+                    <span class="chart-badge">Execution Plan</span>
+                </div>
+                <div id="implementation-roadmap" class="chart"></div>
+                <div class="insight-box">
+                    <div class="insight-title">Key Insight</div>
+                    <div class="insight-text">
+                        The 24-month implementation plan requires precise orchestration across technology development, market entry, 
+                        and scaling phases. Any delay in Phase 1 (0-6 months) cascades throughout the entire timeline.
+                    </div>
+                    <div class="recommendation">
+                        <strong>Strategic Recommendation</strong>
+                        Establish Program Management Office (PMO) with weekly executive reviews. Deploy agile sprint methodology with 
+                        2-week cycles for rapid iteration. Set hard deadline of Q3 2025 for product launch to capture Black Friday 2025.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SWOT Analysis -->
+            <div class="chart-container full-width">
+                <div class="chart-title">
+                    SWOT Analysis Overview
+                    <span class="chart-badge">Strategic Position</span>
+                </div>
+                <div id="swot-analysis" class="chart"></div>
+                <div class="insight-box">
+                    <div class="insight-title">Key Insight</div>
+                    <div class="insight-text">
+                        The SWOT analysis reveals a high-risk, high-reward scenario where external opportunities (market growth, tariff protection) 
+                        could offset internal weaknesses (technology gaps, brand perception) if execution is flawless.
+                    </div>
+                    <div class="recommendation">
+                        <strong>Strategic Recommendation</strong>
+                        Focus on "Opportunity-Strength" strategies: leverage American brand identity in context of potential tariffs, 
+                        use existing channel relationships to accelerate market entry, and position as the "trustworthy American alternative" 
+                        to Chinese technology brands.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize all charts when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // Technology Readiness Gap Chart
+            const techChart = echarts.init(document.getElementById('tech-readiness'));
+            const techOption = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' },
+                    formatter: function(params) {
+                        let result = params[0].name + '<br/>';
+                        params.forEach(function(item) {
+                            result += item.marker + item.seriesName + ': Level ' + item.value + '<br/>';
+                        });
+                        return result;
+                    }
+                },
+                legend: {
+                    data: ['Industry Standard', 'Eureka Current', 'Gap'],
+                    top: 0
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value',
+                    max: 10,
+                    name: 'Technology Readiness Level',
+                    axisLabel: {
+                        formatter: 'TRL {value}'
+                    }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: ['Mobile App', 'Voice Control', 'Self-Cleaning', 'AI Obstacle', 'LiDAR Navigation'],
+                    axisLabel: {
+                        interval: 0
+                    }
+                },
+                series: [
+                    {
+                        name: 'Industry Standard',
+                        type: 'bar',
+                        data: [9, 9, 9, 8, 9],
+                        itemStyle: {
+                            color: '#48bb78'
+                        }
+                    },
+                    {
+                        name: 'Eureka Current',
+                        type: 'bar',
+                        data: [5, 6, 4, 2, 3],
+                        itemStyle: {
+                            color: '#ed8936'
+                        }
+                    },
+                    {
+                        name: 'Gap',
+                        type: 'bar',
+                        data: [4, 3, 5, 6, 6],
+                        itemStyle: {
+                            color: '#f56565',
+                            opacity: 0.7
+                        },
+                        label: {
+                            show: true,
+                            position: 'right',
+                            formatter: '-{c} levels'
+                        }
+                    }
+                ]
+            };
+            techChart.setOption(techOption);
+            
+            // Competitive Spider Chart
+            const spiderChart = echarts.init(document.getElementById('competitive-spider'));
+            const spiderOption = {
+                tooltip: {},
+                legend: {
+                    data: ['Eureka Current', 'Industry Leader', 'Target Position'],
+                    top: 0
+                },
+                radar: {
+                    indicator: [
+                        { name: 'Technology Innovation', max: 100 },
+                        { name: 'Brand Recognition', max: 100 },
+                        { name: 'Price Competitiveness', max: 100 },
+                        { name: 'Channel Control', max: 100 },
+                        { name: 'Supply Chain', max: 100 },
+                        { name: 'Customer Service', max: 100 }
+                    ],
+                    shape: 'polygon',
+                    splitNumber: 5,
+                    axisName: {
+                        color: '#2d3748'
+                    },
+                    splitLine: {
+                        lineStyle: {
+                            color: ['#e2e8f0', '#cbd5e0', '#a0aec0', '#718096', '#4a5568'].reverse()
+                        }
+                    },
+                    splitArea: {
+                        show: false
+                    }
+                },
+                series: [{
+                    type: 'radar',
+                    data: [
+                        {
+                            value: [20, 15, 30, 70, 65, 60],
+                            name: 'Eureka Current',
+                            itemStyle: { color: '#f56565' },
+                            areaStyle: { opacity: 0.3 }
+                        },
+                        {
+                            value: [90, 85, 90, 85, 90, 85],
+                            name: 'Industry Leader',
+                            itemStyle: { color: '#48bb78' },
+                            areaStyle: { opacity: 0.2 }
+                        },
+                        {
+                            value: [65, 60, 70, 75, 70, 80],
+                            name: 'Target Position',
+                            itemStyle: { color: '#667eea' },
+                            areaStyle: { opacity: 0.25 },
+                            lineStyle: { type: 'dashed' }
+                        }
+                    ]
+                }]
+            };
+            spiderChart.setOption(spiderOption);
+            
+            // Investment Timeline Chart
+            const investmentChart = echarts.init(document.getElementById('investment-timeline'));
+            const investmentOption = {
+                tooltip: {
+                    trigger: 'axis',
+                    formatter: function(params) {
+                        let result = 'Month ' + params[0].name + '<br/>';
+                        params.forEach(function(item) {
+                            let value = item.value >= 0 ? '+$' + item.value + 'M' : '-$' + Math.abs(item.value) + 'M';
+                            result += item.marker + item.seriesName + ': ' + value + '<br/>';
+                        });
+                        return result;
+                    }
+                },
+                legend: {
+                    data: ['Cumulative Investment', 'Monthly Cash Flow', 'Cumulative Revenue'],
+                    top: 0
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '15%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: ['0', '3', '6', '9', '12', '15', '18', '21', '24', '27', '30'],
+                    name: 'Months from Project Start',
+                    nameLocation: 'middle',
+                    nameGap: 30
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Amount ($M)',
+                    axisLabel: {
+                        formatter: '${value}M'
+                    },
+                    axisLine: {
+                        show: true
+                    },
+                    splitLine: {
+                        lineStyle: {
+                            type: 'dashed',
+                            opacity: 0.3
+                        }
+                    }
+                },
+                series: [
+                    {
+                        name: 'Cumulative Investment',
+                        type: 'line',
+                        data: [-20, -35, -50, -65, -75, -85, -95, -100, -100, -100, -100],
+                        itemStyle: { color: '#f56565' },
+                        areaStyle: { 
+                            opacity: 0.3,
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: 'rgba(245, 101, 101, 0.3)' },
+                                { offset: 1, color: 'rgba(245, 101, 101, 0.05)' }
+                            ])
+                        }
+                    },
+                    {
+                        name: 'Monthly Cash Flow',
+                        type: 'bar',
+                        data: [-20, -15, -15, -15, -10, -10, -10, -5, 0, 5, 10],
+                        itemStyle: {
+                            color: function(params) {
+                                return params.value < 0 ? '#ed8936' : '#48bb78';
+                            }
+                        }
+                    },
+                    {
+                        name: 'Cumulative Revenue',
+                        type: 'line',
+                        data: [0, 0, 0, 5, 15, 30, 50, 75, 100, 130, 165],
+                        itemStyle: { color: '#48bb78' },
+                        areaStyle: { 
+                            opacity: 0.2,
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: 'rgba(72, 187, 120, 0.3)' },
+                                { offset: 1, color: 'rgba(72, 187, 120, 0.05)' }
+                            ])
+                        },
+                        markPoint: {
+                            data: [
+                                { name: 'Break-even', coord: [8, 0], value: 'Break-even', symbol: 'pin', symbolSize: 60 }
+                            ]
+                        }
+                    }
+                ]
+            };
+            investmentChart.setOption(investmentOption);
+            
+            // Risk Assessment Matrix
+            const riskChart = echarts.init(document.getElementById('risk-matrix'));
+            const riskData = [
+                { name: 'Market Window', value: [85, 90], symbolSize: 80, category: 'Critical' },
+                { name: 'Technology Gap', value: [50, 75], symbolSize: 60, category: 'High' },
+                { name: 'Price Competition', value: [80, 80], symbolSize: 70, category: 'Critical' },
+                { name: 'Team Capability', value: [75, 60], symbolSize: 55, category: 'High' },
+                { name: 'Financial ROI', value: [50, 70], symbolSize: 50, category: 'Medium' },
+                { name: 'Tariff Changes', value: [45, 50], symbolSize: 45, category: 'Medium' },
+                { name: 'Brand Perception', value: [60, 65], symbolSize: 50, category: 'High' },
+                { name: 'Supply Chain', value: [40, 40], symbolSize: 40, category: 'Low' }
+            ];
+            
+            const riskOption = {
+                tooltip: {
+                    formatter: function(params) {
+                        return params.data.name + '<br/>' +
+                               'Probability: ' + params.data.value[0] + '%<br/>' +
+                               'Impact: ' + params.data.value[1] + '%<br/>' +
+                               'Category: ' + params.data.category;
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value',
+                    name: 'Probability (%)',
+                    min: 0,
+                    max: 100,
+                    splitLine: {
+                        lineStyle: { type: 'dashed', opacity: 0.3 }
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Impact (%)',
+                    min: 0,
+                    max: 100,
+                    splitLine: {
+                        lineStyle: { type: 'dashed', opacity: 0.3 }
+                    }
+                },
+                visualMap: {
+                    show: false,
+                    dimension: 2,
+                    categories: ['Low', 'Medium', 'High', 'Critical'],
+                    inRange: {
+                        color: ['#48bb78', '#ecc94b', '#ed8936', '#f56565']
+                    }
+                },
+                series: [{
+                    type: 'scatter',
+                    data: riskData,
+                    symbolSize: function(data) {
+                        return data.symbolSize;
+                    },
+                    label: {
+                        show: true,
+                        formatter: '{b}',
+                        position: 'top',
+                        fontSize: 11
+                    },
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowColor: 'rgba(120, 36, 50, 0.5)',
+                        shadowOffsetY: 5,
+                        color: function(params) {
+                            const colors = {
+                                'Critical': '#f56565',
+                                'High': '#ed8936',
+                                'Medium': '#ecc94b',
+                                'Low': '#48bb78'
+                            };
+                            return colors[params.data.category];
+                        }
+                    }
+                }]
+            };
+            riskChart.setOption(riskOption);
+            
+            // Channel Readiness Chart
+            const channelChart = echarts.init(document.getElementById('channel-readiness'));
+            const channelOption = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                legend: {
+                    data: ['Current Readiness', 'Required Level', 'Gap'],
+                    top: 0
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['Amazon', 'Brand Website', 'Major Retailers', 'Specialty Stores', 'Social Commerce'],
+                    axisLabel: {
+                        interval: 0,
+                        rotate: 30
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Readiness (%)',
+                    max: 100
+                },
+                series: [
+                    {
+                        name: 'Current Readiness',
+                        type: 'bar',
+                        data: [0, 30, 70, 40, 10],
+                        itemStyle: {
+                            color: '#667eea'
+                        }
+                    },
+                    {
+                        name: 'Required Level',
+                        type: 'bar',
+                        data: [90, 80, 85, 60, 70],
+                        itemStyle: {
+                            color: 'rgba(72, 187, 120, 0.3)',
+                            borderColor: '#48bb78',
+                            borderWidth: 2,
+                            borderType: 'dashed'
+                        }
+                    },
+                    {
+                        name: 'Gap',
+                        type: 'line',
+                        data: [90, 50, 15, 20, 60],
+                        itemStyle: {
+                            color: '#f56565'
+                        },
+                        label: {
+                            show: true,
+                            position: 'top',
+                            formatter: '-{c}%'
+                        }
+                    }
+                ]
+            };
+            channelChart.setOption(channelOption);
+            
+            // Regional Strategy Radar
+            const regionalChart = echarts.init(document.getElementById('regional-strategy'));
+            const regionalOption = {
+                tooltip: {},
+                legend: {
+                    data: ['North America Focus', 'Europe Focus', 'Eureka Capability'],
+                    top: 0
+                },
+                radar: {
+                    indicator: [
+                        { name: 'Smart Home Integration', max: 100 },
+                        { name: 'Energy Efficiency', max: 100 },
+                        { name: 'Privacy Compliance', max: 100 },
+                        { name: 'Voice Control', max: 100 },
+                        { name: 'Pet Features', max: 100 },
+                        { name: 'Local Manufacturing', max: 100 }
+                    ],
+                    shape: 'circle',
+                    splitNumber: 5
+                },
+                series: [{
+                    type: 'radar',
+                    data: [
+                        {
+                            value: [90, 60, 50, 85, 80, 75],
+                            name: 'North America Focus',
+                            itemStyle: { color: '#667eea' },
+                            areaStyle: { opacity: 0.3 }
+                        },
+                        {
+                            value: [65, 85, 90, 60, 65, 70],
+                            name: 'Europe Focus',
+                            itemStyle: { color: '#48bb78' },
+                            areaStyle: { opacity: 0.3 }
+                        },
+                        {
+                            value: [30, 40, 20, 35, 50, 60],
+                            name: 'Eureka Capability',
+                            itemStyle: { color: '#f56565' },
+                            areaStyle: { opacity: 0.2 },
+                            lineStyle: { type: 'dashed' }
+                        }
+                    ]
+                }]
+            };
+            regionalChart.setOption(regionalOption);
+            
+            // Implementation Roadmap
+            const roadmapChart = echarts.init(document.getElementById('implementation-roadmap'));
+            const roadmapOption = {
+                tooltip: {
+                    formatter: function(params) {
+                        return params.name + '<br/>' +
+                               'Phase: ' + params.data.phase + '<br/>' +
+                               'Duration: ' + params.value[1] + ' months<br/>' +
+                               'Status: ' + params.data.status;
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    top: '10%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value',
+                    name: 'Timeline (Months)',
+                    max: 24,
+                    axisLabel: {
+                        formatter: 'M{value}'
+                    }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: ['Market Expansion', 'Product Launch', 'Channel Setup', 'Tech Development', 'Team Building']
+                },
+                series: [{
+                    type: 'custom',
+                    renderItem: function(params, api) {
+                        const categoryIndex = api.value(0);
+                        const start = api.coord([api.value(1), categoryIndex]);
+                        const end = api.coord([api.value(2), categoryIndex]);
+                        const height = api.size([0, 1])[1] * 0.6;
+                        
+                        const rectShape = echarts.graphic.clipRectByRect({
+                            x: start[0],
+                            y: start[1] - height / 2,
+                            width: end[0] - start[0],
+                            height: height
+                        }, {
+                            x: params.coordSys.x,
+                            y: params.coordSys.y,
+                            width: params.coordSys.width,
+                            height: params.coordSys.height
+                        });
+                        
+                        return rectShape && {
+                            type: 'rect',
+                            shape: rectShape,
+                            style: api.style()
+                        };
+                    },
+                    encode: {
+                        x: [1, 2],
+                        y: 0
+                    },
+                    data: [
+                        {
+                            name: 'Team Building',
+                            value: [0, 0, 6],
+                            phase: 'Phase 1',
+                            status: 'Critical',
+                            itemStyle: { color: '#f56565' }
+                        },
+                        {
+                            name: 'Technology Development',
+                            value: [1, 0, 12],
+                            phase: 'Phase 1-2',
+                            status: 'In Progress',
+                            itemStyle: { color: '#ed8936' }
+                        },
+                        {
+                            name: 'Channel Setup',
+                            value: [2, 3, 12],
+                            phase: 'Phase 1-2',
+                            status: 'Planning',
+                            itemStyle: { color: '#ecc94b' }
+                        },
+                        {
+                            name: 'Product Launch',
+                            value: [3, 6, 18],
+                            phase: 'Phase 2-3',
+                            status: 'Pending',
+                            itemStyle: { color: '#667eea' }
+                        },
+                        {
+                            name: 'Market Expansion',
+                            value: [4, 12, 24],
+                            phase: 'Phase 3-4',
+                            status: 'Future',
+                            itemStyle: { color: '#48bb78' }
+                        }
+                    ]
+                }]
+            };
+            roadmapChart.setOption(roadmapOption);
+            
+            // SWOT Analysis
+            const swotChart = echarts.init(document.getElementById('swot-analysis'));
+            const swotOption = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c} factors'
+                },
+                series: [
+                    {
+                        type: 'treemap',
+                        data: [
+                            {
+                                name: 'Strengths',
+                                value: 4,
+                                itemStyle: { color: '#48bb78' },
+                                children: [
+                                    { name: 'American Brand Identity', value: 1 },
+                                    { name: 'Retail Channel Relations', value: 1 },
+                                    { name: 'Financial Resources', value: 1 },
+                                    { name: 'Manufacturing Experience', value: 1 }
+                                ]
+                            },
+                            {
+                                name: 'Weaknesses',
+                                value: 4,
+                                itemStyle: { color: '#f56565' },
+                                children: [
+                                    { name: 'Technology Gap', value: 1 },
+                                    { name: 'Brand Perception', value: 1 },
+                                    { name: 'Digital Capabilities', value: 1 },
+                                    { name: 'Organizational Inertia', value: 1 }
+                                ]
+                            },
+                            {
+                                name: 'Opportunities',
+                                value: 4,
+                                itemStyle: { color: '#667eea' },
+                                children: [
+                                    { name: 'Market Growth (5x)', value: 1 },
+                                    { name: 'Tariff Protection', value: 1 },
+                                    { name: 'Premium Segment Growth', value: 1 },
+                                    { name: 'Technology Standards Forming', value: 1 }
+                                ]
+                            },
+                            {
+                                name: 'Threats',
+                                value: 4,
+                                itemStyle: { color: '#ed8936' },
+                                children: [
+                                    { name: 'Chinese Brand Dominance', value: 1 },
+                                    { name: 'Fast Tech Evolution', value: 1 },
+                                    { name: 'Channel Concentration', value: 1 },
+                                    { name: 'Low Brand Loyalty', value: 1 }
+                                ]
+                            }
+                        ],
+                        levels: [
+                            {
+                                itemStyle: {
+                                    borderColor: '#fff',
+                                    borderWidth: 4,
+                                    gapWidth: 4
+                                }
+                            },
+                            {
+                                itemStyle: {
+                                    borderColor: '#fff',
+                                    borderWidth: 2,
+                                    gapWidth: 2
+                                }
+                            }
+                        ],
+                        breadcrumb: {
+                            show: false
+                        },
+                        label: {
+                            show: true,
+                            formatter: '{b}',
+                            fontSize: 12
+                        }
+                    }
+                ]
+            };
+            swotChart.setOption(swotOption);
+            
+            // Make charts responsive
+            window.addEventListener('resize', function() {
+                techChart.resize();
+                spiderChart.resize();
+                investmentChart.resize();
+                riskChart.resize();
+                channelChart.resize();
+                regionalChart.resize();
+                roadmapChart.resize();
+                swotChart.resize();
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka Robot - GEO项目第一阶段实施指南</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #1e3c72;
+            --secondary-color: #2a5298;
+            --accent-color: #4a90e2;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-light: #f9fafb;
+            --border-color: #e5e7eb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 60px 40px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-30px, -30px) rotate(180deg); }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .phase-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 20px;
+            border-radius: 25px;
+            margin-top: 20px;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--border-color);
+            flex-wrap: wrap;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border-radius: 10px;
+        }
+
+        .nav-tab:hover {
+            background: var(--bg-light);
+            color: var(--primary-color);
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+        }
+
+        /* Content Sections */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .section-number {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .section-title {
+            font-size: 1.6rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-light);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        /* Code Blocks */
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .code-header {
+            background: #0f172a;
+            color: #94a3b8;
+            padding: 10px 20px;
+            border-radius: 10px 10px 0 0;
+            margin: 20px 0 0 0;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Tables */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tr:hover {
+            background: var(--bg-light);
+        }
+
+        /* Checklist */
+        .checklist {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+            border: 2px solid var(--border-color);
+        }
+
+        .checklist-header {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+        }
+
+        .checklist-item:hover {
+            background: var(--bg-light);
+            padding-left: 10px;
+        }
+
+        .checklist-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        .checklist-item label {
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .checklist-item.completed label {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: var(--border-color);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            border-radius: 15px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Status Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 0 5px;
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+            border: 1px solid var(--warning-color);
+        }
+
+        .badge-info {
+            background: rgba(74, 144, 226, 0.1);
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+        }
+
+        /* Alert Boxes */
+        .alert {
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .alert-info {
+            background: rgba(74, 144, 226, 0.1);
+            border: 1px solid var(--accent-color);
+            color: var(--primary-color);
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success-color);
+            color: #065f46;
+        }
+
+        .alert-icon {
+            font-size: 1.5rem;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(30, 60, 114, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .nav-tabs {
+                padding: 10px;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            table {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🚀 Eureka Robot GEO 项目实施指南</h1>
+            <p class="subtitle">第一阶段：基础建设 (1-2个月)</p>
+            <span class="phase-badge">Foundation Building Phase</span>
+        </div>
+
+        <!-- Progress Tracker -->
+        <div class="progress-container">
+            <div class="progress-header">
+                <h3>整体进度追踪</h3>
+                <span id="progressPercent">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar" style="width: 0%">0 / 28 任务完成</div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('monitoring')">
+                📊 监测平台
+            </button>
+            <button class="nav-tab" onclick="switchTab('schema')">
+                🏗️ Schema标记
+            </button>
+            <button class="nav-tab" onclick="switchTab('analytics')">
+                📈 数据追踪
+            </button>
+            <button class="nav-tab" onclick="switchTab('content')">
+                📝 内容优化
+            </button>
+            <button class="nav-tab" onclick="switchTab('checklist')">
+                ✅ 执行清单
+            </button>
+        </div>
+
+        <!-- Tab 1: Monitoring Platforms -->
+        <div id="monitoring" class="tab-content active">
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">1</div>
+                    <h2 class="section-title">GEO 监测平台接入与配置</h2>
+                </div>
+
+                <div class="alert alert-info">
+                    <span class="alert-icon">💡</span>
+                    <div>
+                        <strong>关键数据：</strong>根据行业数据，实施GEO监测平台后，平均可获得40%的AI引流增长和4倍的AI可见度提升。
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">A. Scrunch AI 配置 <span class="badge badge-success">推荐</span></h3>
+                    <p><strong>价格：</strong>$300-500/月（Starter/Growth套餐）</p>
+                    <p><strong>核心功能：</strong></p>
+                    <ul style="margin-left: 20px; line-height: 2;">
+                        <li>✓ 实时监测ChatGPT, Gemini, Perplexity等主流AI平台</li>
+                        <li>✓ 品牌曝光度评分（GEO Score）</li>
+                        <li>✓ 竞品对比分析（iRobot, Neato监测）</li>
+                        <li>✓ 错误信息和幻觉检测</li>
+                        <li>✓ 情感分析和引用源追踪</li>
+                    </ul>
+                    
+                    <div class="alert alert-success" style="margin-top: 20px;">
+                        <span class="alert-icon">✨</span>
+                        <div>客户平均获得40%的引流增长和4倍的可见度提升（90天内）</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">B. AthenaHQ 设置</h3>
+                    <p><strong>价格：</strong>$295/月起（包含3,500积分）</p>
+                    <p><strong>配置重点：</strong></p>
+                    <ul style="margin-left: 20px; line-height: 2;">
+                        <li>📌 每日提示词监测（支持数百个查询）</li>
+                        <li>📌 竞品洞察和GEO优化建议</li>
+                        <li>📌 内容缺口识别</li>
+                        <li>📌 AI盲点检测</li>
+                        <li>📌 GA4集成支持</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">C. Profound 企业版</h3>
+                    <p><strong>价格：</strong>$499/月起（企业定制）</p>
+                    <p><strong>企业级特性：</strong></p>
+                    <ul style="margin-left: 20px; line-height: 2;">
+                        <li>🔒 SOC 2 Type II 合规认证</li>
+                        <li>🔒 SSO单点登录（SAML/OIDC）</li>
+                        <li>🔒 每日数据备份</li>
+                        <li>🔒 优先级技术支持</li>
+                        <li>🔒 实时搜索量洞察</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Schema Implementation -->
+        <div id="schema" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">2</div>
+                    <h2 class="section-title">Schema.org 结构化数据部署</h2>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">A. 产品Schema实施</h3>
+                    <div class="code-header">JSON-LD Product Schema</div>
+                    <div class="code-block">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "Eureka Robot Vacuum Model X",
+  "brand": {
+    "@type": "Brand",
+    "name": "Eureka"
+  },
+  "description": "高性能智能扫地机器人，专为宠物家庭设计",
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.5",
+    "reviewCount": "1247",
+    "bestRating": "5"
+  },
+  "offers": {
+    "@type": "Offer",
+    "priceCurrency": "USD",
+    "price": "299.99",
+    "priceValidUntil": "2025-12-31",
+    "availability": "https://schema.org/InStock",
+    "seller": {
+      "@type": "Organization",
+      "name": "Eureka Official Store"
+    }
+  },
+  "image": "https://eureka.com/images/robot-x.jpg",
+  "sku": "ERK-X-2024",
+  "gtin": "1234567890123"
+}
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">B. FAQ Schema标记</h3>
+                    <div class="code-header">JSON-LD FAQ Schema</div>
+                    <div class="code-block">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [{
+    "@type": "Question",
+    "name": "Eureka扫地机器人如何处理宠物毛发？",
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Eureka机器人配备专利防缠绕技术，双层滚刷设计有效分离宠物毛发，
+             防止缠绕。HEPA过滤系统可捕获99.97%的过敏原，特别适合宠物家庭使用。"
+    }
+  }, {
+    "@type": "Question",
+    "name": "电池续航时间是多久？",
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "标准模式下可连续工作120分钟，覆盖约200平方米。
+             低电量时自动返回充电，充满后继续未完成的清扫任务。"
+    }
+  }]
+}
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">C. 评价Schema</h3>
+                    <div class="code-header">JSON-LD Review Schema</div>
+                    <div class="code-block">
+{
+  "@context": "https://schema.org",
+  "@type": "Review",
+  "itemReviewed": {
+    "@type": "Product",
+    "name": "Eureka Robot Vacuum"
+  },
+  "reviewRating": {
+    "@type": "Rating",
+    "ratingValue": "5",
+    "bestRating": "5"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "张明"
+  },
+  "reviewBody": "使用三个月了，清扫效果很好，特别是处理宠物毛发的能力超出预期。",
+  "datePublished": "2024-11-15"
+}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Analytics Configuration -->
+        <div id="analytics" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">3</div>
+                    <h2 class="section-title">GA4 & GTM AI流量追踪配置</h2>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">A. GA4 自定义渠道组设置</h3>
+                    <p><strong>步骤说明：</strong></p>
+                    <ol style="margin-left: 20px; line-height: 2;">
+                        <li>进入 GA4 → 管理 → 数据显示 → 渠道组</li>
+                        <li>创建新渠道组："AI驱动流量"</li>
+                        <li>使用正则表达式匹配AI平台</li>
+                    </ol>
+                    
+                    <div class="code-header">AI平台识别正则表达式</div>
+                    <div class="code-block">
+^(?:chatgpt\.com|claude\.ai|perplexity(?:\.ai)?|
+gemini\.google\.com|copilot\.microsoft\.com|
+openai\.com|deepseek\.com|you\.com|
+bard\.google\.com|grok\.x\.com)
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">B. GTM 事件追踪配置</h3>
+                    <p><strong>关键事件设置：</strong></p>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>事件名称</th>
+                                    <th>触发条件</th>
+                                    <th>参数</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>ai_referral_landing</code></td>
+                                    <td>用户从AI平台到达</td>
+                                    <td>source, landing_page</td>
+                                </tr>
+                                <tr>
+                                    <td><code>ai_content_engagement</code></td>
+                                    <td>与AI引流内容交互</td>
+                                    <td>content_type, engagement_time</td>
+                                </tr>
+                                <tr>
+                                    <td><code>ai_conversion</code></td>
+                                    <td>AI流量转化完成</td>
+                                    <td>conversion_value, product_id</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">C. 自定义维度配置</h3>
+                    <ul style="margin-left: 20px; line-height: 2;">
+                        <li>📊 <strong>AI平台来源：</strong>ChatGPT / Perplexity / Gemini / Claude</li>
+                        <li>📊 <strong>查询类型：</strong>产品研究 / 对比 / 故障排除 / 购买建议</li>
+                        <li>📊 <strong>内容格式：</strong>FAQ / 产品页 / 博客 / 对比表</li>
+                        <li>📊 <strong>用户意图：</strong>信息收集 / 购买决策 / 售后支持</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 4: Content Optimization -->
+        <div id="content" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">4</div>
+                    <h2 class="section-title">AI友好内容格式创建</h2>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">A. 问答式内容结构</h3>
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <h4 style="color: var(--primary-color); margin-bottom: 15px;">
+                            ❓ Eureka扫地机器人如何处理楼梯？
+                        </h4>
+                        <p style="font-weight: 600; margin-bottom: 10px;">
+                            【直接答案 - 50字以内】
+                        </p>
+                        <p style="background: white; padding: 15px; border-radius: 5px;">
+                            Eureka机器人配备多重防跌落传感器，能准确识别楼梯边缘并自动转向，确保设备安全。
+                        </p>
+                        <p style="font-weight: 600; margin: 15px 0 10px;">
+                            【支持细节 - 要点列表】
+                        </p>
+                        <ul style="background: white; padding: 15px; border-radius: 5px; list-style: none;">
+                            <li>• 6个防跌落传感器全方位覆盖</li>
+                            <li>• 感应距离8cm，反应时间0.1秒</li>
+                            <li>• 自动减速并180度转向</li>
+                            <li>• 适用于高度差≥8cm的台阶</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">B. 对比表格格式</h3>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>功能特性</th>
+                                    <th>Eureka Robot</th>
+                                    <th>iRobot</th>
+                                    <th>Neato</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>宠物毛发处理</strong></td>
+                                    <td>高级防缠绕双刷</td>
+                                    <td>标准单刷</td>
+                                    <td>基础滚刷</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>电池续航</strong></td>
+                                    <td>120分钟</td>
+                                    <td>90分钟</td>
+                                    <td>90分钟</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>导航技术</strong></td>
+                                    <td>LiDAR + AI视觉</td>
+                                    <td>摄像头导航</td>
+                                    <td>LiDAR</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>价格区间</strong></td>
+                                    <td>$299-599</td>
+                                    <td>$399-999</td>
+                                    <td>$349-699</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>噪音水平</strong></td>
+                                    <td>55dB（静音模式）</td>
+                                    <td>62dB</td>
+                                    <td>65dB</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">C. 列表式内容优化</h3>
+                    <h4 style="margin: 20px 0;">🏆 Eureka扫地机器人10大核心优势</h4>
+                    <ol style="background: #f8f9fa; padding: 20px 30px; border-radius: 8px; line-height: 2.2;">
+                        <li><strong>智能路径规划：</strong>AI算法优化清扫路线，效率提升40%</li>
+                        <li><strong>防缠绕技术：</strong>专利双刷设计，宠物毛发不缠绕</li>
+                        <li><strong>超长续航：</strong>120分钟连续工作，覆盖200㎡</li>
+                        <li><strong>静音运行：</strong>55dB静音模式，不打扰日常生活</li>
+                        <li><strong>自动充电续扫：</strong>低电量自动回充，充满继续清扫</li>
+                        <li><strong>多地图存储：</strong>支持5张地图，适合复式住宅</li>
+                        <li><strong>APP远程控制：</strong>随时随地控制和监控清扫状态</li>
+                        <li><strong>HEPA过滤：</strong>捕获99.97%过敏原和微尘</li>
+                        <li><strong>虚拟墙设置：</strong>APP划定禁区，保护贵重物品</li>
+                        <li><strong>智能语音控制：</strong>支持Alexa、Google Assistant</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 5: Checklist -->
+        <div id="checklist" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">✅</div>
+                    <h2 class="section-title">8周实施检查清单</h2>
+                </div>
+
+                <!-- Week 1-2 -->
+                <div class="checklist">
+                    <h3 class="checklist-header">📅 第1-2周：平台设置</h3>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task1" onchange="updateProgress()">
+                        <label for="task1">注册Scrunch AI账号（$300/月起步套餐）</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task2" onchange="updateProgress()">
+                        <label for="task2">配置AthenaHQ监测（$295/月）</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task3" onchange="updateProgress()">
+                        <label for="task3">申请Profound企业版演示</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task4" onchange="updateProgress()">
+                        <label for="task4">设置品牌监测关键词（Eureka, Eureka Robot等）</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task5" onchange="updateProgress()">
+                        <label for="task5">添加竞品追踪（iRobot, Neato, Roborock）</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task6" onchange="updateProgress()">
+                        <label for="task6">配置警报和通知</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task7" onchange="updateProgress()">
+                        <label for="task7">建立基线数据报告</label>
+                    </div>
+                </div>
+
+                <!-- Week 3-4 -->
+                <div class="checklist">
+                    <h3 class="checklist-header">📅 第3-4周：技术实施</h3>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task8" onchange="updateProgress()">
+                        <label for="task8">在所有产品页部署Product Schema</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task9" onchange="updateProgress()">
+                        <label for="task9">实施FAQ Schema（至少10个Q&A）</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task10" onchange="updateProgress()">
+                        <label for="task10">添加Review Schema到评价页面</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task11" onchange="updateProgress()">
+                        <label for="task11">使用Google富结果测试工具验证</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task12" onchange="updateProgress()">
+                        <label for="task12">修复Schema错误和警告</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task13" onchange="updateProgress()">
+                        <label for="task13">提交更新的sitemap到Google Search Console</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task14" onchange="updateProgress()">
+                        <label for="task14">监测Schema在搜索结果中的展示</label>
+                    </div>
+                </div>
+
+                <!-- Week 5-6 -->
+                <div class="checklist">
+                    <h3 class="checklist-header">📅 第5-6周：分析配置</h3>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task15" onchange="updateProgress()">
+                        <label for="task15">创建GA4自定义渠道组</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task16" onchange="updateProgress()">
+                        <label for="task16">配置GTM AI事件追踪标签</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task17" onchange="updateProgress()">
+                        <label for="task17">设置自定义维度和指标</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task18" onchange="updateProgress()">
+                        <label for="task18">创建Looker Studio仪表板</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task19" onchange="updateProgress()">
+                        <label for="task19">配置转化追踪</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task20" onchange="updateProgress()">
+                        <label for="task20">测试数据收集准确性</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task21" onchange="updateProgress()">
+                        <label for="task21">设置自动报告</label>
+                    </div>
+                </div>
+
+                <!-- Week 7-8 -->
+                <div class="checklist">
+                    <h3 class="checklist-header">📅 第7-8周：内容优化</h3>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task22" onchange="updateProgress()">
+                        <label for="task22">审核前20个页面的AI友好度</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task23" onchange="updateProgress()">
+                        <label for="task23">创建5个产品对比表</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task24" onchange="updateProgress()">
+                        <label for="task24">开发3个综合FAQ页面</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task25" onchange="updateProgress()">
+                        <label for="task25">优化10个产品描述（Q&A格式）</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task26" onchange="updateProgress()">
+                        <label for="task26">更新所有H2/H3标题为问题格式</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task27" onchange="updateProgress()">
+                        <label for="task27">添加结构化列表到关键页面</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="task28" onchange="updateProgress()">
+                        <label for="task28">完成第一阶段效果评估报告</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPIs Section -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">📈</div>
+                    <h2 class="section-title">预期成果与KPI指标</h2>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div class="card" style="text-align: center;">
+                        <h4 style="color: var(--success-color); font-size: 2rem; margin-bottom: 10px;">40%</h4>
+                        <p>AI平台引流增长</p>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <h4 style="color: var(--success-color); font-size: 2rem; margin-bottom: 10px;">4x</h4>
+                        <p>AI可见度提升</p>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <h4 style="color: var(--success-color); font-size: 2rem; margin-bottom: 10px;">90天</h4>
+                        <p>见效时间</p>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <h4 style="color: var(--success-color); font-size: 2rem; margin-bottom: 10px;">5%</h4>
+                        <p>目标引用率</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pro Tips -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">💡</div>
+                    <h2 class="section-title">专业建议</h2>
+                </div>
+
+                <div class="alert alert-info">
+                    <span class="alert-icon">🎯</span>
+                    <div>
+                        <h4>快速启动策略</h4>
+                        <p>从最受欢迎的5个产品开始优化，根据初步结果快速扩展到全线产品。</p>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <span class="alert-icon">👀</span>
+                    <div>
+                        <h4>竞品监测</h4>
+                        <p>每日使用Scrunch监测iRobot和Neato的AI表现，及时调整策略。</p>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <span class="alert-icon">⚡</span>
+                    <div>
+                        <h4>快速响应</h4>
+                        <p>发现AI幻觉或错误信息立即修正，防止负面信息扩散。</p>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <span class="alert-icon">📝</span>
+                    <div>
+                        <h4>文档记录</h4>
+                        <p>详细记录所有变更，便于分析效果和优化迭代。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching function
+        function switchTab(tabName) {
+            // Hide all tab contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // Progress tracking function
+        function updateProgress() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const total = checkboxes.length;
+            let completed = 0;
+            
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    completed++;
+                    checkbox.parentElement.classList.add('completed');
+                } else {
+                    checkbox.parentElement.classList.remove('completed');
+                }
+            });
+            
+            const percentage = Math.round((completed / total) * 100);
+            const progressBar = document.getElementById('progressBar');
+            const progressPercent = document.getElementById('progressPercent');
+            
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = `${completed} / ${total} 任务完成`;
+            progressPercent.textContent = percentage + '%';
+            
+            // Change color based on progress
+            if (percentage < 33) {
+                progressBar.style.background = 'linear-gradient(90deg, #ef4444, #f87171)';
+            } else if (percentage < 66) {
+                progressBar.style.background = 'linear-gradient(90deg, #f59e0b, #fbbf24)';
+            } else {
+                progressBar.style.background = 'linear-gradient(90deg, #10b981, #34d399)';
+            }
+        }
+
+        // Save progress to localStorage
+        function saveProgress() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const progress = {};
+            checkboxes.forEach(checkbox => {
+                progress[checkbox.id] = checkbox.checked;
+            });
+            localStorage.setItem('eurekaGEOProgress', JSON.stringify(progress));
+        }
+
+        // Load progress from localStorage
+        function loadProgress() {
+            const saved = localStorage.getItem('eurekaGEOProgress');
+            if (saved) {
+                const progress = JSON.parse(saved);
+                Object.keys(progress).forEach(id => {
+                    const checkbox = document.getElementById(id);
+                    if (checkbox) {
+                        checkbox.checked = progress[id];
+                    }
+                });
+                updateProgress();
+            }
+        }
+
+        // Add event listeners for saving progress
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProgress();
+            
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', saveProgress);
+            });
+        });
+
+        // Print function
+        function printGuide() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka GEO Analytics Dashboard - AI Visibility Diagnostic Report</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(96, 165, 250, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .metric-card .label {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .metric-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 8px;
+        }
+
+        .metric-card .trend {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.875rem;
+        }
+
+        .metric-card .trend.negative {
+            color: #ef4444;
+        }
+
+        .metric-card .trend.positive {
+            color: #10b981;
+        }
+
+        .chart-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chart-section h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #f1f5f9;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+
+        .insight-box {
+            background: rgba(96, 165, 250, 0.1);
+            border-left: 4px solid #60a5fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .insight-box h3 {
+            font-size: 1.1rem;
+            color: #60a5fa;
+            margin-bottom: 10px;
+        }
+
+        .insight-box p {
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        .recommendations {
+            background: rgba(167, 139, 250, 0.1);
+            border-left: 4px solid #a78bfa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .recommendations h3 {
+            font-size: 1.1rem;
+            color: #a78bfa;
+            margin-bottom: 10px;
+        }
+
+        .recommendations ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .recommendations li {
+            color: #e2e8f0;
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .recommendations li:before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #a78bfa;
+        }
+
+        .two-column-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .two-column-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.warning {
+            background: rgba(251, 146, 60, 0.2);
+            color: #fb923c;
+        }
+
+        .status-badge.danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .status-badge.success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>Eureka GEO Analytics Dashboard</h1>
+            <div class="subtitle">AI Visibility Diagnostic Report - Week 1-4 Analysis (August 2025)</div>
+        </div>
+
+        <!-- Key Metrics Overview -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="label">Overall Mention Rate</div>
+                <div class="value">12.5%</div>
+                <div class="trend negative">
+                    <span>↓ 5.8% vs Industry Avg</span>
+                    <span class="status-badge warning">Below Average</span>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="label">Share of Voice (SoV-AI)</div>
+                <div class="value">8.7%</div>
+                <div class="trend">
+                    <span>Baseline Established</span>
+                    <span class="status-badge warning">Needs Improvement</span>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="label">Citation Score</div>
+                <div class="value">3.2/10</div>
+                <div class="trend negative">
+                    <span>↓ 1.3 vs Industry</span>
+                    <span class="status-badge danger">Critical</span>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="label">Platform Coverage</div>
+                <div class="value">60%</div>
+                <div class="trend negative">
+                    <span>↓ 20% vs Target</span>
+                    <span class="status-badge warning">Expand Reach</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Platform Performance Analysis -->
+        <div class="chart-section">
+            <h2>Platform-Specific Performance Analysis</h2>
+            <div class="chart-container" id="platformChart"></div>
+            <div class="insight-box">
+                <h3>Key Insights</h3>
+                <p>Perplexity shows the highest mention rate at 18%, followed by ChatGPT at 15%. Gemini significantly underperforms at only 8%, indicating weak presence in Google's AI ecosystem. The ranking positions across platforms are consistently mid-to-low (4-8), suggesting limited brand authority in AI responses.</p>
+            </div>
+            <div class="recommendations">
+                <h3>Strategic Recommendations</h3>
+                <ul>
+                    <li>Prioritize content optimization for Gemini to improve the 8% mention rate</li>
+                    <li>Leverage Perplexity's higher engagement by creating more structured data</li>
+                    <li>Develop platform-specific content strategies to improve ranking positions</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Competitive Landscape -->
+        <div class="two-column-grid">
+            <div class="chart-section">
+                <h2>Competitive Mention Rate Comparison</h2>
+                <div class="chart-container" id="competitiveChart"></div>
+            </div>
+            <div class="chart-section">
+                <h2>Market Share vs AI Share Analysis</h2>
+                <div class="chart-container" id="marketShareChart"></div>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <h2>Query Response Performance Analysis</h2>
+            <div class="two-column-grid">
+                <div>
+                    <div class="chart-container" id="queryResponseChart"></div>
+                </div>
+                <div>
+                    <div class="insight-box">
+                        <h3>Response Pattern Insights</h3>
+                        <p>Brand-specific queries show significantly higher mention rates (32-45%) compared to generic category queries (0%). This indicates strong brand recall but weak category association. The AI platforms don't naturally associate Eureka with modern features like "smart obstacle avoidance" or "mopping functionality".</p>
+                    </div>
+                    <div class="recommendations">
+                        <h3>Content Optimization Strategy</h3>
+                        <ul>
+                            <li>Create comprehensive guides linking Eureka to smart features and modern technology</li>
+                            <li>Develop comparison content highlighting Eureka's competitive advantages</li>
+                            <li>Optimize for high-intent category queries currently showing 0% mention rate</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Assessment -->
+        <div class="chart-section">
+            <h2>Content Asset AI-Friendliness Assessment</h2>
+            <div class="chart-container" id="contentAssessmentChart"></div>
+            <div class="insight-box">
+                <h3>Content Gap Analysis</h3>
+                <p>Critical gaps identified: No comparison pages exist (0/5 AI-friendliness), technical specifications lack context (1/5), and FAQ content is too basic (2/5). Only user guides show moderate AI-friendliness (3/5). The content update frequency is concerning with the last blog update 3 months ago.</p>
+            </div>
+            <div class="recommendations">
+                <h3>Content Roadmap Priorities</h3>
+                <ul>
+                    <li>Immediately create product comparison pages with structured data markup</li>
+                    <li>Transform technical specifications into narrative-style content with context</li>
+                    <li>Expand FAQ section to cover advanced topics and use cases</li>
+                    <li>Establish monthly content update cadence for blog and product pages</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Strategic Priority Matrix -->
+        <div class="chart-section">
+            <h2>Strategic Action Priority Matrix</h2>
+            <div class="chart-container" id="priorityMatrixChart"></div>
+            <div class="insight-box">
+                <h3>Implementation Strategy</h3>
+                <p>The priority matrix reveals quick wins in Schema markup implementation and FAQ upgrades. High-impact initiatives like comparison pages and technical documentation require immediate attention despite higher effort. Focus on P1 items first to achieve maximum AI visibility improvement within 30 days.</p>
+            </div>
+        </div>
+
+        <!-- Growth Projection -->
+        <div class="chart-section">
+            <h2>AI Visibility Growth Projection</h2>
+            <div class="chart-container" id="growthProjectionChart"></div>
+            <div class="recommendations">
+                <h3>Expected Outcomes</h3>
+                <ul>
+                    <li>Month 1: Quick wins from Schema markup and basic content updates (+5% mention rate)</li>
+                    <li>Month 2: Impact from comparison pages and enhanced FAQs (+7.5% mention rate)</li>
+                    <li>Month 3: Full optimization effect reaching 25% mention rate target</li>
+                    <li>ROI: Each 1% increase in AI mention rate correlates with 0.8% increase in organic traffic</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Platform Performance Chart
+        const platformChart = echarts.init(document.getElementById('platformChart'));
+        const platformOption = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow'
+                }
+            },
+            legend: {
+                data: ['Mention Rate (%)', 'Average Ranking Position', 'Citation Quality (1-5)'],
+                textStyle: { color: '#e2e8f0' }
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'value',
+                axisLabel: { color: '#94a3b8' },
+                splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+            },
+            yAxis: {
+                type: 'category',
+                data: ['Bing Chat', 'Claude', 'Gemini', 'Perplexity', 'ChatGPT'],
+                axisLabel: { color: '#94a3b8' }
+            },
+            series: [
+                {
+                    name: 'Mention Rate (%)',
+                    type: 'bar',
+                    data: [11.5, 10.0, 8.0, 18.0, 15.0],
+                    itemStyle: { color: '#60a5fa' }
+                },
+                {
+                    name: 'Average Ranking Position',
+                    type: 'bar',
+                    data: [5, 6, 7, 4, 5],
+                    itemStyle: { color: '#a78bfa' }
+                },
+                {
+                    name: 'Citation Quality (1-5)',
+                    type: 'bar',
+                    data: [2.5, 2.5, 2, 3.5, 2.5],
+                    itemStyle: { color: '#f59e0b' }
+                }
+            ]
+        };
+        platformChart.setOption(platformOption);
+
+        // Competitive Analysis Chart
+        const competitiveChart = echarts.init(document.getElementById('competitiveChart'));
+        const competitiveOption = {
+            tooltip: {
+                trigger: 'item',
+                formatter: '{b}: {c}%'
+            },
+            radar: {
+                indicator: [
+                    { name: 'AI Mention Rate', max: 40 },
+                    { name: 'Share of Voice', max: 35 },
+                    { name: 'Tech Perception', max: 100 },
+                    { name: 'Brand Authority', max: 100 },
+                    { name: 'Content Freshness', max: 100 }
+                ],
+                axisName: { color: '#94a3b8' },
+                splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+            },
+            series: [{
+                type: 'radar',
+                data: [
+                    {
+                        value: [38.5, 32.1, 95, 90, 85],
+                        name: 'iRobot',
+                        lineStyle: { color: '#ef4444' },
+                        areaStyle: { color: 'rgba(239, 68, 68, 0.2)' }
+                    },
+                    {
+                        value: [28.0, 23.4, 85, 75, 90],
+                        name: 'Roborock',
+                        lineStyle: { color: '#f59e0b' },
+                        areaStyle: { color: 'rgba(245, 158, 11, 0.2)' }
+                    },
+                    {
+                        value: [12.5, 8.7, 30, 60, 25],
+                        name: 'Eureka',
+                        lineStyle: { color: '#60a5fa' },
+                        areaStyle: { color: 'rgba(96, 165, 250, 0.2)' }
+                    }
+                ]
+            }]
+        };
+        competitiveChart.setOption(competitiveOption);
+
+        // Market Share vs AI Share Chart
+        const marketShareChart = echarts.init(document.getElementById('marketShareChart'));
+        const marketShareOption = {
+            tooltip: {
+                trigger: 'axis',
+                formatter: function(params) {
+                    return params[0].name + '<br/>' +
+                           'Market Share: ' + params[0].value + '%<br/>' +
+                           'AI Share: ' + params[1].value + '%';
+                }
+            },
+            legend: {
+                data: ['Market Share', 'AI Share (SoV)'],
+                textStyle: { color: '#e2e8f0' }
+            },
+            xAxis: {
+                type: 'category',
+                data: ['iRobot', 'Roborock', 'Ecovacs', 'Shark', 'Eureka'],
+                axisLabel: { color: '#94a3b8' }
+            },
+            yAxis: {
+                type: 'value',
+                axisLabel: { 
+                    color: '#94a3b8',
+                    formatter: '{value}%'
+                },
+                splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+            },
+            series: [
+                {
+                    name: 'Market Share',
+                    type: 'line',
+                    data: [15, 25, 20, 10, 5],
+                    smooth: true,
+                    itemStyle: { color: '#10b981' },
+                    areaStyle: { 
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                            offset: 0,
+                            color: 'rgba(16, 185, 129, 0.4)'
+                        }, {
+                            offset: 1,
+                            color: 'rgba(16, 185, 129, 0.1)'
+                        }])
+                    }
+                },
+                {
+                    name: 'AI Share (SoV)',
+                    type: 'line',
+                    data: [32.1, 23.4, 18.8, 15.0, 8.7],
+                    smooth: true,
+                    itemStyle: { color: '#a78bfa' },
+                    areaStyle: { 
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                            offset: 0,
+                            color: 'rgba(167, 139, 250, 0.4)'
+                        }, {
+                            offset: 1,
+                            color: 'rgba(167, 139, 250, 0.1)'
+                        }])
+                    }
+                }
+            ]
+        };
+        marketShareChart.setOption(marketShareOption);
+
+        // Query Response Chart
+        const queryResponseChart = echarts.init(document.getElementById('queryResponseChart'));
+        const queryResponseOption = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow'
+                }
+            },
+            legend: {
+                data: ['High Response', 'Zero Response'],
+                textStyle: { color: '#e2e8f0' }
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: ['Brand Queries', 'Feature Queries', 'Category Queries', 'Comparison Queries'],
+                axisLabel: { 
+                    color: '#94a3b8',
+                    rotate: 30
+                }
+            },
+            yAxis: {
+                type: 'value',
+                axisLabel: { 
+                    color: '#94a3b8',
+                    formatter: '{value}%'
+                },
+                splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+            },
+            series: [
+                {
+                    name: 'High Response',
+                    type: 'bar',
+                    data: [38.3, 5, 10, 2],
+                    itemStyle: { 
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                            offset: 0,
+                            color: '#60a5fa'
+                        }, {
+                            offset: 1,
+                            color: '#3b82f6'
+                        }])
+                    }
+                },
+                {
+                    name: 'Zero Response',
+                    type: 'bar',
+                    data: [0, 75, 65, 85],
+                    itemStyle: { 
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                            offset: 0,
+                            color: '#ef4444'
+                        }, {
+                            offset: 1,
+                            color: '#dc2626'
+                        }])
+                    }
+                }
+            ]
+        };
+        queryResponseChart.setOption(queryResponseOption);
+
+        // Content Assessment Chart
+        const contentAssessmentChart = echarts.init(document.getElementById('contentAssessmentChart'));
+        const contentAssessmentOption = {
+            tooltip: {
+                trigger: 'axis'
+            },
+            legend: {
+                data: ['Current AI-Friendliness', 'Target Level'],
+                textStyle: { color: '#e2e8f0' }
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: ['Product Pages', 'Tech Specs', 'User Guides', 'Comparison Pages', 'FAQ Content', 'Review Content'],
+                axisLabel: { 
+                    color: '#94a3b8',
+                    rotate: 30
+                }
+            },
+            yAxis: {
+                type: 'value',
+                max: 5,
+                axisLabel: { 
+                    color: '#94a3b8',
+                    formatter: '{value}/5'
+                },
+                splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+            },
+            series: [
+                {
+                    name: 'Current AI-Friendliness',
+                    type: 'bar',
+                    data: [2, 1, 3, 0, 2, 2],
+                    itemStyle: { color: '#f59e0b' }
+                },
+                {
+                    name: 'Target Level',
+                    type: 'line',
+                    data: [5, 5, 5, 5, 5, 5],
+                    lineStyle: { 
+                        color: '#10b981',
+                        type: 'dashed'
+                    },
+                    symbol: 'none'
+                }
+            ]
+        };
+        contentAssessmentChart.setOption(contentAssessmentOption);
+
+        // Priority Matrix Chart
+        const priorityMatrixChart = echarts.init(document.getElementById('priorityMatrixChart'));
+        const priorityMatrixOption = {
+            tooltip: {
+                trigger: 'item',
+                formatter: function(params) {
+                    return params.data[2] + '<br/>Impact: ' + params.data[0] + '<br/>Effort: ' + params.data[1];
+                }
+            },
+            grid: {
+                left: '10%',
+                right: '10%',
+                bottom: '10%',
+                top: '10%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'value',
+                name: 'Implementation Effort',
+                nameLocation: 'middle',
+                nameGap: 30,
+                max: 10,
+                axisLabel: { color: '#94a3b8' },
+                splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+            },
+            yAxis: {
+                type: 'value',
+                name: 'Business Impact',
+                nameLocation: 'middle',
+                nameGap: 40,
+                max: 10,
+                axisLabel: { color: '#94a3b8' },
+                splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+            },
+            series: [{
+                type: 'scatter',
+                symbolSize: function (data) {
+                    return data[3] * 15;
+                },
+                data: [
+                    [2, 8, 'Schema Markup', 4, 'P1'],
+                    [3, 9, 'Comparison Pages', 5, 'P1'],
+                    [2, 7, 'FAQ Upgrade', 3, 'P1'],
+                    [6, 8, 'Technical Documentation', 4, 'P2'],
+                    [7, 6, 'Video Content', 3, 'P2'],
+                    [3, 5, 'Blog Updates', 2, 'P3'],
+                    [4, 4, 'User Reviews', 2, 'P3'],
+                    [8, 3, 'Community Content', 2, 'P4']
+                ],
+                itemStyle: {
+                    color: function(params) {
+                        const priority = params.data[4];
+                        const colors = {
+                            'P1': '#ef4444',
+                            'P2': '#f59e0b',
+                            'P3': '#60a5fa',
+                            'P4': '#94a3b8'
+                        };
+                        return colors[priority];
+                    }
+                },
+                label: {
+                    show: true,
+                    formatter: function(params) {
+                        return params.data[2];
+                    },
+                    position: 'top',
+                    color: '#e2e8f0'
+                }
+            }]
+        };
+        priorityMatrixChart.setOption(priorityMatrixOption);
+
+        // Growth Projection Chart
+        const growthProjectionChart = echarts.init(document.getElementById('growthProjectionChart'));
+        const growthProjectionOption = {
+            tooltip: {
+                trigger: 'axis',
+                formatter: function(params) {
+                    let result = params[0].name + '<br/>';
+                    params.forEach(function(item) {
+                        result += item.marker + ' ' + item.seriesName + ': ' + item.value + '%<br/>';
+                    });
+                    return result;
+                }
+            },
+            legend: {
+                data: ['Mention Rate', 'SoV-AI', 'Citation Score', 'Industry Average'],
+                textStyle: { color: '#e2e8f0' }
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: ['Current', 'Month 1', 'Month 2', 'Month 3', 'Month 6', 'Month 12'],
+                axisLabel: { color: '#94a3b8' }
+            },
+            yAxis: {
+                type: 'value',
+                axisLabel: { 
+                    color: '#94a3b8',
+                    formatter: '{value}%'
+                },
+                splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+            },
+            series: [
+                {
+                    name: 'Mention Rate',
+                    type: 'line',
+                    data: [12.5, 17.5, 20, 25, 30, 35],
+                    smooth: true,
+                    itemStyle: { color: '#60a5fa' },
+                    areaStyle: { 
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                            offset: 0,
+                            color: 'rgba(96, 165, 250, 0.4)'
+                        }, {
+                            offset: 1,
+                            color: 'rgba(96, 165, 250, 0.1)'
+                        }])
+                    }
+                },
+                {
+                    name: 'SoV-AI',
+                    type: 'line',
+                    data: [8.7, 11, 13, 15, 18, 22],
+                    smooth: true,
+                    itemStyle: { color: '#a78bfa' }
+                },
+                {
+                    name: 'Citation Score',
+                    type: 'line',
+                    data: [32, 40, 45, 50, 60, 70],
+                    smooth: true,
+                    itemStyle: { color: '#10b981' }
+                },
+                {
+                    name: 'Industry Average',
+                    type: 'line',
+                    data: [18.3, 18.3, 18.3, 18.3, 18.3, 18.3],
+                    lineStyle: { 
+                        color: '#ef4444',
+                        type: 'dashed'
+                    },
+                    symbol: 'none'
+                }
+            ]
+        };
+        growthProjectionChart.setOption(growthProjectionOption);
+
+        // Make charts responsive
+        window.addEventListener('resize', function() {
+            platformChart.resize();
+            competitiveChart.resize();
+            marketShareChart.resize();
+            queryResponseChart.resize();
+            contentAssessmentChart.resize();
+            priorityMatrixChart.resize();
+            growthProjectionChart.resize();
+        });
+    </script>
+</body>
+</html>

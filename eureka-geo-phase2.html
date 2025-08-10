@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka GEO Phase 2 - Pilot Optimization Execution Report</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        .report-header {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 60px 40px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.2);
+        }
+
+        .report-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+
+        .report-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .meta-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .meta-label {
+            font-size: 0.875rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .meta-value {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        /* Section Styles */
+        .section {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .section-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .section h2 {
+            font-size: 1.875rem;
+            color: #1e293b;
+            font-weight: 700;
+        }
+
+        .section h3 {
+            font-size: 1.5rem;
+            color: #334155;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .section h4 {
+            font-size: 1.25rem;
+            color: #475569;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        /* Code Block Styles */
+        .code-container {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .code-title {
+            color: #e2e8f0;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .copy-btn {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: #4f46e5;
+        }
+
+        pre {
+            margin: 0;
+            background: transparent !important;
+        }
+
+        code {
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.875rem;
+        }
+
+        /* Table Styles */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.875rem;
+        }
+
+        .data-table th {
+            background: #f1f5f9;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #475569;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .data-table tr:hover {
+            background: #f8fafc;
+        }
+
+        /* Timeline Styles */
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #6366f1, #8b5cf6);
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 40px 0;
+            position: relative;
+        }
+
+        .timeline-content {
+            width: 45%;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .timeline-content.left {
+            text-align: right;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            background: #6366f1;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Card Styles */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .card {
+            background: #f8fafc;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .card h4 {
+            font-size: 1.125rem;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        /* Progress Indicators */
+        .progress-bar {
+            background: #e2e8f0;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* Status Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-warning {
+            background: #fed7aa;
+            color: #92400e;
+        }
+
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        /* Result Summary */
+        .result-summary {
+            background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%);
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid #e0e7ff;
+            margin: 30px 0;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .metric-card {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #6366f1;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .metric-change {
+            color: #10b981;
+            font-size: 0.875rem;
+            margin-top: 5px;
+        }
+
+        /* Charts */
+        .chart-container {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .chart {
+            width: 100%;
+            height: 400px;
+        }
+
+        /* Video Script */
+        .video-script {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 30px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .script-line {
+            display: flex;
+            gap: 20px;
+            margin: 15px 0;
+            align-items: flex-start;
+        }
+
+        .script-time {
+            background: #6366f1;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            white-space: nowrap;
+        }
+
+        .script-content {
+            flex: 1;
+        }
+
+        /* Media Mentions */
+        .media-mentions {
+            background: #f8fafc;
+            padding: 24px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .media-item {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .media-logo {
+            width: 60px;
+            height: 60px;
+            background: #e2e8f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .media-content h4 {
+            margin-bottom: 8px;
+            color: #1e293b;
+        }
+
+        .media-content p {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .report-header {
+                padding: 40px 20px;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            .timeline::before {
+                left: 20px;
+            }
+
+            .timeline-item {
+                flex-direction: column;
+                align-items: flex-start;
+                margin-left: 40px;
+            }
+
+            .timeline-content {
+                width: 100%;
+                text-align: left !important;
+            }
+
+            .timeline-dot {
+                left: 20px;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+            }
+
+            .section {
+                box-shadow: none;
+                border: 1px solid #e2e8f0;
+                break-inside: avoid;
+            }
+
+            .copy-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Report Header -->
+        <header class="report-header">
+            <h1>Eureka Robot Vacuum GEO Pilot Optimization Execution Report</h1>
+            <p style="font-size: 1.25rem; opacity: 0.9;">Transforming AI Visibility Through Structured Content</p>
+            <div class="report-meta">
+                <div class="meta-item">
+                    <div class="meta-label">Project Phase</div>
+                    <div class="meta-value">Phase 2 - Pilot Optimization</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Execution Period</div>
+                    <div class="meta-value">Sep-Oct 2025 (Months 2-3)</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Team</div>
+                    <div class="meta-value">GEO Optimization Team</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Report Version</div>
+                    <div class="meta-value">V2.0</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Month 2: Content Structure Transformation -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">📊</div>
+                <h2>Month 2: Content Structure Transformation</h2>
+            </div>
+
+            <h3>Week 1-2: Schema Markup Deployment</h3>
+
+            <h4>1. Product Page Schema Markup</h4>
+            <p>Example: Eureka J20 Product Page Structured Data</p>
+            
+            <div class="code-container">
+                <div class="code-header">
+                    <span class="code-title">product-schema.json</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-json">{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": "Eureka J20 Smart Robot Vacuum",
+  "image": [
+    "https://eureka.com/images/j20-main.jpg",
+    "https://eureka.com/images/j20-feature.jpg",
+    "https://eureka.com/images/j20-size.jpg"
+  ],
+  "description": "Eureka J20 features LiDAR navigation and 4000Pa suction power, designed for modern homes.",
+  "sku": "J20-2025",
+  "mpn": "EUR-J20-US",
+  "brand": {
+    "@type": "Brand",
+    "name": "Eureka",
+    "logo": "https://eureka.com/logo.png"
+  },
+  "manufacturer": {
+    "@type": "Organization",
+    "name": "Eureka Technology Co.",
+    "foundingDate": "1909",
+    "sameAs": "https://en.wikipedia.org/wiki/Eureka_vacuum"
+  },
+  "offers": {
+    "@type": "Offer",
+    "url": "https://eureka.com/products/j20",
+    "priceCurrency": "USD",
+    "price": "599.99",
+    "priceValidUntil": "2025-12-31",
+    "availability": "https://schema.org/InStock",
+    "seller": {
+      "@type": "Organization",
+      "name": "Eureka Official Store"
+    }
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.6",
+    "reviewCount": "1289",
+    "bestRating": "5",
+    "worstRating": "1"
+  },
+  "review": [
+    {
+      "@type": "Review",
+      "author": {
+        "@type": "Person",
+        "name": "Sarah Johnson"
+      },
+      "datePublished": "2025-08-15",
+      "reviewRating": {
+        "@type": "Rating",
+        "ratingValue": "5",
+        "bestRating": "5"
+      },
+      "reviewBody": "The J20's LiDAR navigation is incredibly precise. Cleaning efficiency improved by 40% compared to my previous robot vacuum."
+    }
+  ]
+}</code></pre>
+            </div>
+
+            <h4>2. FAQ Structured Implementation</h4>
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-icon">📋</div>
+                    <h4>Before</h4>
+                    <p>Plain HTML Q&A list</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">✨</div>
+                    <h4>After</h4>
+                    <p>FAQPage structured markup</p>
+                </div>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span class="code-title">faq-schema.json</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-json">{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [{
+    "@type": "Question",
+    "name": "How long does the Eureka J20 battery last?",
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "The Eureka J20 features a 5200mAh battery that provides up to 180 minutes of continuous cleaning, covering approximately 2500 square feet. It automatically returns to the charging dock when battery drops below 20%."
+    }
+  },{
+    "@type": "Question",
+    "name": "How does the J20's LiDAR navigation work?",
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "The J20 uses 360-degree LiDAR scanning at 5 rotations per second to create precise indoor maps. Combined with SLAM algorithms, it achieves centimeter-level positioning accuracy for intelligent path planning."
+    }
+  },{
+    "@type": "Question",
+    "name": "How do I maintain my Eureka J20?",
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Regular maintenance includes: 1) Empty dustbin weekly; 2) Clean filters monthly; 3) Replace side brushes every 2 months; 4) Replace main brush every 6 months. Video guides available in the app."
+    }
+  }]
+}</code></pre>
+            </div>
+
+            <h3>Week 3-4: Content Format Optimization</h3>
+
+            <h4>1. Long-form Content Transformation</h4>
+            <div class="section" style="background: #f8fafc;">
+                <h3 style="margin-top: 0;">Eureka Robot Vacuum Complete Buying Guide (2025)</h3>
+                
+                <div class="card-grid">
+                    <div class="card">
+                        <h4>🎯 30-Second Summary</h4>
+                        <ul style="list-style: none; padding: 0;">
+                            <li>• <strong>Budget (&lt;$300)</strong>: Eureka Groove NEN110</li>
+                            <li>• <strong>Mid-range ($300-500)</strong>: Eureka E10s</li>
+                            <li>• <strong>Premium (&gt;$500)</strong>: Eureka J20</li>
+                            <li>• <strong>Key Differences</strong>: Navigation, suction, smart features</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card">
+                        <h4>🏠 By Home Size</h4>
+                        <table class="data-table">
+                            <tr>
+                                <th>Home Size</th>
+                                <th>Model</th>
+                                <th>Reason</th>
+                            </tr>
+                            <tr>
+                                <td>&lt;1000 sq ft</td>
+                                <td>Groove NEN110</td>
+                                <td>Compact, affordable</td>
+                            </tr>
+                            <tr>
+                                <td>1000-2000 sq ft</td>
+                                <td>E10s</td>
+                                <td>Balanced features</td>
+                            </tr>
+                            <tr>
+                                <td>&gt;2000 sq ft</td>
+                                <td>J20</td>
+                                <td>Smart zoning</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <h4>2. Multi-modal Content Creation</h4>
+            
+            <!-- Timeline Infographic -->
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-content left">
+                        <h4>1909</h4>
+                        <p>Founded</p>
+                    </div>
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content" style="opacity: 0;"></div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content" style="opacity: 0;"></div>
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h4>1970s</h4>
+                        <p>Pioneered upright vacuums</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content left">
+                        <h4>2010s</h4>
+                        <p>Entered robotics</p>
+                    </div>
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content" style="opacity: 0;"></div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content" style="opacity: 0;"></div>
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h4>2025</h4>
+                        <p>AI-powered cleaning</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video Script -->
+            <div class="video-script">
+                <h4 style="color: white; margin-bottom: 20px;">60-Second Eureka J20 Overview</h4>
+                <div class="script-line">
+                    <span class="script-time">0-10s</span>
+                    <div class="script-content">
+                        <strong>Opening:</strong> 360° product showcase<br>
+                        "Meet Eureka J20 - Century-old brand's smart innovation"
+                    </div>
+                </div>
+                <div class="script-line">
+                    <span class="script-time">10-25s</span>
+                    <div class="script-content">
+                        <strong>Core Features:</strong><br>
+                        - LiDAR navigation in action<br>
+                        - 4000Pa suction test (picking up steel balls)<br>
+                        - App remote control interface
+                    </div>
+                </div>
+                <div class="script-line">
+                    <span class="script-time">25-40s</span>
+                    <div class="script-content">
+                        <strong>Use Cases:</strong><br>
+                        - Pet hair cleaning<br>
+                        - Deep carpet cleaning<br>
+                        - Obstacle avoidance demo
+                    </div>
+                </div>
+                <div class="script-line">
+                    <span class="script-time">40-55s</span>
+                    <div class="script-content">
+                        <strong>Data Display:</strong><br>
+                        - 180-minute runtime<br>
+                        - 2500 sq ft coverage<br>
+                        - 60dB quiet operation
+                    </div>
+                </div>
+                <div class="script-line">
+                    <span class="script-time">55-60s</span>
+                    <div class="script-content">
+                        <strong>Call to Action:</strong><br>
+                        "Eureka J20 - Making Cleaning Smarter"
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Month 3: Authority Building -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">🏆</div>
+                <h2>Month 3: Authority Building</h2>
+            </div>
+
+            <h3>Expert Content Matrix Execution</h3>
+
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-icon">👨‍💼</div>
+                    <h4>Dr. Michael Chen, CTO</h4>
+                    <p><strong>Article:</strong> "LiDAR vs Vision Navigation: Deep Dive into Robot Vacuum Technology"</p>
+                    <p><strong>Channels:</strong> Tech blog, LinkedIn, Medium</p>
+                    <p><strong>Citations:</strong> MIT Robotics Lab, IEEE papers</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">👩‍💼</div>
+                    <h4>Jennifer Martinez, Product Director</h4>
+                    <p><strong>Article:</strong> "2025 Smart Home Cleaning Trends Report"</p>
+                    <p><strong>Data:</strong> Statista reports, consumer survey (n=2000)</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">👷‍♂️</div>
+                    <h4>Tom Anderson, Service Lead</h4>
+                    <p><strong>Article:</strong> "The Science of Robot Vacuum Maintenance"</p>
+                    <p><strong>Format:</strong> Technical guide + video demos</p>
+                </div>
+            </div>
+
+            <h3>Third-Party Endorsements</h3>
+
+            <div class="media-mentions">
+                <h3 style="margin-top: 0;">Media Coverage</h3>
+                
+                <div class="media-item">
+                    <div class="media-logo">TR</div>
+                    <div class="media-content">
+                        <h4>TechRadar: "Best value in its price range"</h4>
+                        <p>In the 2025 robot vacuum roundup, the J20 won Editor's Choice for outstanding cleaning efficiency and smart features.</p>
+                        <small style="color: #6366f1;">Published: Sep 15, 2025</small>
+                    </div>
+                </div>
+                
+                <div class="media-item">
+                    <div class="media-logo">CR</div>
+                    <div class="media-content">
+                        <h4>Consumer Reports: 4.5/5 Stars</h4>
+                        <p>"Excellent performance in reliability testing, particularly for pet hair removal."</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Certifications & Awards</h3>
+            
+            <div class="card-grid">
+                <div class="card" style="text-align: center;">
+                    <div class="card-icon" style="margin: 0 auto;">🏆</div>
+                    <h4>Certifications</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li>• Energy Star 2025</li>
+                        <li>• UL Safety Certified</li>
+                        <li>• FCC Part 15 Class B</li>
+                        <li>• CES 2025 Innovation Nominee</li>
+                    </ul>
+                </div>
+                <div class="card" style="text-align: center;">
+                    <div class="card-icon" style="margin: 0 auto;">📊</div>
+                    <h4>Third-Party Test Results</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li>• AHAM Cleaning Efficiency: 98.5%</li>
+                        <li>• Quiet Mark: &lt;65dB</li>
+                        <li>• Allergy UK Certified</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Technical Glossary</h3>
+            
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Term</th>
+                        <th>Definition</th>
+                        <th>Eureka Application</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>LiDAR</strong></td>
+                        <td>Light Detection and Ranging</td>
+                        <td>J20 uses 360° scanning at 5Hz refresh rate</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SLAM</strong></td>
+                        <td>Simultaneous Localization and Mapping</td>
+                        <td>Real-time map updates with ±2cm accuracy</td>
+                    </tr>
+                    <tr>
+                        <td><strong>HEPA</strong></td>
+                        <td>High Efficiency Particulate Air</td>
+                        <td>E10s/J20 filter 99.97% of particles</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Climb Height</strong></td>
+                        <td>Maximum height robot can traverse</td>
+                        <td>J20 can climb 20mm thresholds</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Side Brush RPM</strong></td>
+                        <td>Edge brush rotation speed</td>
+                        <td>330RPM for optimized edge cleaning</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Testing & Iteration -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">📈</div>
+                <h2>Testing & Iteration (Ongoing)</h2>
+            </div>
+
+            <h3>Weekly Monitoring Data</h3>
+            
+            <div class="chart-container">
+                <h4>AI Mention Rate Progress</h4>
+                <div id="weeklyChart" class="chart"></div>
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Week</th>
+                        <th>Mention Rate</th>
+                        <th>New Citations</th>
+                        <th>vs Competition</th>
+                        <th>Focus Area</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>W5</td>
+                        <td>12.5% → 15.2%</td>
+                        <td>+18</td>
+                        <td>Holding steady</td>
+                        <td>Schema taking effect</td>
+                    </tr>
+                    <tr>
+                        <td>W6</td>
+                        <td>15.2% → 18.7%</td>
+                        <td>+25</td>
+                        <td>Surpassed Shark</td>
+                        <td>FAQ optimization impact</td>
+                    </tr>
+                    <tr>
+                        <td>W7</td>
+                        <td>18.7% → 21.3%</td>
+                        <td>+31</td>
+                        <td>Approaching Ecovacs</td>
+                        <td>Expert content cited</td>
+                    </tr>
+                    <tr>
+                        <td>W8</td>
+                        <td>21.3% → 24.8%</td>
+                        <td>+42</td>
+                        <td>Industry #4</td>
+                        <td>Multi-modal breakthrough</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>A/B Test Results</h3>
+            
+            <div class="card-grid">
+                <div class="card">
+                    <h4>Test 1: Content Format</h4>
+                    <p><strong>A:</strong> Traditional paragraphs (baseline)</p>
+                    <p><strong>B:</strong> Bullet points + data</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 35%;"></div>
+                    </div>
+                    <p style="text-align: center; margin-top: 10px;">
+                        <span class="badge badge-success">+35% Citation Rate</span>
+                    </p>
+                </div>
+                <div class="card">
+                    <h4>Test 2: Technical Depth</h4>
+                    <p><strong>A:</strong> Simple features (baseline)</p>
+                    <p><strong>B:</strong> Technical + data</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 48%;"></div>
+                    </div>
+                    <p style="text-align: center; margin-top: 10px;">
+                        <span class="badge badge-success">+48% Authority Score</span>
+                    </p>
+                </div>
+                <div class="card">
+                    <h4>Test 3: Visual Content</h4>
+                    <p><strong>A:</strong> Text only (baseline)</p>
+                    <p><strong>B:</strong> Text + visuals + video</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 52%;"></div>
+                    </div>
+                    <p style="text-align: center; margin-top: 10px;">
+                        <span class="badge badge-success">+52% Complete Citations</span>
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Phase Results Summary -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">🎯</div>
+                <h2>Phase 2 Results Summary</h2>
+            </div>
+
+            <div class="result-summary">
+                <h3 style="text-align: center; margin-bottom: 30px;">Key Metrics Achievement</h3>
+                
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <div class="metric-value">24.8%</div>
+                        <div class="metric-label">AI Mention Rate</div>
+                        <div class="metric-change">↑ 98.4%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">14.2%</div>
+                        <div class="metric-label">SoV-AI</div>
+                        <div class="metric-change">↑ 63.2%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">5.8/10</div>
+                        <div class="metric-label">Citation Score</div>
+                        <div class="metric-change">↑ 81.3%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">85%</div>
+                        <div class="metric-label">Platform Coverage</div>
+                        <div class="metric-change">↑ 41.7%</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Optimization Strategy Adjustments</h3>
+            
+            <div class="card-grid">
+                <div class="card">
+                    <h4>✅ Continue Strengthening</h4>
+                    <ul>
+                        <li>Schema markup (significant impact)</li>
+                        <li>Expert content (high citation rate)</li>
+                        <li>Data-driven descriptions (AI preference)</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>🆕 New Experiments</h4>
+                    <ul>
+                        <li>Comparison content (vs competitors)</li>
+                        <li>Use case scenarios (user stories)</li>
+                        <li>Technical whitepapers (deep content)</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>⬇️ Deprioritize</h4>
+                    <ul>
+                        <li>Marketing jargon (AI ignores)</li>
+                        <li>Duplicate content (no value add)</li>
+                        <li>Generic descriptions</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Next Phase Recommendations</h3>
+            
+            <div class="section" style="background: #f0f9ff; border: 2px solid #60a5fa;">
+                <ol style="margin: 0;">
+                    <li><strong>Scale optimization</strong>: Apply successful strategies to entire product line</li>
+                    <li><strong>Deepen content</strong>: Establish Eureka Technology Center content hub</li>
+                    <li><strong>User-generated content</strong>: Incentivize customer reviews and case studies</li>
+                    <li><strong>New platforms</strong>: Test Anthropic Claude and emerging AI platforms</li>
+                </ol>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px; padding-top: 30px; border-top: 2px solid #e2e8f0;">
+                <p><strong>Execution Team:</strong> GEO Optimization Team</p>
+                <p><strong>Report Date:</strong> October 31, 2025</p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Initialize weekly progress chart
+        const weeklyChart = echarts.init(document.getElementById('weeklyChart'));
+        const weeklyOption = {
+            tooltip: {
+                trigger: 'axis',
+                formatter: function(params) {
+                    let result = params[0].name + '<br/>';
+                    params.forEach(function(item) {
+                        result += item.marker + ' ' + item.seriesName + ': ' + item.value + 
+                                  (item.seriesName.includes('Rate') ? '%' : '') + '<br/>';
+                    });
+                    return result;
+                }
+            },
+            legend: {
+                data: ['Mention Rate', 'New Citations'],
+                top: 'bottom'
+            },
+            grid: {
+                left: '3%',
+                right: '10%',
+                bottom: '15%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: ['Baseline', 'Week 5', 'Week 6', 'Week 7', 'Week 8']
+            },
+            yAxis: [
+                {
+                    type: 'value',
+                    name: 'Mention Rate (%)',
+                    axisLabel: {
+                        formatter: '{value}%'
+                    }
+                },
+                {
+                    type: 'value',
+                    name: 'Citations',
+                    position: 'right'
+                }
+            ],
+            series: [
+                {
+                    name: 'Mention Rate',
+                    type: 'line',
+                    data: [12.5, 15.2, 18.7, 21.3, 24.8],
+                    smooth: true,
+                    itemStyle: { color: '#6366f1' },
+                    lineStyle: { width: 3 },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                            offset: 0,
+                            color: 'rgba(99, 102, 241, 0.3)'
+                        }, {
+                            offset: 1,
+                            color: 'rgba(99, 102, 241, 0.1)'
+                        }])
+                    }
+                },
+                {
+                    name: 'New Citations',
+                    type: 'bar',
+                    yAxisIndex: 1,
+                    data: [0, 18, 25, 31, 42],
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                            offset: 0,
+                            color: '#8b5cf6'
+                        }, {
+                            offset: 1,
+                            color: '#6366f1'
+                        }])
+                    }
+                }
+            ]
+        };
+        weeklyChart.setOption(weeklyOption);
+
+        // Copy code function
+        function copyCode(button) {
+            const codeBlock = button.parentElement.nextElementSibling.querySelector('code');
+            const text = codeBlock.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.style.background = '#10b981';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = '#6366f1';
+                }, 2000);
+            });
+        }
+
+        // Responsive chart resize
+        window.addEventListener('resize', function() {
+            weeklyChart.resize();
+        });
+    </script>
+</body>
+</html>

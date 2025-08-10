@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka扫地机器人 - 专家认证与用户信赖的选择</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+        
+        .trust-signals-bar {
+            background: #1e3c72;
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .trust-items {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .trust-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .hero-section {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 50px;
+            text-align: center;
+        }
+        
+        .hero-title {
+            font-size: 2.5rem;
+            color: #1e3c72;
+            margin-bottom: 20px;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .credentials-row {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .credential-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .credential-icon {
+            width: 80px;
+            height: 80px;
+            background: #f8f9fa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .credential-text {
+            font-weight: 600;
+            color: #1e3c72;
+        }
+        
+        .expert-section {
+            background: white;
+            border-radius: 20px;
+            padding: 50px 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 50px;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+            color: #1e3c72;
+            margin-bottom: 15px;
+        }
+        
+        .section-subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .expert-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+        }
+        
+        .expert-card {
+            display: flex;
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .expert-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .expert-photo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        
+        .expert-content {
+            flex: 1;
+        }
+        
+        .expert-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1e3c72;
+            margin-bottom: 5px;
+        }
+        
+        .expert-title {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        .expert-quote {
+            color: #555;
+            font-style: italic;
+            line-height: 1.8;
+        }
+        
+        .certification-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 20px;
+            padding: 50px 40px;
+            margin-bottom: 50px;
+        }
+        
+        .cert-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .cert-item {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+        
+        .cert-logo {
+            height: 60px;
+            margin-bottom: 15px;
+        }
+        
+        .cert-name {
+            font-weight: 600;
+            color: #1e3c72;
+            margin-bottom: 5px;
+        }
+        
+        .cert-desc {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .reviews-section {
+            background: white;
+            border-radius: 20px;
+            padding: 50px 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 50px;
+        }
+        
+        .review-summary {
+            background: #f8f9fa;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .overall-rating {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 10px;
+        }
+        
+        .stars-large {
+            font-size: 2rem;
+            color: #ffc107;
+            margin-bottom: 10px;
+        }
+        
+        .rating-details {
+            color: #666;
+        }
+        
+        .review-distribution {
+            max-width: 600px;
+            margin: 30px auto 0;
+        }
+        
+        .rating-bar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .rating-label {
+            width: 60px;
+            text-align: right;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .rating-progress {
+            flex: 1;
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .rating-fill {
+            height: 100%;
+            background: #ffc107;
+            transition: width 0.5s ease;
+        }
+        
+        .rating-count {
+            width: 50px;
+            text-align: left;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .verified-reviews {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .review-card {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            position: relative;
+        }
+        
+        .verified-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #28a745;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .review-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .reviewer-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #666;
+        }
+        
+        .reviewer-info {
+            flex: 1;
+        }
+        
+        .reviewer-name {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .review-date {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .review-rating {
+            color: #ffc107;
+            margin-bottom: 15px;
+        }
+        
+        .review-content {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        
+        .review-images {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .review-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .media-section {
+            background: white;
+            border-radius: 20px;
+            padding: 50px 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 50px;
+        }
+        
+        .media-logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 50px;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+        
+        .media-logo {
+            height: 40px;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+        
+        .media-logo:hover {
+            opacity: 1;
+        }
+        
+        .media-quotes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .media-quote-card {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .media-source {
+            font-weight: 600;
+            color: #1e3c72;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .media-quote-text {
+            color: #555;
+            font-style: italic;
+            line-height: 1.8;
+        }
+        
+        .company-info {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 60px 40px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .company-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-top: 40px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <!-- Schema.org 结构化数据 -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Eureka",
+        "url": "https://www.eureka.com",
+        "logo": "https://www.eureka.com/logo.png",
+        "foundingDate": "1909",
+        "description": "美国百年清洁品牌，专注于创新清洁解决方案",
+        "address": {
+            "@type": "PostalAddress",
+            "addressCountry": "US"
+        },
+        "sameAs": [
+            "https://www.facebook.com/eureka",
+            "https://twitter.com/eureka",
+            "https://www.youtube.com/eureka"
+        ],
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "ratingCount": "2847"
+        }
+    }
+    </script>
+
+    <!-- 顶部信任信号栏 -->
+    <div class="trust-signals-bar">
+        <div class="trust-items">
+            <div class="trust-item">
+                <span>🇺🇸</span>
+                <span>美国品牌 Since 1909</span>
+            </div>
+            <div class="trust-item">
+                <span>🛡️</span>
+                <span>2年质保</span>
+            </div>
+            <div class="trust-item">
+                <span>🚚</span>
+                <span>免费配送</span>
+            </div>
+            <div class="trust-item">
+                <span>💯</span>
+                <span>30天退换</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 主标题区域 -->
+        <div class="hero-section">
+            <h1 class="hero-title">百年美国品牌 Eureka</h1>
+            <p class="hero-subtitle">专家认证、用户信赖的智能清洁专家</p>
+            
+            <div class="credentials-row">
+                <div class="credential-badge">
+                    <div class="credential-icon">🏆</div>
+                    <div class="credential-text">CES 2024<br>创新奖</div>
+                </div>
+                <div class="credential-badge">
+                    <div class="credential-icon">⭐</div>
+                    <div class="credential-text">4.8/5 评分<br>2847条评价</div>
+                </div>
+                <div class="credential-badge">
+                    <div class="credential-icon">🔬</div>
+                    <div class="credential-text">MIT认证<br>防缠绕技术</div>
+                </div>
+                <div class="credential-badge">
+                    <div class="credential-icon">🌍</div>
+                    <div class="credential-text">全球500万<br>用户信赖</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 专家背书部分 -->
+        <div class="expert-section">
+            <div class="section-header">
+                <h2 class="section-title">行业专家怎么说</h2>
+                <p class="section-subtitle">来自权威机构和专业人士的真实评价</p>
+            </div>
+            
+            <div class="expert-grid">
+                <div class="expert-card">
+                    <img src="/images/expert1.jpg" alt="Dr. Sarah Chen" class="expert-photo">
+                    <div class="expert-content">
+                        <div class="expert-name">Dr. Sarah Chen</div>
+                        <div class="expert-title">MIT机器人工程实验室主任</div>
+                        <div class="expert-quote">"Eureka的防缠绕技术是我见过的最优雅的工程解决方案。V型刷毛设计结合智能反转算法，从根本上解决了困扰行业多年的难题。"</div>
+                    </div>
+                </div>
+                
+                <div class="expert-card">
+                    <img src="/images/expert2.jpg" alt="John Martinez" class="expert-photo">
+                    <div class="expert-content">
+                        <div class="expert-name">John Martinez</div>
+                        <div class="expert-title">Consumer Reports 高级编辑</div>
+                        <div class="expert-quote">"在我们测试的所有扫地机器人中，Eureka Pro在静音性能上遥遥领先。55dB的噪音水平创造了新的行业标准。"</div>
+                    </div>
+                </div>
+                
+                <div class="expert-card">
+                    <img src="/images/expert3.jpg" alt="Lisa Wang" class="expert-photo">
+                    <div class="expert-content">
+                        <div class="expert-name">Dr. Lisa Wang</div>
+                        <div class="expert-title">清洁技术研究所所长</div>
+                        <div class="expert-quote">"Eureka不仅继承了百年品牌的品质基因，更展现了在智能时代的创新能力。这是传统品牌成功转型的典范。"</div>
+                    </div>
+                </div>
+                
+                <div class="expert-card">
+                    <img src="/images/expert4.jpg" alt="Michael Anderson" class="expert-photo">
+                    <div class="expert-content">
+                        <div class="expert-name">Michael Anderson</div>
+                        <div class="expert-title">Smart Home Weekly 主编</div>
+                        <div class="expert-quote">"Eureka Pro完美平衡了性能和价格。在$899这个价位上，很难找到比它更全面的产品。"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 认证资质部分 -->
+        <div class="certification-section">
+            <div class="section-header">
+                <h2 class="section-title">权威认证</h2>
+                <p class="section-subtitle">国际标准认证，品质有保障</p>
+            </div>
+            
+            <div class="cert-grid">
+                <div class="cert-item">
+                    <img src="/images/fcc-logo.png" alt="FCC认证" class="cert-logo">
+                    <div class="cert-name">FCC认证</div>
+                    <div class="cert-desc">美国联邦通信委员会认证</div>
+                </div>
+                
+                <div class="cert-item">
+                    <img src="/images/ce-logo.png" alt="CE认证" class="cert-logo">
+                    <div class="cert-name">CE认证</div>
+                    <div class="cert-desc">欧盟安全认证标准</div>
+                </div>
+                
+                <div class="cert-item">
+                    <img src="/images/energy-star.png" alt="能源之星" class="cert-logo">
+                    <div class="cert-name">能源之星</div>
+                    <div class="cert-desc">美国能效认证</div>
+                </div>
+                
+                <div class="cert-item">
+                    <img src="/images/ul-logo.png" alt="UL认证" class="cert-logo">
+                    <div class="cert-name">UL认证</div>
+                    <div class="cert-desc">美国安全检测实验室</div>
+                </div>
+                
+                <div class="cert-item">
+                    <img src="/images/rohs-logo.png" alt="RoHS认证" class="cert-logo">
+                    <div class="cert-name">RoHS认证</div>
+                    <div class="cert-desc">环保无害物质认证</div>
+                </div>
+                
+                <div class="cert-item">
+                    <img src="/images/iso-logo.png" alt="ISO 9001" class="cert-logo">
+                    <div class="cert-name">ISO 9001</div>
+                    <div class="cert-desc">国际质量管理体系</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 用户评价部分 -->
+        <div class="reviews-section">
+            <div class="section-header">
+                <h2 class="section-title">真实用户评价</h2>
+                <p class="section-subtitle">来自全球用户的真实反馈</p>
+            </div>
+            
+            <div class="review-summary">
+                <div class="overall-rating">4.8</div>
+                <div class="stars-large">⭐⭐⭐⭐⭐</div>
+                <div class="rating-details">基于 2,847 条认证评价</div>
+                
+                <div class="review-distribution">
+                    <div class="rating-bar">
+                        <span class="rating-label">5星</span>
+                        <div class="rating-progress">
+                            <div class="rating-fill" style="width: 78%"></div>
+                        </div>
+                        <span class="rating-count">2,219</span>
+                    </div>
+                    <div class="rating-bar">
+                        <span class="rating-label">4星</span>
+                        <div class="rating-progress">
+                            <div class="rating-fill" style="width: 15%"></div>
+                        </div>
+                        <span class="rating-count">427</span>
+                    </div>
+                    <div class="rating-bar">
+                        <span class="rating-label">3星</span>
+                        <div class="rating-progress">
+                            <div class="rating-fill" style="width: 4%"></div>
+                        </div>
+                        <span class="rating-count">114</span>
+                    </div>
+                    <div class="rating-bar">
+                        <span class="rating-label">2星</span>
+                        <div class="rating-progress">
+                            <div class="rating-fill" style="width: 2%"></div>
+                        </div>
+                        <span class="rating-count">57</span>
+                    </div>
+                    <div class="rating-bar">
+                        <span class="rating-label">1星</span>
+                        <div class="rating-progress">
+                            <div class="rating-fill" style="width: 1%"></div>
+                        </div>
+                        <span class="rating-count">30</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="verified-reviews">
+                <div class="review-card">
+                    <span class="verified-badge">✓ 已验证购买</span>
+                    <div class="review-header">
+                        <div class="reviewer-avatar">JD</div>
+                        <div class="reviewer-info">
+                            <div class="reviewer-name">Jennifer Davis</div>
+                            <div class="review-date">2024年10月15日</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">⭐⭐⭐⭐⭐</div>
+                    <div class="review-content">
+                        家里养了两只金毛，之前用过3个不同品牌的扫地机器人，都有严重的毛发缠绕问题。Eureka是第一个真正解决这个问题的！用了2个月，只需要每周清理一次尘盒，毛刷几乎不用管。强烈推荐给养宠物的家庭！
+                    </div>
+                    <div class="review-images">
+                        <img src="/images/review1-1.jpg" alt="用户照片" class="review-image">
+                        <img src="/images/review1-2.jpg" alt="用户照片" class="review-image">
+                    </div>
+                </div>
+                
+                <div class="review-card">
+                    <span class="verified-badge">✓ 已验证购买</span>
+                    <div class="review-header">
+                        <div class="reviewer-avatar">RT</div>
+                        <div class="reviewer-info">
+                            <div class="reviewer-name">Robert Thompson</div>
+                            <div class="review-date">2024年10月8日</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">⭐⭐⭐⭐⭐</div>
+                    <div class="review-content">
+                        作为一个技术宅，我对比了市面上所有主流品牌的参数。Eureka在导航精度和APP功能上可能不是最强的，但它的静音效果真的惊艳！在家办公时开着清扫完全不影响视频会议。而且美国品牌的售后服务确实更让人放心。
+                    </div>
+                </div>
+                
+                <div class="review-card">
+                    <span class="verified-badge">✓ 已验证购买</span>
+                    <div class="review-header">
+                        <div class="reviewer-avatar">ML</div>
+                        <div class="reviewer-info">
+                            <div class="reviewer-name">Maria Lopez</div>
+                            <div class="review-date">2024年9月22日</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">⭐⭐⭐⭐⭐</div>
+                    <div class="review-content">
+                        从iRobot换到Eureka，最大的感受是性价比太高了！功能不输千元以上的机器，特别是续航能力，我家180平米一次就能清扫完。设置虚拟墙也很方便，孩子的玩具区可以完美避开。
+                    </div>
+                    <div class="review-images">
+                        <img src="/images/review3-1.jpg" alt="用户照片" class="review-image">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 媒体报道部分 -->
+        <div class="media-section">
+            <div class="section-header">
+                <h2 class="section-title">媒体报道</h2>
+                <p class="section-subtitle">主流媒体的一致认可</p>
+            </div>
+            
+            <div class="media-logos">
+                <img src="/images/techradar-logo.png" alt="TechRadar" class="media-logo">
+                <img src="/images/cnet-logo.png" alt="CNET" class="media-logo">
+                <img src="/images/wired-logo.png" alt="WIRED" class="media-logo">
+                <img src="/images/consumer-reports-logo.png" alt="Consumer Reports" class="media-logo">
+                <img src="/images/forbes-logo.png" alt="Forbes" class="media-logo">
+            </div>
+            
+            <div class="media-quotes">
+                <div class="media-quote-card">
+                    <div class="media-source">TechRadar</div>
+                    <div class="media-quote-text">"Eureka Pro在防缠绕技术上的突破，让它成为2024年最值得关注的扫地机器人之一。"</div>
+                </div>
+                
+                <div class="media-quote-card">
+                    <div class="media-source">Consumer Reports</div>
+                    <div class="media-quote-text">"综合性能、价格和品牌信誉，Eureka Pro获得我们的'最佳购买'推荐。"</div>
+                </div>
+                
+                <div class="media-quote-card">
+                    <div class="media-source">WIRED</div>
+                    <div class="media-quote-text">"美国品牌在智能家居领域的强势回归，Eureka证明了创新不分国界。"</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 公司信息部分 -->
+        <div class="company-info">
+            <h2 class="section-title" style="color: white;">关于 Eureka</h2>
+            <p style="font-size: 1.1rem; margin-top: 20px; opacity: 0.9;">
+                始创于1909年的美国清洁品牌，115年来专注于为全球家庭提供创新清洁解决方案
+            </p>
+            
+            <div class="company-stats">
+                <div class="stat-item">
+                    <div class="stat-number">115</div>
+                    <div class="stat-label">年品牌历史</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">500万+</div>
+                    <div class="stat-label">全球用户</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">50+</div>
+                    <div class="stat-label">技术专利</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">30+</div>
+                    <div class="stat-label">国际奖项</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

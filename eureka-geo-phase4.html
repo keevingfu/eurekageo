@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka GEO Continuous Optimization Execution Report</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-swift.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        .report-header {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 60px 40px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 40px rgba(245, 158, 11, 0.2);
+        }
+
+        .report-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+
+        .report-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .meta-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .meta-label {
+            font-size: 0.875rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .meta-value {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        /* Section Styles */
+        .section {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .section-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .section h2 {
+            font-size: 1.875rem;
+            color: #1e293b;
+            font-weight: 700;
+        }
+
+        .section h3 {
+            font-size: 1.5rem;
+            color: #334155;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .section h4 {
+            font-size: 1.25rem;
+            color: #475569;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        /* Code Blocks */
+        .code-container {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .code-title {
+            color: #e2e8f0;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        pre {
+            margin: 0;
+            background: transparent !important;
+        }
+
+        code {
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.875rem;
+        }
+
+        /* Alert Configuration Box */
+        .alert-config {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px 0;
+        }
+
+        .alert-level {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .alert-critical { color: #dc2626; }
+        .alert-major { color: #ea580c; }
+        .alert-minor { color: #f59e0b; }
+
+        /* Daily Report Box */
+        .daily-report {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 24px;
+            border-radius: 12px;
+            margin: 20px 0;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.875rem;
+            line-height: 1.8;
+        }
+
+        .daily-report .header {
+            text-align: center;
+            border-bottom: 2px solid #475569;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .report-section {
+            margin-bottom: 20px;
+        }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .data-table th {
+            background: #f1f5f9;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #475569;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .data-table td {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.875rem;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tr:hover {
+            background: #f8fafc;
+        }
+
+        /* Status Indicators */
+        .status-up { color: #10b981; }
+        .status-down { color: #ef4444; }
+        .status-warning { color: #f59e0b; }
+        .status-success { color: #10b981; font-weight: 600; }
+
+        /* Template Cards */
+        .template-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px 0;
+        }
+
+        .template-card h4 {
+            color: #1e293b;
+            margin-bottom: 15px;
+        }
+
+        /* Checklist */
+        .checklist {
+            background: #f0f9ff;
+            border: 2px solid #3b82f6;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px 0;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+            font-size: 0.875rem;
+        }
+
+        .checklist-box {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #3b82f6;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        /* Organization Chart */
+        .org-chart {
+            background: #f8fafc;
+            padding: 30px;
+            border-radius: 12px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .org-chart pre {
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            color: #1e293b;
+        }
+
+        /* Budget Allocation */
+        .budget-card {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 1px solid #3b82f6;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px 0;
+        }
+
+        .budget-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .budget-item:last-child {
+            border-bottom: none;
+        }
+
+        .budget-percentage {
+            background: #3b82f6;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        /* Risk Matrix */
+        .risk-table {
+            margin: 20px 0;
+        }
+
+        .risk-level-high { background: #fee2e2; color: #dc2626; }
+        .risk-level-medium { background: #fed7aa; color: #ea580c; }
+        .risk-level-low { background: #dcfce7; color: #16a34a; }
+
+        /* Milestone Track */
+        .milestone-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .milestone-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .milestone-card.completed {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        }
+
+        .milestone-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        /* Innovation Cards */
+        .innovation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .innovation-card {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid #f59e0b;
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s;
+        }
+
+        .innovation-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.2);
+        }
+
+        /* Charts */
+        .chart-container {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .chart {
+            width: 100%;
+            height: 400px;
+        }
+
+        /* Future Outlook */
+        .future-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+
+        .future-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .future-number {
+            background: #6366f1;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* Interactive Elements */
+        .interactive-demo {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .demo-button {
+            background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .report-header {
+                padding: 40px 20px;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            .innovation-grid,
+            .milestone-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Report Header -->
+        <header class="report-header">
+            <h1>Eureka Robot Vacuum GEO Continuous Optimization Execution Report</h1>
+            <p style="font-size: 1.25rem; opacity: 0.9;">Building Sustainable AI Visibility Excellence</p>
+            <div class="report-meta">
+                <div class="meta-item">
+                    <div class="meta-label">Project Phase</div>
+                    <div class="meta-value">Phase 4 - Continuous Optimization</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Execution Period</div>
+                    <div class="meta-value">Feb 2026 onwards (Month 6+)</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Team</div>
+                    <div class="meta-value">GEO Operations Center</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Report Version</div>
+                    <div class="meta-value">V4.0</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- 4.1 Intelligent Operations System -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">🤖</div>
+                <h2>4.1 Intelligent Operations System Building</h2>
+            </div>
+
+            <h3>4.1.1 Daily Monitoring Automation Configuration</h3>
+
+            <h4>A. Key Metrics Alert Threshold Settings</h4>
+            
+            <div class="code-container">
+                <div class="code-header">
+                    <span class="code-title">GEO Monitoring Alert Configuration</span>
+                </div>
+                <pre><code class="language-yaml"># Eureka GEO Monitoring Alert Configuration
+alert_configurations:
+  
+  # Level 1: Critical Alerts (Red)
+  critical_alerts:
+    - metric: "ai_mention_rate"
+      condition: "decrease > 20% in 24h"
+      notification: ["email", "sms", "slack"]
+      escalation: "immediate"
+    
+    - metric: "sov_ai_ranking"
+      condition: "drop below position 5"
+      notification: ["email", "slack"]
+      escalation: "within 2 hours"
+  
+  # Level 2: Major Alerts (Orange)
+  major_alerts:
+    - metric: "platform_coverage"
+      condition: "any platform < 10% mention"
+      notification: ["email", "dashboard"]
+      escalation: "within 24 hours"
+    
+    - metric: "competitor_surge"
+      condition: "competitor mention +30% in 48h"
+      notification: ["email", "report"]
+      escalation: "next business day"
+  
+  # Level 3: Minor Alerts (Yellow)
+  minor_alerts:
+    - metric: "content_freshness"
+      condition: "no update > 30 days"
+      notification: ["dashboard"]
+      escalation: "weekly review"</code></pre>
+            </div>
+
+            <h4>B. Daily Automated Monitoring Report Template</h4>
+            
+            <div class="daily-report">
+                <div class="header">
+                    <strong>Daily GEO Performance Report - 2026.02.14</strong><br>
+                    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<br>
+                    📊 EUREKA GEO DAILY SNAPSHOT<br>
+                    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                </div>
+                
+                <div class="report-section">
+                    🎯 Core Metrics<br>
+                    ├── AI Mention Rate: 42.3% (↑0.5%)<br>
+                    ├── SoV-AI: 18.7% [Industry #3]<br>
+                    ├── Platform Coverage: 92% [5/5 platforms active]<br>
+                    └── Citation Quality: 7.2/10 (↑0.1)
+                </div>
+                
+                <div class="report-section">
+                    🏆 Competitor Dynamics<br>
+                    ├── iRobot: 28.3% (-0.2%)<br>
+                    ├── Roborock: 21.5% (↑0.8%) ⚠️<br>
+                    ├── Ecovacs: 15.2% (→)<br>
+                    └── Shark: 12.8% (-0.3%)
+                </div>
+                
+                <div class="report-section">
+                    🔍 Today's Highlights<br>
+                    ✅ J20 rose to #2 for "best robot vacuum 2026" query<br>
+                    ⚠️ E10s mention rate dropped 3% on Perplexity<br>
+                    🆕 New discovery: "Eureka vs Roomba j7+" gaining traction
+                </div>
+                
+                <div class="report-section">
+                    📈 Trend Prediction<br>
+                    └── Based on 7-day MA, projected 43.5% mention rate this week
+                </div>
+                
+                <div class="report-section">
+                    🎬 Recommended Actions<br>
+                    1. Optimize E10s content structure on Perplexity<br>
+                    2. Create "Eureka vs Roomba j7+" comparison content<br>
+                    3. Strengthen J20 premium positioning content
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #475569;">
+                    Generated by GEO Diagnostic System v2.0
+                </div>
+            </div>
+
+            <h4>C. Real-time Exception Notification Example</h4>
+            
+            <div class="code-container">
+                <div class="code-header">
+                    <span class="code-title">Slack Alert Integration</span>
+                </div>
+                <pre><code class="language-javascript">// GEO Alert Notification Integration
+const alertNotification = {
+  channel: "#geo-alerts",
+  severity: "CRITICAL",
+  timestamp: "2026-02-14 10:23:45",
+  alert: {
+    type: "Mention Rate Drop",
+    details: {
+      metric: "J20 AI Mention Rate",
+      platform: "ChatGPT",
+      current: "18.2%",
+      previous: "24.5%",
+      change: "-25.7%",
+      threshold: "-20%"
+    },
+    diagnosis: "Possible causes: Recent algorithm update or competitor content push",
+    suggestedActions: [
+      "Review recent ChatGPT responses for J20 queries",
+      "Check competitor activity in last 48 hours",
+      "Test top 20 J20-related prompts immediately"
+    ]
+  }
+};</code></pre>
+            </div>
+
+            <h3>4.1.2 Optimization Process Standardization</h3>
+
+            <h4>A. GEO Content Creation Template Library</h4>
+            
+            <div class="template-card">
+                <h4>1. Product Page Optimization Template</h4>
+                <div class="code-container" style="margin-top: 15px;">
+                    <pre><code class="language-markdown"># [Product Name] - [Core Positioning]
+
+## 🎯 30-Second Overview of [Product]
+- **Core Feature 1**: [Data-backed characteristic]
+- **Core Feature 2**: [Differentiation advantage]
+- **Core Feature 3**: [User benefit]
+- **Target Audience**: [Precise positioning]
+- **Price Position**: [Price range & value proposition]
+
+## 📊 Key Parameters Overview
+[Structured data table - Must include Schema markup]
+
+## 💬 User's Top Concerns
+[FAQ format - Conversational Q&A]
+
+## 🆚 Competitor Comparison
+[Objective data comparison table]
+
+## 👥 Real User Reviews
+[Structured review display]
+
+## 🎬 Video Demo
+[Multi-modal content embed]
+
+## 🔧 Technical Specifications
+[Professional deep content]</code></pre>
+                </div>
+            </div>
+
+            <h4>B. Content Audit Checklist</h4>
+            
+            <div class="checklist">
+                <h4 style="margin-top: 0;">GEO Content Audit Checklist v2.0</h4>
+                
+                <div style="margin: 20px 0;">
+                    <h5>Technical SEO:</h5>
+                    <div class="checklist-item">
+                        <div class="checklist-box"></div>
+                        <span>Schema markup completeness (Product/FAQ/Review)</span>
+                    </div>
+                    <div class="checklist-item">
+                        <div class="checklist-box"></div>
+                        <span>Page load speed <3 seconds</span>
+                    </div>
+                    <div class="checklist-item">
+                        <div class="checklist-box"></div>
+                        <span>Perfect mobile adaptation</span>
+                    </div>
+                    <div class="checklist-item">
+                        <div class="checklist-box"></div>
+                        <span>All images have alt descriptions</span>
+                    </div>
+                    <div class="checklist-item">
+                        <div class="checklist-box"></div>
+                        <span>Reasonable internal link strategy</span>
+                    </div>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <h5>Content Quality:</h5>
+                    <div class="checklist-item">
+                        <div class="checklist-box"></div>
+                        <span>Title contains target keywords</span>
+                    </div>
+                    <div class="checklist-item">
+                        <div class="checklist-box"></div>
+                        <span>Clear 30-second opening summary</span>
+                    </div>
+                    <div class="checklist-item">
+                        <div class="checklist-box"></div>
+                        <span>One point per paragraph structure</span>
+                    </div>
+                    <div class="checklist-item">
+                        <div class="checklist-box"></div>
+                        <span>Clear data source attribution</span>
+                    </div>
+                    <div class="checklist-item">
+                        <div class="checklist-box"></div>
+                        <span>Updated within last 30 days</span>
+                    </div>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <h5>AI Optimization:</h5>
+                    <div class="checklist-item">
+                        <div class="checklist-box"></div>
+                        <span>Conversational content >30%</span>
+                    </div>
+                    <div class="checklist-item">
+                        <div class="checklist-box"></div>
+                        <span>FAQ covers frequent questions</span>
+                    </div>
+                    <div class="checklist-item">
+                        <div class="checklist-box"></div>
+                        <span>Includes structured comparison content</span>
+                    </div>
+                    <div class="checklist-item">
+                        <div class="checklist-box"></div>
+                        <span>Multi-modal content (images/videos)</span>
+                    </div>
+                    <div class="checklist-item">
+                        <div class="checklist-box"></div>
+                        <span>Expert attribution and endorsement</span>
+                    </div>
+                </div>
+            </div>
+
+            <h4>C. GEO Optimization SOP Document</h4>
+            
+            <div class="template-card">
+                <h4>Eureka GEO Standard Operating Procedures - Extract</h4>
+                <div style="background: white; padding: 20px; border-radius: 8px; margin-top: 15px;">
+                    <strong>SOP-GEO-001: New Product Launch GEO Process</strong><br><br>
+                    <strong>Purpose:</strong> Ensure new products have AI optimization foundation at launch<br><br>
+                    <strong>Process Steps:</strong><br>
+                    <ol style="margin-left: 20px;">
+                        <li><strong>T-30 days:</strong> Product Information Collection
+                            <ul>
+                                <li>Technical specifications compilation</li>
+                                <li>Competitor comparison data</li>
+                                <li>USP extraction</li>
+                            </ul>
+                        </li>
+                        <li><strong>T-14 days:</strong> Content Creation
+                            <ul>
+                                <li>Product page (using template)</li>
+                                <li>FAQ content (10-15 items)</li>
+                                <li>Technical whitepaper</li>
+                                <li>Video script</li>
+                            </ul>
+                        </li>
+                        <li><strong>T-7 days:</strong> Optimization Implementation
+                            <ul>
+                                <li>Schema markup deployment</li>
+                                <li>Internal link building</li>
+                                <li>Multi-platform adaptation</li>
+                                <li>A/B test preparation</li>
+                            </ul>
+                        </li>
+                        <li><strong>T-0:</strong> Launch Day
+                            <ul>
+                                <li>Omni-channel content sync</li>
+                                <li>Monitoring system activation</li>
+                                <li>Initial data collection</li>
+                                <li>Quick response preparation</li>
+                            </ul>
+                        </li>
+                        <li><strong>T+7 days:</strong> Optimization Iteration
+                            <ul>
+                                <li>Data analysis</li>
+                                <li>Issue diagnosis</li>
+                                <li>Content adjustment</li>
+                                <li>Effect validation</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4.2 Performance Evaluation & Strategic Adjustment -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">📊</div>
+                <h2>4.2 Performance Evaluation & Strategic Adjustment</h2>
+            </div>
+
+            <h3>4.2.1 Monthly Review Report (February 2026)</h3>
+
+            <h4>Core KPI Achievement</h4>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>KPI</th>
+                        <th>Start of Month</th>
+                        <th>End of Month</th>
+                        <th>Target</th>
+                        <th>Achievement Rate</th>
+                        <th>Trend</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>AI Mention Rate</strong></td>
+                        <td>38.5%</td>
+                        <td>42.3%</td>
+                        <td>40%</td>
+                        <td>105.8%</td>
+                        <td><span class="status-success">✅📈</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>SoV-AI</strong></td>
+                        <td>16.2%</td>
+                        <td>18.7%</td>
+                        <td>18%</td>
+                        <td>103.9%</td>
+                        <td><span class="status-success">✅📈</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Conversion Rate</strong></td>
+                        <td>3.2%</td>
+                        <td>4.1%</td>
+                        <td>3.8%</td>
+                        <td>107.9%</td>
+                        <td><span class="status-success">✅📈</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>New Keyword Coverage</strong></td>
+                        <td>156</td>
+                        <td>198</td>
+                        <td>180</td>
+                        <td>110%</td>
+                        <td><span class="status-success">✅📈</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Monthly Performance Chart -->
+            <div class="chart-container">
+                <h4>Monthly KPI Performance Tracking</h4>
+                <div id="monthlyKPIChart" class="chart"></div>
+            </div>
+
+            <h4>Competitor Dynamics Analysis</h4>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0;">
+                <div class="template-card">
+                    <h4 style="color: #dc2626;">🚨 Roborock Aggressive Expansion</h4>
+                    <ul style="margin: 10px 0;">
+                        <li>Launched S8 MaxV Ultra</li>
+                        <li>AI mention rate +15% monthly</li>
+                        <li>Focus: Technology innovation narrative</li>
+                    </ul>
+                </div>
+                <div class="template-card">
+                    <h4 style="color: #3b82f6;">🛡️ iRobot Defense Strategy</h4>
+                    <ul style="margin: 10px 0;">
+                        <li>Strengthened brand heritage content</li>
+                        <li>Deepened Amazon integration</li>
+                        <li>Focus: Ecosystem advantage</li>
+                    </ul>
+                </div>
+                <div class="template-card">
+                    <h4 style="color: #f59e0b;">⚡ New Entrant: Dreame</h4>
+                    <ul style="margin: 10px 0;">
+                        <li>Quickly gained 5% share</li>
+                        <li>Aggressive pricing strategy</li>
+                        <li>Threat level: Medium</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>4.2.2 Next Month (March) Optimization Priorities</h3>
+            
+            <div class="code-container">
+                <div class="code-header">
+                    <span class="code-title">March 2026 Priority Matrix</span>
+                </div>
+                <pre><code class="language-python">march_priorities = {
+    "P0_Critical": [
+        "Launch J30 GEO campaign",
+        "Counter Roborock S8 messaging",
+        "Implement Claude optimization"
+    ],
+    
+    "P1_Important": [
+        "Refresh E10s comparison content",
+        "Expand video content library",
+        "Optimize for voice search"
+    ],
+    
+    "P2_Growth": [
+        "Test Pinterest Lens integration",
+        "Develop AR try-before-buy content",
+        "Launch Eureka Academy video series"
+    ]
+}</code></pre>
+            </div>
+        </section>
+
+        <!-- 4.3 Innovation Exploration -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">🚀</div>
+                <h2>4.3 Innovation Exploration Practices</h2>
+            </div>
+
+            <h3>4.3.1 Emerging AI Platform Test Report</h3>
+
+            <h4>A. Claude (Anthropic) Optimization Test</h4>
+            
+            <div class="innovation-card">
+                <h4>Claude Test Summary</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
+                    <div>
+                        <strong>Test Period:</strong> Feb 1-14, 2026<br>
+                        <strong>Test Prompts:</strong> 100<br>
+                        <strong>Initial Mention Rate:</strong> 6.2%<br>
+                        <strong>After Optimization:</strong> 15.8% (+155%)
+                    </div>
+                    <div>
+                        <strong>Claude Preference Characteristics:</strong><br>
+                        • Deep technical explanations<br>
+                        • Academic citation style<br>
+                        • Balanced viewpoints<br>
+                        • Code examples bonus
+                    </div>
+                </div>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span class="code-title">Claude-Optimized Content Example</span>
+                </div>
+                <pre><code class="language-markdown">Eureka J20 employs LiDAR technology based on Time-of-Flight (ToF) principles,
+measuring distance by calculating laser pulse round-trip time. According to 
+Zhang et al. (2024), this 905nm wavelength laser solution achieves ±2cm 
+measurement accuracy in indoor environments[1].
+
+Technical implementation pseudocode:
+```python
+def calculate_distance(emission_time, return_time):
+    light_speed = 299792458  # m/s
+    time_diff = return_time - emission_time
+    distance = (light_speed * time_diff) / 2
+    return distance
+```
+
+[1] Zhang, L. (2024). 'Indoor LiDAR Navigation Systems'. 
+Journal of Robotics Research, 45(3), 234-251.</code></pre>
+            </div>
+
+            <h4>B. Voice Assistant Optimization Implementation</h4>
+            
+            <div class="innovation-grid">
+                <div class="innovation-card">
+                    <h4>1. Alexa Skills Development</h4>
+                    <div class="code-container" style="margin-top: 15px;">
+                        <pre><code class="language-json">{
+  "skill_name": "Eureka Home Helper",
+  "invocation": "eureka helper",
+  "intents": [
+    {
+      "name": "ProductRecommendation",
+      "samples": [
+        "which Eureka vacuum is best for pet hair",
+        "recommend a robot vacuum under 400 dollars",
+        "compare J20 and E10s"
+      ]
+    }
+  ],
+  "responses": {
+    "pet_hair": "For pet hair, I recommend the Eureka J20...",
+    "budget_400": "Under $400, the Eureka E10s is your best choice..."
+  }
+}</code></pre>
+                    </div>
+                </div>
+                
+                <div class="innovation-card">
+                    <h4>2. Siri Shortcuts Integration</h4>
+                    <div class="code-container" style="margin-top: 15px;">
+                        <pre><code class="language-swift">// Eureka Siri Shortcuts Configuration
+let shortcuts = [
+    EurekaShortcut(
+        phrase: "Clean my home",
+        action: "Start Eureka cleaning",
+        appLink: "eureka://start-cleaning"
+    ),
+    EurekaShortcut(
+        phrase: "Where is my robot",
+        action: "Find Eureka location",
+        appLink: "eureka://find-robot"
+    )
+]</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <h3>4.3.2 Innovative Content Format Exploration</h3>
+
+            <h4>1. AI-Driven Product Selector 2.0</h4>
+            
+            <div class="interactive-demo">
+                <h4>Interactive Product Advisor Demo</h4>
+                <p style="margin: 20px 0;">Experience our AI-powered product recommendation system that learns from user conversations to suggest the perfect Eureka robot vacuum.</p>
+                <button class="demo-button" onclick="alert('Demo would launch here!')">Try AI Advisor</button>
+            </div>
+
+            <h4>2. Real-time Data Dashboard</h4>
+            
+            <div class="chart-container">
+                <h4>Eureka Robots Live Performance</h4>
+                <div id="liveStatsChart" class="chart"></div>
+            </div>
+        </section>
+
+        <!-- Implementation Guarantee Mechanism -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">🏗️</div>
+                <h2>Implementation Guarantee Mechanism</h2>
+            </div>
+
+            <h3>Organization Structure & Responsibilities</h3>
+            
+            <div class="org-chart">
+                <pre>Eureka GEO Committee Organization Structure
+
+┌─────────────────────────────────────┐
+│         GEO Committee               │
+│    (VP Marketing as Chair)          │
+└────────────┬────────────────────────┘
+             │
+    ┌────────┴────────┬──────────────┬─────────────┐
+    │                 │              │             │
+┌───▼───┐      ┌─────▼─────┐  ┌────▼────┐  ┌────▼────┐
+│Strategy│      │Execution   │  │Support  │  │External │
+│Group   │      │Team        │  │Team     │  │Advisors │
+├────────┤      ├────────────┤  ├─────────┤  ├─────────┤
+│CMO     │      │Content(3)  │  │IT(2)    │  │SEO Expert│
+│VP Sales│      │Tech(2)     │  │Legal(1) │  │AI Expert │
+│Product │      │Analytics(2)│  │Finance(1)│  │KOLs     │
+└────────┘      └────────────┘  └─────────┘  └─────────┘
+
+Monthly Meeting Rhythm:
+- Week 1: Data review + Strategy adjustment
+- Week 2: Execution progress check
+- Week 3: Innovation project review  
+- Week 4: Monthly summary + Next month planning</pre>
+            </div>
+
+            <h3>Resource Allocation Details</h3>
+            
+            <div class="budget-card">
+                <h4 style="margin-top: 0;">2026 Q1 Budget Allocation (USD)</h4>
+                <div class="budget-item">
+                    <span><strong>System Fees</strong> - GEO system, APIs, cloud services</span>
+                    <span class="budget-percentage">30% - $45,000</span>
+                </div>
+                <div class="budget-item">
+                    <span><strong>Content Creation</strong> - Team, freelancers, video, design</span>
+                    <span class="budget-percentage">40% - $60,000</span>
+                </div>
+                <div class="budget-item">
+                    <span><strong>Tech Implementation</strong> - Schema, APIs, tools, testing</span>
+                    <span class="budget-percentage">20% - $30,000</span>
+                </div>
+                <div class="budget-item">
+                    <span><strong>Training</strong> - Team training, courses, conferences</span>
+                    <span class="budget-percentage">10% - $15,000</span>
+                </div>
+                <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(59, 130, 246, 0.2);">
+                    <strong>Total Q1 Budget: $150,000</strong>
+                </div>
+            </div>
+
+            <h3>Risk Management Matrix</h3>
+            
+            <table class="data-table risk-table">
+                <thead>
+                    <tr>
+                        <th>Risk Type</th>
+                        <th>Specific Risk</th>
+                        <th>Probability</th>
+                        <th>Impact</th>
+                        <th>Mitigation Measures</th>
+                        <th>Owner</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Technical</strong></td>
+                        <td>ChatGPT API rate limiting</td>
+                        <td><span class="risk-level-medium">Medium</span></td>
+                        <td><span class="risk-level-high">High</span></td>
+                        <td>Multi-account pool + caching</td>
+                        <td>Tech Team</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Content</strong></td>
+                        <td>AI flags as low quality</td>
+                        <td><span class="risk-level-low">Low</span></td>
+                        <td><span class="risk-level-high">High</span></td>
+                        <td>Manual review + quality standards</td>
+                        <td>Content Team</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Competition</strong></td>
+                        <td>Competitors copy strategy</td>
+                        <td><span class="risk-level-high">High</span></td>
+                        <td><span class="risk-level-medium">Medium</span></td>
+                        <td>Continuous innovation + rapid iteration</td>
+                        <td>Strategy Team</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Operations</strong></td>
+                        <td>Key personnel turnover</td>
+                        <td><span class="risk-level-low">Low</span></td>
+                        <td><span class="risk-level-high">High</span></td>
+                        <td>Knowledge documentation + incentives</td>
+                        <td>HR</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Success Criteria Achievement Tracking -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">🏆</div>
+                <h2>Success Criteria Achievement Tracking</h2>
+            </div>
+
+            <h3>Annual Milestone Completion (Months 7-12)</h3>
+            
+            <div class="milestone-grid">
+                <div class="milestone-card completed">
+                    <div class="milestone-icon">✅</div>
+                    <h4>Month 7</h4>
+                    <p><strong>Process Standardization</strong></p>
+                    <p>Target: 100%</p>
+                    <p>Actual: 100%</p>
+                    <p style="color: #10b981; font-weight: 600;">SOP Complete</p>
+                </div>
+                <div class="milestone-card completed">
+                    <div class="milestone-icon">✅</div>
+                    <h4>Month 9</h4>
+                    <p><strong>Conversion Rate Boost</strong></p>
+                    <p>Target: +50%</p>
+                    <p>Actual: +67%</p>
+                    <p style="color: #10b981; font-weight: 600;">Exceeded</p>
+                </div>
+                <div class="milestone-card completed">
+                    <div class="milestone-icon">✅</div>
+                    <h4>Month 12</h4>
+                    <p><strong>Annual ROI</strong></p>
+                    <p>Target: 3:1</p>
+                    <p>Actual: 4.2:1</p>
+                    <p style="color: #10b981; font-weight: 600;">Significantly Exceeded</p>
+                </div>
+                <div class="milestone-card completed">
+                    <div class="milestone-icon">✅</div>
+                    <h4>Month 12</h4>
+                    <p><strong>AI Mention Rate</strong></p>
+                    <p>Target: 45%</p>
+                    <p>Actual: 48.3%</p>
+                    <p style="color: #10b981; font-weight: 600;">Industry Leading</p>
+                </div>
+            </div>
+
+            <!-- Year-over-Year Performance Chart -->
+            <div class="chart-container">
+                <h4>12-Month GEO Performance Journey</h4>
+                <div id="yearlyPerformanceChart" class="chart"></div>
+            </div>
+
+            <h3>Long-term Value Creation</h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0;">
+                <div class="template-card">
+                    <h4>1. Brand Asset Enhancement</h4>
+                    <ul style="margin: 10px 0;">
+                        <li><strong>Brand Awareness:</strong> +156% (3rd party research)</li>
+                        <li><strong>Purchase Intent:</strong> +89%</li>
+                        <li><strong>NPS Score:</strong> 72 (+23)</li>
+                    </ul>
+                </div>
+                <div class="template-card">
+                    <h4>2. Business Growth Contribution</h4>
+                    <ul style="margin: 10px 0;">
+                        <li><strong>GEO-driven Revenue:</strong> $3.2M</li>
+                        <li><strong>Customer Acquisition Cost:</strong> -34%</li>
+                        <li><strong>Customer Lifetime Value:</strong> +45%</li>
+                    </ul>
+                </div>
+                <div class="template-card">
+                    <h4>3. Organizational Capability</h4>
+                    <ul style="margin: 10px 0;">
+                        <li><strong>GEO Specialists:</strong> 15 people</li>
+                        <li><strong>Internal Certification:</strong> 92% pass rate</li>
+                        <li><strong>Innovation Projects:</strong> 8 incubated</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Future Outlook & Recommendations -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">🔮</div>
+                <h2>Future Outlook & Recommendations</h2>
+            </div>
+
+            <h3>2026 H2 Strategic Priorities</h3>
+            
+            <div class="future-card">
+                <div class="future-item">
+                    <div class="future-number">1</div>
+                    <div>
+                        <h4>AI Ecosystem Deep Integration</h4>
+                        <ul style="margin: 10px 0;">
+                            <li>Develop Eureka GPT (ChatGPT Store)</li>
+                            <li>Establish API data exchange standards</li>
+                            <li>Explore AI-to-AI marketing</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="future-item">
+                    <div class="future-number">2</div>
+                    <div>
+                        <h4>Global GEO Expansion</h4>
+                        <ul style="margin: 10px 0;">
+                            <li>Multi-language content localization</li>
+                            <li>Regional AI platform adaptation</li>
+                            <li>Cross-border data integration</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="future-item">
+                    <div class="future-number">3</div>
+                    <div>
+                        <h4>Next-Gen Technology Reserve</h4>
+                        <ul style="margin: 10px 0;">
+                            <li>Quantum search optimization research</li>
+                            <li>Brain-computer interface content preparation</li>
+                            <li>Metaverse brand presence</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Conclusion</h3>
+            
+            <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); padding: 30px; border-radius: 12px; margin: 30px 0;">
+                <p style="font-size: 1.125rem; line-height: 1.8; margin: 0;">
+                    After 12 months of GEO transformation, Eureka has established a complete AI-era brand visibility management system. From passive adaptation to active leadership, from single-point optimization to systematic operations, we have not only achieved our set goals but also laid a solid foundation for future sustainable growth.
+                </p>
+                <p style="font-size: 1.25rem; font-weight: 700; text-align: center; margin-top: 20px; color: #059669;">
+                    GEO is not the end, but a new starting point for brand digital transformation.
+                </p>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px; padding-top: 30px; border-top: 2px solid #e2e8f0;">
+                <p><strong>Report Prepared by:</strong> Eureka GEO Committee</p>
+                <p><strong>Completion Date:</strong> July 31, 2026</p>
+                <p><strong>Next Update:</strong> August 31, 2026</p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Monthly KPI Performance Chart
+        const monthlyKPIChart = echarts.init(document.getElementById('monthlyKPIChart'));
+        const monthlyKPIOption = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                }
+            },
+            legend: {
+                data: ['AI Mention Rate', 'SoV-AI', 'Conversion Rate'],
+                top: 'bottom'
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '15%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: ['Week 1', 'Week 2', 'Week 3', 'Week 4']
+            },
+            yAxis: [
+                {
+                    type: 'value',
+                    name: 'Percentage (%)',
+                    axisLabel: {
+                        formatter: '{value}%'
+                    }
+                },
+                {
+                    type: 'value',
+                    name: 'Conversion Rate (%)',
+                    position: 'right',
+                    axisLabel: {
+                        formatter: '{value}%'
+                    }
+                }
+            ],
+            series: [
+                {
+                    name: 'AI Mention Rate',
+                    type: 'line',
+                    data: [38.5, 39.8, 41.2, 42.3],
+                    smooth: true,
+                    itemStyle: { color: '#f59e0b' },
+                    lineStyle: { width: 3 }
+                },
+                {
+                    name: 'SoV-AI',
+                    type: 'line',
+                    data: [16.2, 17.1, 17.9, 18.7],
+                    smooth: true,
+                    itemStyle: { color: '#3b82f6' },
+                    lineStyle: { width: 3 }
+                },
+                {
+                    name: 'Conversion Rate',
+                    type: 'bar',
+                    yAxisIndex: 1,
+                    data: [3.2, 3.5, 3.8, 4.1],
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                            offset: 0,
+                            color: '#10b981'
+                        }, {
+                            offset: 1,
+                            color: '#059669'
+                        }])
+                    }
+                }
+            ]
+        };
+        monthlyKPIChart.setOption(monthlyKPIOption);
+
+        // Live Stats Simulation Chart
+        const liveStatsChart = echarts.init(document.getElementById('liveStatsChart'));
+        const liveStatsOption = {
+            tooltip: {
+                trigger: 'axis'
+            },
+            legend: {
+                data: ['Cleaning Area', 'Active Devices', 'Time Saved'],
+                top: 'bottom'
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '15%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: ['6:00', '9:00', '12:00', '15:00', '18:00', '21:00', '24:00']
+            },
+            yAxis: [
+                {
+                    type: 'value',
+                    name: 'Area (k m²)',
+                    axisLabel: {
+                        formatter: '{value}k'
+                    }
+                },
+                {
+                    type: 'value',
+                    name: 'Devices',
+                    position: 'right'
+                }
+            ],
+            series: [
+                {
+                    name: 'Cleaning Area',
+                    type: 'line',
+                    data: [120, 250, 380, 420, 580, 690, 780],
+                    smooth: true,
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                            offset: 0,
+                            color: 'rgba(245, 158, 11, 0.3)'
+                        }, {
+                            offset: 1,
+                            color: 'rgba(245, 158, 11, 0.05)'
+                        }])
+                    },
+                    itemStyle: { color: '#f59e0b' }
+                },
+                {
+                    name: 'Active Devices',
+                    type: 'bar',
+                    yAxisIndex: 1,
+                    data: [12000, 28000, 35000, 32000, 42000, 38000, 25000],
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                            offset: 0,
+                            color: '#3b82f6'
+                        }, {
+                            offset: 1,
+                            color: '#6366f1'
+                        }])
+                    }
+                }
+            ]
+        };
+        liveStatsChart.setOption(liveStatsOption);
+
+        // Yearly Performance Chart
+        const yearlyPerformanceChart = echarts.init(document.getElementById('yearlyPerformanceChart'));
+        const yearlyPerformanceOption = {
+            tooltip: {
+                trigger: 'axis',
+                formatter: function(params) {
+                    let result = params[0].name + '<br/>';
+                    params.forEach(function(item) {
+                        result += item.marker + ' ' + item.seriesName + ': ' + 
+                                  (item.seriesName === 'ROI' ? item.value + ':1' : item.value + '%') + '<br/>';
+                    });
+                    return result;
+                }
+            },
+            legend: {
+                data: ['AI Mention Rate', 'SoV-AI', 'ROI'],
+                top: 'bottom'
+            },
+            grid: {
+                left: '3%',
+                right: '8%',
+                bottom: '15%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: ['Baseline', 'M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9', 'M10', 'M11', 'M12']
+            },
+            yAxis: [
+                {
+                    type: 'value',
+                    name: 'Percentage (%)',
+                    axisLabel: {
+                        formatter: '{value}%'
+                    }
+                },
+                {
+                    type: 'value',
+                    name: 'ROI',
+                    position: 'right',
+                    axisLabel: {
+                        formatter: '{value}:1'
+                    }
+                }
+            ],
+            series: [
+                {
+                    name: 'AI Mention Rate',
+                    type: 'line',
+                    data: [12.5, 15.2, 18.7, 24.8, 31.2, 37.5, 42.3, 43.1, 44.2, 45.5, 46.8, 47.6, 48.3],
+                    smooth: true,
+                    itemStyle: { color: '#f59e0b' },
+                    lineStyle: { width: 3 },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                            offset: 0,
+                            color: 'rgba(245, 158, 11, 0.3)'
+                        }, {
+                            offset: 1,
+                            color: 'rgba(245, 158, 11, 0.05)'
+                        }])
+                    }
+                },
+                {
+                    name: 'SoV-AI',
+                    type: 'line',
+                    data: [8.7, 10.2, 12.5, 14.2, 16.8, 19.2, 21.5, 22.1, 22.8, 23.2, 23.6, 23.9, 24.2],
+                    smooth: true,
+                    itemStyle: { color: '#3b82f6' },
+                    lineStyle: { width: 3 }
+                },
+                {
+                    name: 'ROI',
+                    type: 'bar',
+                    yAxisIndex: 1,
+                    data: [0, 0.5, 0.8, 1.2, 1.8, 2.3, 2.8, 3.1, 3.4, 3.7, 3.9, 4.1, 4.2],
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                            offset: 0,
+                            color: '#10b981'
+                        }, {
+                            offset: 1,
+                            color: '#059669'
+                        }])
+                    }
+                }
+            ]
+        };
+        yearlyPerformanceChart.setOption(yearlyPerformanceOption);
+
+        // Responsive
+        window.addEventListener('resize', function() {
+            monthlyKPIChart.resize();
+            liveStatsChart.resize();
+            yearlyPerformanceChart.resize();
+        });
+    </script>
+</body>
+</html>

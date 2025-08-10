@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka Market Intelligence Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .header h1 {
+            color: #2d3748;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header p {
+            color: #718096;
+            font-size: 1.1em;
+        }
+        
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chart-title {
+            font-size: 1.3em;
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .chart {
+            width: 100%;
+            height: 350px;
+        }
+        
+        .insight-box {
+            background: #f7fafc;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 8px;
+        }
+        
+        .insight-title {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .insight-title::before {
+            content: "💡";
+            margin-right: 8px;
+        }
+        
+        .insight-text {
+            color: #4a5568;
+            line-height: 1.6;
+        }
+        
+        .recommendation {
+            background: #edf2f7;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border-left: 3px solid #764ba2;
+        }
+        
+        .recommendation strong {
+            color: #764ba2;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        @media (max-width: 768px) {
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>Eureka Premium Robot Vacuum Market Intelligence Dashboard</h1>
+            <p>Strategic Insights & Recommendations for Premium Market Entry</p>
+        </div>
+        
+        <div class="metrics-row">
+            <div class="metric-card">
+                <div class="metric-value">$4.5-6.1B</div>
+                <div class="metric-label">Current Market Size (2024)</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">$12-33B</div>
+                <div class="metric-label">Projected Market Size (2030)</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">10-27%</div>
+                <div class="metric-label">Annual Growth Rate (CAGR)</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">35%</div>
+                <div class="metric-label">Premium Segment Revenue Share</div>
+            </div>
+        </div>
+        
+        <div class="chart-grid">
+            <!-- Market Growth Trajectory -->
+            <div class="chart-container">
+                <div class="chart-title">Market Growth Trajectory (2024-2030)</div>
+                <div id="market-growth" class="chart"></div>
+                <div class="insight-box">
+                    <div class="insight-title">Key Insight</div>
+                    <div class="insight-text">
+                        The robot vacuum market shows explosive growth potential with conservative estimates suggesting a doubling of market size, while optimistic projections indicate a 5x expansion opportunity.
+                        <div class="recommendation">
+                            <strong>Recommendation:</strong> Establish market presence by 2025 to capture early premium segment growth momentum before market saturation occurs.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Competitive Positioning -->
+            <div class="chart-container">
+                <div class="chart-title">Competitive Positioning Matrix</div>
+                <div id="competitive-matrix" class="chart"></div>
+                <div class="insight-box">
+                    <div class="insight-title">Key Insight</div>
+                    <div class="insight-text">
+                        Market leaders show distinct positioning strategies: Roborock dominates through technology, Ecovacs through lifestyle marketing, iRobot leverages legacy trust, while Dyson commands ultra-premium pricing.
+                        <div class="recommendation">
+                            <strong>Recommendation:</strong> Position Eureka between Roborock's technology focus and iRobot's trust factor, emphasizing American engineering with competitive pricing.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Technology Adoption -->
+            <div class="chart-container">
+                <div class="chart-title">Technology Feature Adoption Trends</div>
+                <div id="tech-adoption" class="chart"></div>
+                <div class="insight-box">
+                    <div class="insight-title">Key Insight</div>
+                    <div class="insight-text">
+                        LiDAR navigation has become table stakes for premium models, while self-maintenance systems represent the fastest-growing differentiator commanding $300-500 price premiums.
+                        <div class="recommendation">
+                            <strong>Recommendation:</strong> Launch with LiDAR as baseline, differentiate through superior self-maintenance exceeding current 120-day autonomous operation standards.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Regional Priorities -->
+            <div class="chart-container">
+                <div class="chart-title">Regional Market Priorities</div>
+                <div id="regional-priorities" class="chart"></div>
+                <div class="insight-box">
+                    <div class="insight-title">Key Insight</div>
+                    <div class="insight-text">
+                        North American consumers prioritize smart home integration (65% demand voice control), while European buyers focus on energy efficiency and privacy protection.
+                        <div class="recommendation">
+                            <strong>Recommendation:</strong> Develop dual messaging tracks and feature sets optimized for each region's unique priorities and regulatory requirements.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Price Segment Analysis -->
+            <div class="chart-container full-width">
+                <div class="chart-title">Price Segment Feature Requirements</div>
+                <div id="price-features" class="chart"></div>
+                <div class="insight-box">
+                    <div class="insight-title">Key Insight</div>
+                    <div class="insight-text">
+                        The $500-1,500 premium segment demands multiple simultaneous innovations, not single breakthrough features. Potential 125% tariffs on Chinese competitors could create significant pricing advantages for non-Chinese manufacturers.
+                        <div class="recommendation">
+                            <strong>Recommendation:</strong> Target $799-999 sweet spot with comprehensive feature set, emphasizing "Designed and Manufactured in America" to exploit potential tariff advantages.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Marketing Channel ROI -->
+            <div class="chart-container">
+                <div class="chart-title">Marketing Channel Effectiveness</div>
+                <div id="channel-roi" class="chart"></div>
+                <div class="insight-box">
+                    <div class="insight-title">Key Insight</div>
+                    <div class="insight-text">
+                        Amazon marketplace dominates with highest ROI, while YouTube reviewers provide lasting authority. Social media requires platform-specific strategies for optimal engagement.
+                        <div class="recommendation">
+                            <strong>Recommendation:</strong> Allocate 40% budget to Amazon optimization, 35% to Google Ads/social content, 25% to community building and retention programs.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Seasonal Patterns -->
+            <div class="chart-container">
+                <div class="chart-title">Seasonal Sales Opportunity Calendar</div>
+                <div id="seasonal-sales" class="chart"></div>
+                <div class="insight-box">
+                    <div class="insight-title">Key Insight</div>
+                    <div class="insight-text">
+                        Black Friday generates 30% YoY Q4 growth with $150-600 discounts driving volume. Spring cleaning and pet shedding seasons provide counter-seasonal revenue opportunities.
+                        <div class="recommendation">
+                            <strong>Recommendation:</strong> Concentrate 35% of annual marketing spend around Black Friday, develop spring allergen campaigns, and create pet-specific campaigns for International Animal Day.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Consumer Priorities Heatmap -->
+            <div class="chart-container full-width">
+                <div class="chart-title">Consumer Purchase Decision Factors</div>
+                <div id="consumer-priorities" class="chart"></div>
+                <div class="insight-box">
+                    <div class="insight-title">Key Insight</div>
+                    <div class="insight-text">
+                        Premium buyers prioritize navigation accuracy, autonomous operation duration, and pet waste avoidance as non-negotiable features, while considering smart home integration and energy efficiency as strong differentiators.
+                        <div class="recommendation">
+                            <strong>Recommendation:</strong> Lead marketing with demonstrable proof points: extreme testing videos for durability, 120+ day autonomous operation, and perfect pet waste avoidance scores with replacement guarantee.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize all charts when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Market Growth Trajectory Chart
+            const marketGrowthChart = echarts.init(document.getElementById('market-growth'));
+            const marketGrowthOption = {
+                tooltip: {
+                    trigger: 'axis',
+                    formatter: function(params) {
+                        return params[0].name + '<br>' +
+                               params[0].seriesName + ': $' + params[0].value + 'B<br>' +
+                               params[1].seriesName + ': $' + params[1].value + 'B';
+                    }
+                },
+                legend: {
+                    data: ['Conservative Projection', 'Optimistic Projection']
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['2024', '2025', '2026', '2027', '2028', '2029', '2030']
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Market Size ($B)',
+                    axisLabel: {
+                        formatter: '${value}B'
+                    }
+                },
+                series: [
+                    {
+                        name: 'Conservative Projection',
+                        type: 'line',
+                        smooth: true,
+                        data: [4.5, 5.0, 5.5, 6.5, 8.0, 10.0, 12.0],
+                        itemStyle: { color: '#667eea' },
+                        areaStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: 'rgba(102, 126, 234, 0.3)' },
+                                { offset: 1, color: 'rgba(102, 126, 234, 0.05)' }
+                            ])
+                        }
+                    },
+                    {
+                        name: 'Optimistic Projection',
+                        type: 'line',
+                        smooth: true,
+                        data: [6.1, 7.8, 10.2, 14.0, 19.5, 26.0, 33.0],
+                        itemStyle: { color: '#764ba2' },
+                        areaStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: 'rgba(118, 75, 162, 0.3)' },
+                                { offset: 1, color: 'rgba(118, 75, 162, 0.05)' }
+                            ])
+                        }
+                    }
+                ]
+            };
+            marketGrowthChart.setOption(marketGrowthOption);
+            
+            // Competitive Positioning Matrix
+            const competitiveChart = echarts.init(document.getElementById('competitive-matrix'));
+            const competitiveOption = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: function(params) {
+                        return params.data.name + '<br>' +
+                               'Technology Score: ' + params.data.value[0] + '<br>' +
+                               'Price Point: $' + params.data.value[1] + '<br>' +
+                               'Market Share: ' + params.data.value[2] + '%';
+                    }
+                },
+                xAxis: {
+                    type: 'value',
+                    name: 'Technology Innovation Score',
+                    min: 0,
+                    max: 100
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Average Price Point ($)',
+                    min: 0,
+                    max: 2500
+                },
+                series: [{
+                    type: 'scatter',
+                    symbolSize: function(data) {
+                        return Math.sqrt(data[2]) * 15; // Size based on market share
+                    },
+                    data: [
+                        { name: 'Roborock', value: [90, 800, 25], itemStyle: { color: '#ff6b6b' } },
+                        { name: 'Ecovacs', value: [75, 600, 20], itemStyle: { color: '#4ecdc4' } },
+                        { name: 'iRobot', value: [65, 900, 15], itemStyle: { color: '#45b7d1' } },
+                        { name: 'Dyson', value: [85, 1800, 5], itemStyle: { color: '#96ceb4' } },
+                        { name: 'Eufy', value: [70, 500, 10], itemStyle: { color: '#ffeaa7' } },
+                        { name: 'Eureka Target', value: [80, 899, 8], itemStyle: { color: '#667eea' } }
+                    ],
+                    label: {
+                        show: true,
+                        formatter: '{b}',
+                        position: 'top'
+                    }
+                }]
+            };
+            competitiveChart.setOption(competitiveOption);
+            
+            // Technology Adoption Chart
+            const techAdoptionChart = echarts.init(document.getElementById('tech-adoption'));
+            const techAdoptionOption = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                legend: {
+                    data: ['2020', '2023', 'Growth Rate']
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['LiDAR Navigation', 'Self-Emptying', 'AI Obstacle', 'Voice Control', 'Hot Water Mop']
+                },
+                yAxis: [
+                    {
+                        type: 'value',
+                        name: 'Adoption Rate (%)',
+                        min: 0,
+                        max: 100,
+                        axisLabel: { formatter: '{value}%' }
+                    },
+                    {
+                        type: 'value',
+                        name: 'Growth Rate (%)',
+                        min: 0,
+                        max: 50,
+                        axisLabel: { formatter: '{value}%' }
+                    }
+                ],
+                series: [
+                    {
+                        name: '2020',
+                        type: 'bar',
+                        data: [40, 15, 10, 30, 5],
+                        itemStyle: { color: '#dfe6e9' }
+                    },
+                    {
+                        name: '2023',
+                        type: 'bar',
+                        data: [60, 35, 45, 65, 25],
+                        itemStyle: { color: '#667eea' }
+                    },
+                    {
+                        name: 'Growth Rate',
+                        type: 'line',
+                        yAxisIndex: 1,
+                        data: [20, 20, 35, 35, 20],
+                        itemStyle: { color: '#764ba2' }
+                    }
+                ]
+            };
+            techAdoptionChart.setOption(techAdoptionOption);
+            
+            // Regional Priorities Radar Chart
+            const regionalChart = echarts.init(document.getElementById('regional-priorities'));
+            const regionalOption = {
+                tooltip: {},
+                legend: {
+                    data: ['North America', 'Europe']
+                },
+                radar: {
+                    indicator: [
+                        { name: 'Smart Home Integration', max: 100 },
+                        { name: 'Energy Efficiency', max: 100 },
+                        { name: 'Privacy Protection', max: 100 },
+                        { name: 'Voice Control', max: 100 },
+                        { name: 'Pet Features', max: 100 },
+                        { name: 'Price Sensitivity', max: 100 }
+                    ]
+                },
+                series: [{
+                    type: 'radar',
+                    data: [
+                        {
+                            value: [90, 60, 50, 85, 80, 60],
+                            name: 'North America',
+                            areaStyle: {
+                                color: new echarts.graphic.RadialGradient(0.5, 0.5, 0.5, [
+                                    { offset: 0, color: 'rgba(102, 126, 234, 0.3)' },
+                                    { offset: 1, color: 'rgba(102, 126, 234, 0.1)' }
+                                ])
+                            },
+                            itemStyle: { color: '#667eea' }
+                        },
+                        {
+                            value: [65, 90, 85, 60, 65, 75],
+                            name: 'Europe',
+                            areaStyle: {
+                                color: new echarts.graphic.RadialGradient(0.5, 0.5, 0.5, [
+                                    { offset: 0, color: 'rgba(118, 75, 162, 0.3)' },
+                                    { offset: 1, color: 'rgba(118, 75, 162, 0.1)' }
+                                ])
+                            },
+                            itemStyle: { color: '#764ba2' }
+                        }
+                    ]
+                }]
+            };
+            regionalChart.setOption(regionalOption);
+            
+            // Price-Features Analysis
+            const priceFeaturesChart = echarts.init(document.getElementById('price-features'));
+            const priceFeaturesOption = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                legend: {
+                    data: ['Required Features', 'Premium Features', 'Ultra-Premium Features']
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['$300-500', '$500-800', '$800-1200', '$1200-1500', '$1500+']
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Number of Features'
+                },
+                series: [
+                    {
+                        name: 'Required Features',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [3, 5, 7, 8, 9],
+                        itemStyle: { color: '#74b9ff' }
+                    },
+                    {
+                        name: 'Premium Features',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [1, 3, 5, 6, 7],
+                        itemStyle: { color: '#667eea' }
+                    },
+                    {
+                        name: 'Ultra-Premium Features',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [0, 0, 2, 4, 6],
+                        itemStyle: { color: '#764ba2' }
+                    }
+                ]
+            };
+            priceFeaturesChart.setOption(priceFeaturesOption);
+            
+            // Marketing Channel ROI
+            const channelROIChart = echarts.init(document.getElementById('channel-roi'));
+            const channelROIOption = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c}% ROI'
+                },
+                series: [{
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: {
+                        borderRadius: 10,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: true,
+                        formatter: '{b}\n{c}% ROI'
+                    },
+                    emphasis: {
+                        label: {
+                            show: true,
+                            fontSize: 20,
+                            fontWeight: 'bold'
+                        }
+                    },
+                    data: [
+                        { value: 280, name: 'Amazon Marketplace', itemStyle: { color: '#667eea' } },
+                        { value: 220, name: 'YouTube Reviews', itemStyle: { color: '#764ba2' } },
+                        { value: 180, name: 'Google Ads', itemStyle: { color: '#a855f7' } },
+                        { value: 150, name: 'Social Media', itemStyle: { color: '#ec4899' } },
+                        { value: 120, name: 'Reddit Community', itemStyle: { color: '#f43f5e' } }
+                    ]
+                }]
+            };
+            channelROIChart.setOption(channelROIOption);
+            
+            // Seasonal Sales Calendar
+            const seasonalChart = echarts.init(document.getElementById('seasonal-sales'));
+            const seasonalOption = {
+                tooltip: {
+                    trigger: 'axis',
+                    formatter: function(params) {
+                        return params[0].name + '<br>' +
+                               'Sales Index: ' + params[0].value + '<br>' +
+                               'Campaign Focus: ' + params[0].data.campaign;
+                    }
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Sales Index',
+                    min: 50,
+                    max: 200
+                },
+                series: [{
+                    type: 'line',
+                    smooth: true,
+                    data: [
+                        { value: 80, campaign: 'New Year Clean' },
+                        { value: 75, campaign: 'Valentine Gifts' },
+                        { value: 120, campaign: 'Spring Cleaning' },
+                        { value: 130, campaign: 'Allergy Season' },
+                        { value: 100, campaign: 'Pet Shedding' },
+                        { value: 85, campaign: 'Summer Travel' },
+                        { value: 70, campaign: 'Mid-Year Sales' },
+                        { value: 90, campaign: 'Back to School' },
+                        { value: 95, campaign: 'Fall Cleaning' },
+                        { value: 110, campaign: 'Pet Day' },
+                        { value: 180, campaign: 'Black Friday' },
+                        { value: 160, campaign: 'Holiday Gifts' }
+                    ],
+                    itemStyle: { color: '#667eea' },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: 'rgba(102, 126, 234, 0.4)' },
+                            { offset: 1, color: 'rgba(102, 126, 234, 0.1)' }
+                        ])
+                    },
+                    markLine: {
+                        data: [
+                            { type: 'average', name: 'Average' }
+                        ]
+                    },
+                    markPoint: {
+                        data: [
+                            { type: 'max', name: 'Peak', label: { formatter: 'Black Friday Peak' } },
+                            { type: 'min', name: 'Low' }
+                        ]
+                    }
+                }]
+            };
+            seasonalChart.setOption(seasonalOption);
+            
+            // Consumer Priorities Heatmap
+            const consumerChart = echarts.init(document.getElementById('consumer-priorities'));
+            const hours = ['Entry Level', 'Mid-Range', 'Premium', 'Ultra-Premium'];
+            const days = ['Navigation', 'Self-Empty', 'Pet Waste', 'Voice Control', 'Mop Function', 'App Control', 'Quiet Mode'];
+            const data = [
+                [0, 0, 60], [0, 1, 40], [0, 2, 30], [0, 3, 50], [0, 4, 45], [0, 5, 70], [0, 6, 55],
+                [1, 0, 75], [1, 1, 70], [1, 2, 65], [1, 3, 70], [1, 4, 75], [1, 5, 85], [1, 6, 70],
+                [2, 0, 95], [2, 1, 90], [2, 2, 95], [2, 3, 85], [2, 4, 85], [2, 5, 90], [2, 6, 80],
+                [3, 0, 100], [3, 1, 95], [3, 2, 100], [3, 3, 90], [3, 4, 95], [3, 5, 95], [3, 6, 90]
+            ];
+            
+            const consumerOption = {
+                tooltip: {
+                    position: 'top',
+                    formatter: function(params) {
+                        return hours[params.data[0]] + ' - ' + days[params.data[1]] + ': ' + params.data[2] + '% importance';
+                    }
+                },
+                grid: {
+                    height: '60%',
+                    top: '10%'
+                },
+                xAxis: {
+                    type: 'category',
+                    data: days,
+                    splitArea: { show: true }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: hours,
+                    splitArea: { show: true }
+                },
+                visualMap: {
+                    min: 0,
+                    max: 100,
+                    calculable: true,
+                    orient: 'horizontal',
+                    left: 'center',
+                    bottom: '5%',
+                    inRange: {
+                        color: ['#e0e7ff', '#667eea', '#764ba2']
+                    }
+                },
+                series: [{
+                    type: 'heatmap',
+                    data: data,
+                    label: { show: true },
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }]
+            };
+            consumerChart.setOption(consumerOption);
+            
+            // Make charts responsive
+            window.addEventListener('resize', function() {
+                marketGrowthChart.resize();
+                competitiveChart.resize();
+                techAdoptionChart.resize();
+                regionalChart.resize();
+                priceFeaturesChart.resize();
+                channelROIChart.resize();
+                seasonalChart.resize();
+                consumerChart.resize();
+            });
+        });
+    </script>
+</body>
+</html>

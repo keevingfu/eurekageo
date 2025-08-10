@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka扫地机器人 - GEO项目诊断与优化需求清单</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-30px, -30px) rotate(180deg); }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 50px;
+        }
+
+        .section-number {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-right: 15px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        h2 {
+            color: #333;
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #f0f0f0;
+        }
+
+        h3 {
+            color: #555;
+            font-size: 1.3rem;
+            margin: 30px 0 20px;
+            padding-left: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 25px 0;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #555;
+        }
+
+        tr:hover {
+            background: #f9f9ff;
+            transition: background 0.3s ease;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .objectives-list {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .objective-item {
+            margin-bottom: 20px;
+            padding-left: 40px;
+            position: relative;
+        }
+
+        .objective-item::before {
+            content: '✓';
+            position: absolute;
+            left: 10px;
+            top: 2px;
+            color: #667eea;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .objective-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .objective-desc {
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .kpi-card {
+            background: white;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+
+        .kpi-title {
+            font-size: 1.2rem;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .kpi-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .kpi-description {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+
+        .kpi-visualization {
+            background: #f8f9ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 5px;
+            color: #555;
+        }
+
+        .priority-card {
+            background: linear-gradient(135deg, #f8f9ff 0%, #fff 100%);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 1px solid #e0e0f0;
+        }
+
+        .priority-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .priority-badge {
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .priority-high {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+        }
+
+        .priority-medium {
+            background: #fef3c7;
+            color: #d97706;
+            border: 1px solid #fcd34d;
+        }
+
+        .priority-ongoing {
+            background: #dbeafe;
+            color: #2563eb;
+            border: 1px solid #93c5fd;
+        }
+
+        .priority-content ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .priority-content li {
+            padding: 12px 0;
+            padding-left: 30px;
+            position: relative;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .priority-content li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .role-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .role-card {
+            background: white;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .role-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+
+        .role-title {
+            font-size: 1.1rem;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .role-description {
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .note {
+            background: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 5px;
+            color: #92400e;
+        }
+
+        .note strong {
+            color: #78350f;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            h2 {
+                font-size: 1.4rem;
+            }
+            
+            .role-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            table {
+                font-size: 0.9rem;
+            }
+            
+            th, td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Eureka扫地机器人</h1>
+            <p class="subtitle">GEO项目诊断与优化需求与目标确认清单</p>
+        </div>
+
+        <div class="content">
+            <!-- Section 1: 诊断范围定义 -->
+            <div class="section">
+                <h2>
+                    <span class="section-number">1</span>
+                    诊断范围定义
+                </h2>
+                <p style="color: #666; margin-bottom: 20px;">明确项目诊断分析所涵盖的范围与边界，包括市场、产品、内容、平台及竞品等维度：</p>
+                
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 25%;">范围要素</th>
+                                <th>具体范围描述</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>区域市场</strong></td>
+                                <td>北美（美国、加拿大）和欧洲（英国、德国、法国等主要国家），聚焦目标市场的本地搜索环境和用户需求。</td>
+                            </tr>
+                            <tr>
+                                <td><strong>产品范围</strong></td>
+                                <td>Eureka扫地机器人全线产品（所有型号与系列），确保各型号产品均在诊断与优化覆盖范围内。</td>
+                            </tr>
+                            <tr>
+                                <td><strong>内容范围</strong></td>
+                                <td>品牌官网现有内容（产品页、FAQ、博客文章、用户评价等）以及外部权威内容（如维基百科品牌/产品词条、第三方评测文章）。重点关注这些内容是否符合AI抓取和引用要求（结构化、权威性等）。</td>
+                            </tr>
+                            <tr>
+                                <td><strong>平台范围</strong></td>
+                                <td>主要生成式AI搜索平台（ChatGPT、Bing Chat、Google Bard 等），以及相关智能对话搜索渠道。诊断各平台中品牌内容的可见性。</td>
+                            </tr>
+                            <tr>
+                                <td><strong>语言要求</strong></td>
+                                <td>英语为主要内容语言（覆盖北美及大部分欧洲受众）；酌情考虑欧洲重点市场的本地语言内容（如德语、法语），以提升本地化用户体验和转化。</td>
+                            </tr>
+                            <tr>
+                                <td><strong>竞品分析</strong></td>
+                                <td>锁定主要竞品（如 iRobot、Neato 等扫地机器人品牌）在AI搜索结果中的表现，比较Eureka内容的缺失点与差距，作为诊断和优化参照。</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Section 2: 业务目标确认 -->
+            <div class="section">
+                <h2>
+                    <span class="section-number">2</span>
+                    业务目标确认
+                </h2>
+                <p style="color: #666; margin-bottom: 20px;">根据品牌现状和项目偏好，明确本次GEO项目的核心业务目标如下：</p>
+                
+                <div class="objectives-list">
+                    <div class="objective-item">
+                        <div class="objective-title">提升AI搜索曝光度</div>
+                        <div class="objective-desc">显著提高Eureka品牌内容在生成式AI搜索答案中的出现频率和可见性。例如，在用户提出相关清洁/扫地机器人问题时，AI生成的回答能够引用或提及Eureka内容，从而达到品牌曝光的目的。</div>
+                    </div>
+                    <div class="objective-item">
+                        <div class="objective-title">增加落地页点击率</div>
+                        <div class="objective-desc">通过优化内容呈现和答案引用方式，吸引更多用户从AI答案点击进入Eureka官方网站或产品页。目标是提升AI答案引用Eureka内容时用户的点击比率（CTR），为官网带来更多高意向流量。</div>
+                    </div>
+                    <div class="objective-item">
+                        <div class="objective-title">提升转化率</div>
+                        <div class="objective-desc">提高由AI搜索引流至官网用户的转化率，包括购买转化或其他预设转化目标（如预约试用、联系表单提交等）。通过全链路优化策略，将AI推荐流量尽可能转化为实际销售或有效线索。</div>
+                    </div>
+                </div>
+                
+                <div class="note">
+                    <strong>注：</strong>以上目标在实施过程中可进一步细化量化，例如预期提升百分比等，作为项目KPI。
+                </div>
+            </div>
+
+            <!-- Section 3: 关键指标与可视化字段建议 -->
+            <div class="section">
+                <h2>
+                    <span class="section-number">3</span>
+                    关键指标与可视化字段建议
+                </h2>
+                <p style="color: #666; margin-bottom: 20px;">围绕上述业务目标，制定相应的关键指标(KPI)及其定义，并规划在GEO SaaS平台或数据仪表盘中的可视化呈现方式：</p>
+                
+                <div class="kpi-card">
+                    <div class="kpi-title">
+                        AI回答引用率
+                        <span class="kpi-badge">内容引用频率</span>
+                    </div>
+                    <div class="kpi-description">
+                        品牌官方内容被AI生成的答案引用为信息来源的频度。例如，在相关提问场景下Eureka官网内容被作为参考出处的次数或比例。该指标反映品牌内容"被模型选中"的程度。
+                    </div>
+                    <div class="kpi-visualization">
+                        <strong>可视化呈现：</strong>KPI数字卡片显示当前引用次数/频率，折线图展示该频率随时间的趋势变化；可按平台（ChatGPT、Bing等）过滤查看。
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-title">
+                        AI回答曝光量
+                        <span class="kpi-badge">品牌提及次数</span>
+                    </div>
+                    <div class="kpi-description">
+                        品牌名称或产品在AI回答中出现的次数。例如AI在回答"哪款扫地机器人好"时直接提及了Eureka或其产品型号的频次。该指标反映品牌在AI答案中的曝光覆盖度。
+                    </div>
+                    <div class="kpi-visualization">
+                        <strong>可视化呈现：</strong>计数器显示累计提及次数，柱状图/折线图展示各时间段提及量；并提供按平台或话题关键词分类的视图，观察哪些问题场景下品牌出现更多。
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-title">
+                        落地页点击率
+                        <span class="kpi-badge">AI来源CTR</span>
+                    </div>
+                    <div class="kpi-description">
+                        用户在AI生成答案中看到Eureka引用/链接后点击进入品牌落地页的比率。计算方式为：AI答案中Eureka链接被点击次数 / AI答案中该链接出现次数。体现获取AI流量的效率。
+                    </div>
+                    <div class="kpi-visualization">
+                        <strong>可视化呈现：</strong>漏斗图展示从AI回答曝光到点击的转化（例如100次曝光 -> 10次点击，CTR=10%），或仪表盘百分比显示当前CTR值；支持按地区市场或平台分项查看。
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-title">
+                        转化率
+                        <span class="kpi-badge">AI流量转化</span>
+                    </div>
+                    <div class="kpi-description">
+                        经AI答案点击进入官网的访客中完成预定转化行为的比例。例如购买下单转化率 = 成交订单数 / AI来源访客数。该指标衡量AI引流流量的质量和网站的成交能力。
+                    </div>
+                    <div class="kpi-visualization">
+                        <strong>可视化呈现：</strong>KPI百分比显示总体转化率，漏斗/进度图展示从访问->加入购物车->下单的转化漏斗；提供地区筛选（北美/欧洲）和产品类别筛选。
+                    </div>
+                </div>
+
+                <div class="note">
+                    <strong>可视化字段补充：</strong>仪表盘应支持按地区市场（北美 vs 欧洲）和产品线/型号对上述指标进行筛选和分解分析，以便发现各细分维度的表现差异。此外，增加实时监测面板，追踪AI引用率、品牌曝光量的增长趋势以及负面信息占比下降情况，确保优化措施成效可视可衡。
+                </div>
+            </div>
+
+            <!-- Section 4: 诊断优先级规划 -->
+            <div class="section">
+                <h2>
+                    <span class="section-number">4</span>
+                    诊断优先级规划
+                </h2>
+                <p style="color: #666; margin-bottom: 20px;">根据核心目标和现状，将诊断与优化工作分阶段分优先级展开，优先解决影响最大的环节，形成全链路闭环的优化路径：</p>
+                
+                <div class="priority-card">
+                    <div class="priority-header">
+                        <h3 style="margin: 0; border: none; padding: 0;">1. AI可见度优先诊断</h3>
+                        <span class="priority-badge priority-high">最高优先级</span>
+                    </div>
+                    <div class="priority-content">
+                        <p style="margin-bottom: 15px; color: #666;">聚焦品牌在AI生成答案中的存在与可见性：</p>
+                        <ul>
+                            <li><strong>现状扫描：</strong>利用工具快速监测品牌在主要AI平台回答中的现有表现。记录相关提问下是否出现Eureka品牌，以及出现形式（被引用/被提及/未出现）。</li>
+                            <li><strong>内容纠错：</strong>检查AI回答中涉及Eureka的内容是否有错误、过时或负面信息，及时反馈纠偏（如通过提交投诉或发布权威澄清内容）。确保AI提供关于品牌的事实准确无误。</li>
+                            <li><strong>内容抓取：</strong>分析Eureka官网内容是否易于被AI爬取和引用。找出抓取漏洞，例如缺少结构化数据、网页内容不够清晰等，并记录需要改进的要点。确保AI"看得到"并愿意引用品牌内容。</li>
+                            <li><strong>竞品对比：</strong>调研主要竞品在AI答案中的露出情况，了解竞品内容为何被引用或推荐。对比分析Eureka缺席的原因，形成提升品牌 AI 曝光的初步策略。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="priority-card">
+                    <div class="priority-header">
+                        <h3 style="margin: 0; border: none; padding: 0;">2. 内容与落地页优化</h3>
+                        <span class="priority-badge priority-medium">次优先级</span>
+                    </div>
+                    <div class="priority-content">
+                        <p style="margin-bottom: 15px; color: #666;">提高用户点击率并为转化打好基础：</p>
+                        <ul>
+                            <li><strong>内容结构优化：</strong>根据诊断结果，对官网内容进行优化改进。落实Schema标记、页面段落清晰分层等措施，使网站内容更加结构化且利于AI理解和抓取。同时增强内容的E-E-A-T属性（经验、专业、权威、可信）以提升AI对内容的信任度。</li>
+                            <li><strong>提高引用诱因：</strong>针对常见用户提问场景，充实网站内容的深度与差异化亮点，让AI在生成答案时更有理由引用Eureka的信息。例如发布专业对比测评、行业报告数据等，提高内容权威性。</li>
+                            <li><strong>落地页相关性：</strong>优化着陆页（产品页或专题页）的内容布局，使其与用户通过AI提出的问题高度相关。确保用户点击进入后立即获取所需信息和明确的下一步引导（CTA）。</li>
+                            <li><strong>本地化与用户体验：</strong>针对欧洲等多语言市场，评估是否需要提供本地语言版本或本地化要素（如度量单位、插座制式说明等）以提升可信度和用户好感度。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="priority-card">
+                    <div class="priority-header">
+                        <h3 style="margin: 0; border: none; padding: 0;">3. 转化路径优化</h3>
+                        <span class="priority-badge priority-ongoing">持续优化阶段</span>
+                    </div>
+                    <div class="priority-content">
+                        <p style="margin-bottom: 15px; color: #666;">完善网站转化漏斗，提升引流流量变现：</p>
+                        <ul>
+                            <li><strong>数据跟踪诊断：</strong>针对从AI进入网站的用户行为数据进行监测分析，识别转化漏斗中薄弱环节。例如查看这些用户的页面停留时间、加入购物车比例、购买完成率等，找出主要流失点。</li>
+                            <li><strong>页面信任与功能优化：</strong>优化官网的关键转化页面（如产品详情页、购物车、结算页）的用户体验。增加信任背书元素（第三方评测引用、用户评价⭐⭐⭐⭐⭐、安全认证徽标等）来打消顾虑。</li>
+                            <li><strong>A/B测试迭代：</strong>对影响转化的关键要素进行A/B测试（如不同的CTA按钮文本、页面布局、促销信息呈现方式），基于数据反馈不断迭代优化，提高AI引入流量的转化表现。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="note">
+                    <strong>注：</strong>以上规划体现先抓主要矛盾（AI曝光不足）再优化次级环节（CTR、转化）的顺序。在执行中各阶段可部分并行推进，但应确保前期诊断结论有效指导后续优化策略。
+                </div>
+            </div>
+
+            <!-- Section 5: 初步角色设计建议 -->
+            <div class="section">
+                <h2>
+                    <span class="section-number">5</span>
+                    初步角色设计建议
+                </h2>
+                <p style="color: #666; margin-bottom: 20px;">鉴于团队角色尚未确定，建议组建涵盖策略、内容、技术和数据分析等职责的项目团队。以下是各角色及其职责的设计建议：</p>
+                
+                <div class="role-grid">
+                    <div class="role-card">
+                        <div class="role-title">项目经理 / 负责人</div>
+                        <div class="role-description">
+                            全面负责GEO项目推进与协调，制定项目计划和时间表，跨部门沟通资源（市场、技术、内容等），确保诊断与优化工作按计划完成。及时跟进各项任务进度，统筹风险与变更管理，保障项目闭环落地。
+                        </div>
+                    </div>
+
+                    <div class="role-card">
+                        <div class="role-title">GEO策略顾问 / 主管</div>
+                        <div class="role-description">
+                            GEO（生成式引擎优化）策略制定者，精通SEO及AI搜索优化方法。负责分析诊断报告，提炼核心问题，制定整体优化策略和优先级规划。指导内容和技术团队实施针对AI搜索的优化方案，确保策略以AI可见度提升为导向。
+                        </div>
+                    </div>
+
+                    <div class="role-card">
+                        <div class="role-title">内容策划/编辑专员</div>
+                        <div class="role-description">
+                            负责网站内容的诊断与优化执行。根据GEO策略调整或新增内容，包括撰写高质量的专题文章、QA内容、对比测评等，提高内容的权威性和被引用率。优化页面文案和结构（标题、段落、Schema标记）以利于AI抓取，并把控多语言内容的本地化质量。
+                        </div>
+                    </div>
+
+                    <div class="role-card">
+                        <div class="role-title">技术优化工程师（SEO/网站开发）</div>
+                        <div class="role-description">
+                            负责网站技术层面的诊断与改进。解决影响AI抓取的技术问题，如网站爬虫可访问性、页面加载速度、移动端适配等。实施结构化数据标记、内部链接优化等措施，提高网站内容对AI算法的友好度。配合内容专员确保网站改动有效提升AI引用率和用户体验。
+                        </div>
+                    </div>
+
+                    <div class="role-card">
+                        <div class="role-title">数据分析师</div>
+                        <div class="role-description">
+                            负责搭建数据监测指标体系和仪表盘（结合GEO SaaS平台），跟踪AI搜索相关的各项指标表现。定期输出数据分析报告，包括AI引用/曝光数据、流量及转化效果，供团队评估优化成效。通过分析用户行为数据，提出进一步优化建议。
+                        </div>
+                    </div>
+
+                    <div class="role-card">
+                        <div class="role-title">转化率优化师（CRO/UX）</div>
+                        <div class="role-description">
+                            （可选角色）专注提升网站的转化表现。从用户体验和转化率角度出发，诊断页面存在的转化障碍，设计并执行A/B测试实验。优化着陆页布局、表单流程、信任元素等，以提高由AI引流访客的最终转化率。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="note">
+                    <strong>说明：</strong>上述角色设计可根据实际团队规模进行合并或扩展。例如，初期阶段GEO策略顾问和SEO工程师角色可能由同一人兼任；同时后期随着项目规模扩大，可引入更多内容创作者或地区市场顾问等。关键是在团队职责分工中覆盖策略制定-内容执行-技术支持-数据反馈-转化优化整个闭环，确保GEO项目高效落地并持续优化迭代。
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

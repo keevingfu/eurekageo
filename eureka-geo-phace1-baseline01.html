@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka扫地机器人 GEO基础诊断报告</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --secondary: #7c3aed;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #1e293b;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .bg-animation {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .bg-animation::after {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            border-radius: 50%;
+            right: -200px;
+            bottom: -200px;
+            animation: float 25s infinite ease-in-out reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(100px, -100px) scale(1.1); }
+            66% { transform: translate(-100px, 100px) scale(0.9); }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            animation: slideDown 0.8s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .header-left h1 {
+            font-size: 2.5rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .meta-info {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .meta-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+        }
+
+        .meta-value {
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.8s ease-out forwards;
+            opacity: 0;
+        }
+
+        .section:nth-child(2) { animation-delay: 0.1s; }
+        .section:nth-child(3) { animation-delay: 0.2s; }
+        .section:nth-child(4) { animation-delay: 0.3s; }
+        .section:nth-child(5) { animation-delay: 0.4s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 28px;
+            background: var(--gradient);
+            border-radius: 2px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #f6f8fb 0%, #ffffff 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .metric-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .status-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .status-warning {
+            background: #fef3c7;
+            color: #f59e0b;
+        }
+
+        .status-info {
+            background: #dbeafe;
+            color: #3b82f6;
+        }
+
+        .platform-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+        }
+
+        .platform-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .platform-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .platform-table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .platform-table tbody tr:hover {
+            background: #f8fafc;
+            transform: scale(1.02);
+        }
+
+        .platform-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .platform-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient);
+            border-radius: 4px;
+            transition: width 1.5s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .competitor-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .competitor-card:hover {
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            transform: translateX(10px);
+        }
+
+        .competitor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .competitor-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .competitor-metrics {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .competitor-metric {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .competitor-metric-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+        }
+
+        .competitor-metric-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .action-card {
+            background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border-left: 4px solid #f59e0b;
+            transition: all 0.3s ease;
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.2);
+        }
+
+        .action-card h4 {
+            color: #92400e;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .action-list {
+            list-style: none;
+        }
+
+        .action-list li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: #78350f;
+        }
+
+        .action-list li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #f59e0b;
+            font-weight: bold;
+        }
+
+        .chart-container {
+            height: 300px;
+            margin: 2rem 0;
+            position: relative;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .priority-matrix {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 1rem;
+            height: 400px;
+            margin: 2rem 0;
+            position: relative;
+        }
+
+        .matrix-quadrant {
+            background: white;
+            border: 2px dashed #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .matrix-quadrant:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .matrix-label {
+            position: absolute;
+            font-size: 0.75rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .matrix-items {
+            margin-top: 1rem;
+        }
+
+        .priority-tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            margin: 0.25rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .priority-tag:hover {
+            transform: scale(1.1);
+        }
+
+        .p1 {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .p2 {
+            background: #fed7aa;
+            color: #ea580c;
+        }
+
+        .p3 {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .p4 {
+            background: #e0e7ff;
+            color: #4f46e5;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: white;
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            header {
+                padding: 1.5rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-left h1 {
+                font-size: 1.75rem;
+            }
+
+            .section {
+                padding: 1.5rem;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .platform-table {
+                font-size: 0.875rem;
+            }
+
+            .platform-table th, .platform-table td {
+                padding: 0.75rem 0.5rem;
+            }
+        }
+
+        .loading-animation {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0,0,0,0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-warning {
+            background: #fed7aa;
+            color: #92400e;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>Eureka扫地机器人 GEO基础诊断报告</h1>
+                    <div class="meta-info">
+                        <div class="meta-item">
+                            <span class="meta-label">项目名称</span>
+                            <span class="meta-value">Eureka品牌AI可见度优化项目</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">诊断周期</span>
+                            <span class="meta-value">2025年8月第1-4周</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">诊断团队</span>
+                            <span class="meta-value">GEO专项小组</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">报告版本</span>
+                            <span class="meta-value">V1.0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section class="section">
+            <h2 class="section-title">第1周：AI可见度基线测试报告</h2>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">总体提及率（mention_rate）</div>
+                    <div class="metric-value">12.5%</div>
+                    <div class="metric-status">
+                        <span class="status-icon status-warning">⚠️</span>
+                        <span>低于行业均值 18.3%</span>
+                    </div>
+                    <div class="progress-bar" style="margin-top: 1rem;">
+                        <div class="progress-fill" style="width: 68%"></div>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">AI份额（SoV-AI）</div>
+                    <div class="metric-value">8.7%</div>
+                    <div class="metric-status">
+                        <span class="status-icon status-info">📊</span>
+                        <span>基准值</span>
+                    </div>
+                    <div class="progress-bar" style="margin-top: 1rem;">
+                        <div class="progress-fill" style="width: 8.7%"></div>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">引用分数（citation_score）</div>
+                    <div class="metric-value">3.2/10</div>
+                    <div class="metric-status">
+                        <span class="status-icon status-warning">⚠️</span>
+                        <span>需改进（行业均值 4.5/10）</span>
+                    </div>
+                    <div class="progress-bar" style="margin-top: 1rem;">
+                        <div class="progress-fill" style="width: 32%"></div>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">平台覆盖率（platform_reach）</div>
+                    <div class="metric-value">60%</div>
+                    <div class="metric-status">
+                        <span class="status-icon status-warning">⚠️</span>
+                        <span>需扩展（行业均值 80%）</span>
+                    </div>
+                    <div class="progress-bar" style="margin-top: 1rem;">
+                        <div class="progress-fill" style="width: 60%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin: 2rem 0 1rem; color: #334155;">分平台表现细分</h3>
+            <table class="platform-table">
+                <thead>
+                    <tr>
+                        <th>平台</th>
+                        <th>提及率</th>
+                        <th>排序位置</th>
+                        <th>引用质量</th>
+                        <th>主要问题</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>ChatGPT</strong></td>
+                        <td>15.0%</td>
+                        <td>4-6位</td>
+                        <td><span class="badge badge-warning">中等</span></td>
+                        <td>品牌认知弱</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Perplexity</strong></td>
+                        <td>18.0%</td>
+                        <td>3-5位</td>
+                        <td><span class="badge badge-success">较好</span></td>
+                        <td>数据源缺失</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Gemini</strong></td>
+                        <td>8.0%</td>
+                        <td>6-8位</td>
+                        <td><span class="badge badge-danger">较差</span></td>
+                        <td>内容匹配低</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Claude</strong></td>
+                        <td>10.0%</td>
+                        <td>5-7位</td>
+                        <td><span class="badge badge-warning">中等</span></td>
+                        <td>专业度不足</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Bing Chat</strong></td>
+                        <td>11.5%</td>
+                        <td>4-6位</td>
+                        <td><span class="badge badge-warning">中等</span></td>
+                        <td>更新滞后</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">第2周：竞品分析与差距识别</h2>
+            
+            <div class="competitor-card">
+                <div class="competitor-header">
+                    <span class="competitor-name">iRobot</span>
+                    <span style="color: #10b981; font-weight: 600;">市场领导者</span>
+                </div>
+                <div class="competitor-metrics">
+                    <div class="competitor-metric">
+                        <span class="competitor-metric-label">市场定位</span>
+                        <span class="competitor-metric-value">高端智能</span>
+                    </div>
+                    <div class="competitor-metric">
+                        <span class="competitor-metric-label">AI提及率</span>
+                        <span class="competitor-metric-value">38.5%</span>
+                    </div>
+                    <div class="competitor-metric">
+                        <span class="competitor-metric-label">SoV-AI</span>
+                        <span class="competitor-metric-value">32.1%</span>
+                    </div>
+                    <div class="competitor-metric">
+                        <span class="competitor-metric-label">主要优势</span>
+                        <span class="competitor-metric-value">技术领先，品牌历史</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="competitor-card">
+                <div class="competitor-header">
+                    <span class="competitor-name">Roborock</span>
+                    <span style="color: #3b82f6; font-weight: 600;">强势竞争者</span>
+                </div>
+                <div class="competitor-metrics">
+                    <div class="competitor-metric">
+                        <span class="competitor-metric-label">市场定位</span>
+                        <span class="competitor-metric-value">性价比</span>
+                    </div>
+                    <div class="competitor-metric">
+                        <span class="competitor-metric-label">AI提及率</span>
+                        <span class="competitor-metric-value">28.0%</span>
+                    </div>
+                    <div class="competitor-metric">
+                        <span class="competitor-metric-label">SoV-AI</span>
+                        <span class="competitor-metric-value">23.4%</span>
+                    </div>
+                    <div class="competitor-metric">
+                        <span class="competitor-metric-label">主要优势</span>
+                        <span class="competitor-metric-value">功能全面，用户口碑</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="competitor-card" style="background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);">
+                <div class="competitor-header">
+                    <span class="competitor-name">Eureka</span>
+                    <span style="color: #dc2626; font-weight: 600;">当前状态</span>
+                </div>
+                <div class="competitor-metrics">
+                    <div class="competitor-metric">
+                        <span class="competitor-metric-label">市场定位</span>
+                        <span class="competitor-metric-value">传统品牌</span>
+                    </div>
+                    <div class="competitor-metric">
+                        <span class="competitor-metric-label">AI提及率</span>
+                        <span class="competitor-metric-value">12.5%</span>
+                    </div>
+                    <div class="competitor-metric">
+                        <span class="competitor-metric-label">SoV-AI</span>
+                        <span class="competitor-metric-value">8.7%</span>
+                    </div>
+                    <div class="competitor-metric">
+                        <span class="competitor-metric-label">主要优势</span>
+                        <span class="competitor-metric-value">百年历史，经典传承</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">第3-4周：内容资产盘点报告</h2>
+            
+            <div class="chart-container">
+                <h3 style="margin-bottom: 1.5rem; color: #334155;">内容改造优先级矩阵</h3>
+                <div class="priority-matrix">
+                    <div class="matrix-quadrant">
+                        <span class="matrix-label" style="top: 10px; left: 10px;">高影响力 / 低难度</span>
+                        <div class="matrix-items">
+                            <span class="priority-tag p1">P1: 产品对比页面</span>
+                            <span class="priority-tag p1">P1: FAQ升级</span>
+                        </div>
+                    </div>
+                    <div class="matrix-quadrant">
+                        <span class="matrix-label" style="top: 10px; right: 10px;">高影响力 / 高难度</span>
+                        <div class="matrix-items">
+                            <span class="priority-tag p2">P2: 技术白皮书</span>
+                            <span class="priority-tag p2">P2: 视频内容</span>
+                        </div>
+                    </div>
+                    <div class="matrix-quadrant">
+                        <span class="matrix-label" style="bottom: 10px; left: 10px;">低影响力 / 低难度</span>
+                        <div class="matrix-items">
+                            <span class="priority-tag p3">P3: 博客更新</span>
+                            <span class="priority-tag p3">P3: 用户评价</span>
+                        </div>
+                    </div>
+                    <div class="matrix-quadrant">
+                        <span class="matrix-label" style="bottom: 10px; right: 10px;">低影响力 / 高难度</span>
+                        <div class="matrix-items">
+                            <span class="priority-tag p4">P4: 社区内容</span>
+                            <span class="priority-tag p4">P4: 使用技巧</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">执行建议与下一步行动</h2>
+            
+            <div class="action-grid">
+                <div class="action-card">
+                    <h4>🚨 紧急修复</h4>
+                    <ul class="action-list">
+                        <li>为所有产品页面添加Schema标记</li>
+                        <li>创建Eureka vs 竞品对比页面</li>
+                        <li>更新最新产品J20的详细规格</li>
+                    </ul>
+                </div>
+                
+                <div class="action-card">
+                    <h4>📝 内容创建</h4>
+                    <ul class="action-list">
+                        <li>撰写"2025年Eureka扫地机器人完整指南"</li>
+                        <li>制作"Eureka技术演进历程"信息图</li>
+                        <li>录制产品使用视频教程</li>
+                    </ul>
+                </div>
+                
+                <div class="action-card">
+                    <h4>⚙️ 系统配置</h4>
+                    <ul class="action-list">
+                        <li>在GEO系统中设置每日监测任务</li>
+                        <li>配置竞品动态告警</li>
+                        <li>建立周报自动生成机制</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="margin-top: 3rem; padding: 2rem; background: linear-gradient(135deg, #e0f2fe 0%, #ddd6fe 100%); border-radius: 12px;">
+                <h3 style="color: #1e293b; margin-bottom: 1rem;">📈 预期成效</h3>
+                <p style="color: #475569; line-height: 1.8;">
+                    通过第一阶段诊断，我们明确了Eureka在AI平台的现状和改进方向。预计经过3个月的优化，可实现：
+                </p>
+                <ul style="margin-top: 1rem; list-style: none; padding: 0;">
+                    <li style="padding: 0.5rem 0; color: #334155;">
+                        <strong>✓ AI提及率</strong> 从12.5%提升至25%
+                    </li>
+                    <li style="padding: 0.5rem 0; color: #334155;">
+                        <strong>✓ SoV-AI</strong> 从8.7%提升至15%
+                    </li>
+                    <li style="padding: 0.5rem 0; color: #334155;">
+                        <strong>✓ 新增搜索场景</strong> 覆盖率提升50%
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <div class="footer">
+            <p>报告生成时间：2025年8月9日 | 下一步：启动第二阶段试点优化工作</p>
+        </div>
+    </div>
+
+    <script>
+        // 动态加载进度条动画
+        document.addEventListener('DOMContentLoaded', function() {
+            const progressBars = document.querySelectorAll('.progress-fill');
+            progressBars.forEach((bar, index) => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 100 + (index * 200));
+            });
+
+            // 数字增长动画
+            const metricValues = document.querySelectorAll('.metric-value');
+            metricValues.forEach(value => {
+                const text = value.textContent;
+                const number = parseFloat(text);
+                if (!isNaN(number)) {
+                    let current = 0;
+                    const increment = number / 30;
+                    const timer = setInterval(() => {
+                        current += increment;
+                        if (current >= number) {
+                            current = number;
+                            clearInterval(timer);
+                            value.textContent = text;
+                        } else {
+                            value.textContent = current.toFixed(1) + text.replace(/[\d.]+/, '');
+                        }
+                    }, 50);
+                }
+            });
+
+            // 添加滚动显示动画
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationPlayState = 'running';
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.animationPlayState = 'paused';
+                observer.observe(section);
+            });
+        });
+
+        // 添加交互效果
+        document.querySelectorAll('.metric-card').forEach(card => {
+            card.addEventListener('click', function() {
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 200);
+            });
+        });
+
+        // 优先级标签点击效果
+        document.querySelectorAll('.priority-tag').forEach(tag => {
+            tag.addEventListener('click', function() {
+                const originalBg = this.style.background;
+                this.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                this.style.color = 'white';
+                setTimeout(() => {
+                    this.style.background = '';
+                    this.style.color = '';
+                }, 1000);
+            });
+        });
+    </script>
+</body>
+</html>

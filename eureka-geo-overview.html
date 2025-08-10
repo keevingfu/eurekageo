@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka Robot - GEO Project Analytics Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+        }
+
+        .dashboard {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(100, 116, 139, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            color: #94a3b8;
+            font-size: 1rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid rgba(100, 116, 139, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(96, 165, 250, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .metric-card .label {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .metric-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 8px;
+        }
+
+        .metric-card .change {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.875rem;
+        }
+
+        .metric-card .change.positive {
+            color: #10b981;
+        }
+
+        .metric-card .change.negative {
+            color: #ef4444;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(100, 116, 139, 0.3);
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 0.95rem;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab:hover {
+            color: #e2e8f0;
+        }
+
+        .tab.active {
+            color: #60a5fa;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #60a5fa, #a78bfa);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chart-container {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(100, 116, 139, 0.2);
+        }
+
+        .chart-container h3 {
+            color: #f1f5f9;
+            font-size: 1.25rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .chart {
+            width: 100%;
+            height: 400px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+        }
+
+        .insight-box {
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.1) 0%, rgba(167, 139, 250, 0.1) 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 15px;
+            border: 1px solid rgba(96, 165, 250, 0.3);
+        }
+
+        .insight-box h4 {
+            color: #60a5fa;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .insight-box p {
+            color: #cbd5e1;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .recommendation-list {
+            list-style: none;
+            margin-top: 12px;
+        }
+
+        .recommendation-list li {
+            padding: 8px 0;
+            color: #cbd5e1;
+            display: flex;
+            align-items: start;
+            gap: 10px;
+        }
+
+        .recommendation-list li::before {
+            content: '→';
+            color: #60a5fa;
+            font-weight: bold;
+            margin-top: 2px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(100, 116, 139, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #60a5fa, #a78bfa);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.active {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.5);
+        }
+
+        .status-badge.pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.5);
+        }
+
+        .status-badge.critical {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>Eureka Robot - GEO Project Analytics</h1>
+            <p class="subtitle">Generative Engine Optimization Performance Dashboard</p>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="label">AI Answer Citation Rate</div>
+                <div class="value">3.2%</div>
+                <div class="change negative">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
+                    </svg>
+                    -0.5% vs last month
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 32%"></div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="label">Brand Mentions in AI</div>
+                <div class="value">1,247</div>
+                <div class="change positive">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                    </svg>
+                    +12.3% vs last month
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 62%"></div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="label">Landing Page CTR</div>
+                <div class="value">8.7%</div>
+                <div class="change positive">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                    </svg>
+                    +1.2% vs last month
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 87%"></div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="label">AI Traffic Conversion</div>
+                <div class="value">2.4%</div>
+                <div class="change negative">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
+                    </svg>
+                    -0.3% vs last month
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 48%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('overview')">Overview</button>
+            <button class="tab" onclick="switchTab('market')">Market Analysis</button>
+            <button class="tab" onclick="switchTab('competition')">Competition</button>
+            <button class="tab" onclick="switchTab('content')">Content Performance</button>
+            <button class="tab" onclick="switchTab('optimization')">Optimization Progress</button>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <div class="grid-2">
+                <div class="chart-container">
+                    <h3>AI Platform Performance Distribution</h3>
+                    <div id="platformChart" class="chart"></div>
+                    <div class="insight-box">
+                        <h4>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                            </svg>
+                            Key Insight
+                        </h4>
+                        <p>ChatGPT shows the highest citation rate (42%) but Bing Chat drives better conversion (35%). Focus on optimizing content for both platforms' different ranking algorithms.</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>Monthly Trend Analysis</h3>
+                    <div id="trendChart" class="chart"></div>
+                    <div class="insight-box">
+                        <h4>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 11l3 3L22 4"></path>
+                                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
+                            </svg>
+                            Recommendations
+                        </h4>
+                        <ul class="recommendation-list">
+                            <li>Implement structured data markup for all product pages</li>
+                            <li>Create AI-friendly FAQ sections with clear Q&A format</li>
+                            <li>Increase content update frequency to maintain relevance</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3>Conversion Funnel Analysis</h3>
+                <div id="funnelChart" class="chart"></div>
+                <div class="insight-box">
+                    <h4>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                        </svg>
+                        Critical Action Points
+                    </h4>
+                    <p>Major drop-off occurs between landing page visit and add-to-cart (68% loss). Implement trust signals and clearer CTAs on landing pages. The checkout abandonment rate (45%) suggests payment flow optimization is needed.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Analysis Tab -->
+        <div id="market" class="tab-content">
+            <div class="grid-2">
+                <div class="chart-container">
+                    <h3>Regional Performance Comparison</h3>
+                    <div id="regionalChart" class="chart"></div>
+                    <div class="insight-box">
+                        <h4>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                            </svg>
+                            Regional Insights
+                        </h4>
+                        <p>North America shows 2.3x better AI visibility than Europe. German and French markets need localized content urgently. UK performs best in Europe with 67% of NA's citation rate.</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>Market Share in AI Responses</h3>
+                    <div id="marketShareChart" class="chart"></div>
+                    <div class="insight-box">
+                        <h4>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                            </svg>
+                            Market Strategy
+                        </h4>
+                        <ul class="recommendation-list">
+                            <li>Focus on German market - highest growth potential with low current share</li>
+                            <li>Strengthen UK position as European hub</li>
+                            <li>Maintain US dominance while expanding Canadian presence</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Competition Tab -->
+        <div id="competition" class="tab-content">
+            <div class="chart-container">
+                <h3>Competitive Positioning Matrix</h3>
+                <div id="competitiveChart" class="chart"></div>
+                <div class="insight-box">
+                    <h4>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                        </svg>
+                        Competitive Analysis
+                    </h4>
+                    <p>iRobot dominates with 45% AI citation share. Eureka ranks 4th with 12% share. Main gap: lack of authoritative third-party reviews and Wikipedia presence. Neato's recent content strategy boosted their visibility by 34%.</p>
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="chart-container">
+                    <h3>Feature Comparison in AI Mentions</h3>
+                    <div id="featureComparisonChart" class="chart"></div>
+                </div>
+                <div class="chart-container">
+                    <h3>Content Authority Score</h3>
+                    <div id="authorityChart" class="chart"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Performance Tab -->
+        <div id="content" class="tab-content">
+            <div class="grid-2">
+                <div class="chart-container">
+                    <h3>Content Type Performance</h3>
+                    <div id="contentTypeChart" class="chart"></div>
+                    <div class="insight-box">
+                        <h4>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                            Content Optimization Priority
+                        </h4>
+                        <ul class="recommendation-list">
+                            <li>FAQ sections show 3x higher citation rate - expand coverage</li>
+                            <li>Product comparison pages underperform - needs restructuring</li>
+                            <li>Technical specifications rarely cited - simplify language</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>Topic Coverage Analysis</h3>
+                    <div id="topicCoverageChart" class="chart"></div>
+                    <div class="insight-box">
+                        <h4>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M12 6v6l4 2"></path>
+                            </svg>
+                            Content Gaps
+                        </h4>
+                        <p>Missing content on: pet hair handling (78% of competitor mentions), quiet operation modes (65%), and smart home integration (89%). These topics drive 45% of category AI responses.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Optimization Progress Tab -->
+        <div id="optimization" class="tab-content">
+            <div class="chart-container">
+                <h3>Project Implementation Timeline</h3>
+                <div id="timelineChart" class="chart"></div>
+            </div>
+            <div class="grid-2">
+                <div class="chart-container">
+                    <h3>Task Completion Status</h3>
+                    <div id="taskStatusChart" class="chart"></div>
+                    <div class="insight-box">
+                        <h4>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                            Progress Update
+                        </h4>
+                        <p>Phase 1 (AI Visibility Diagnosis) 78% complete. Content structure optimization showing early positive results (+15% citation rate). Technical SEO improvements pending will unlock 25% performance gain.</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>Team Resource Allocation</h3>
+                    <div id="resourceChart" class="chart"></div>
+                    <div class="insight-box">
+                        <h4>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            Resource Recommendations
+                        </h4>
+                        <ul class="recommendation-list">
+                            <li>Add dedicated CRO specialist - current conversion bottleneck</li>
+                            <li>Increase content team capacity by 40% for Q2 targets</li>
+                            <li>Technical SEO resource fully utilized - consider additional support</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Initialize charts for the active tab
+            setTimeout(() => {
+                initChartsForTab(tabName);
+            }, 100);
+        }
+
+        // Initialize charts based on active tab
+        function initChartsForTab(tabName) {
+            switch(tabName) {
+                case 'overview':
+                    initOverviewCharts();
+                    break;
+                case 'market':
+                    initMarketCharts();
+                    break;
+                case 'competition':
+                    initCompetitionCharts();
+                    break;
+                case 'content':
+                    initContentCharts();
+                    break;
+                case 'optimization':
+                    initOptimizationCharts();
+                    break;
+            }
+        }
+
+        // Overview Charts
+        function initOverviewCharts() {
+            // Platform Performance Chart
+            const platformChart = echarts.init(document.getElementById('platformChart'));
+            platformChart.setOption({
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c}%'
+                },
+                series: [{
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    data: [
+                        { value: 42, name: 'ChatGPT', itemStyle: { color: '#60a5fa' } },
+                        { value: 35, name: 'Bing Chat', itemStyle: { color: '#a78bfa' } },
+                        { value: 18, name: 'Google Bard', itemStyle: { color: '#34d399' } },
+                        { value: 5, name: 'Others', itemStyle: { color: '#fbbf24' } }
+                    ],
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    },
+                    label: {
+                        color: '#e2e8f0'
+                    }
+                }]
+            });
+
+            // Trend Chart
+            const trendChart = echarts.init(document.getElementById('trendChart'));
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+            trendChart.setOption({
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['Citations', 'CTR', 'Conversions'],
+                    textStyle: { color: '#94a3b8' }
+                },
+                xAxis: {
+                    type: 'category',
+                    data: months,
+                    axisLine: { lineStyle: { color: '#475569' } },
+                    axisLabel: { color: '#94a3b8' }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLine: { lineStyle: { color: '#475569' } },
+                    axisLabel: { color: '#94a3b8' },
+                    splitLine: { lineStyle: { color: '#334155' } }
+                },
+                series: [
+                    {
+                        name: 'Citations',
+                        type: 'line',
+                        data: [2.1, 2.4, 2.8, 3.0, 3.1, 3.2],
+                        smooth: true,
+                        lineStyle: { color: '#60a5fa', width: 3 },
+                        itemStyle: { color: '#60a5fa' }
+                    },
+                    {
+                        name: 'CTR',
+                        type: 'line',
+                        data: [6.5, 7.0, 7.8, 8.2, 8.5, 8.7],
+                        smooth: true,
+                        lineStyle: { color: '#a78bfa', width: 3 },
+                        itemStyle: { color: '#a78bfa' }
+                    },
+                    {
+                        name: 'Conversions',
+                        type: 'line',
+                        data: [2.8, 2.6, 2.5, 2.6, 2.5, 2.4],
+                        smooth: true,
+                        lineStyle: { color: '#f87171', width: 3 },
+                        itemStyle: { color: '#f87171' }
+                    }
+                ],
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                }
+            });
+
+            // Funnel Chart
+            const funnelChart = echarts.init(document.getElementById('funnelChart'));
+            funnelChart.setOption({
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c} ({d}%)'
+                },
+                series: [{
+                    type: 'funnel',
+                    left: '10%',
+                    width: '80%',
+                    label: {
+                        position: 'inside',
+                        color: '#fff'
+                    },
+                    itemStyle: {
+                        borderColor: '#1e293b',
+                        borderWidth: 2
+                    },
+                    data: [
+                        { value: 100, name: 'AI Answer Views', itemStyle: { color: '#60a5fa' } },
+                        { value: 8.7, name: 'Landing Page Visits', itemStyle: { color: '#818cf8' } },
+                        { value: 2.8, name: 'Add to Cart', itemStyle: { color: '#a78bfa' } },
+                        { value: 1.5, name: 'Checkout', itemStyle: { color: '#c084fc' } },
+                        { value: 1.2, name: 'Purchase', itemStyle: { color: '#e879f9' } }
+                    ]
+                }]
+            });
+        }
+
+        // Market Charts
+        function initMarketCharts() {
+            // Regional Chart
+            const regionalChart = echarts.init(document.getElementById('regionalChart'));
+            regionalChart.setOption({
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                legend: {
+                    data: ['Citation Rate', 'CTR', 'Conversion'],
+                    textStyle: { color: '#94a3b8' }
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['USA', 'Canada', 'UK', 'Germany', 'France'],
+                    axisLine: { lineStyle: { color: '#475569' } },
+                    axisLabel: { color: '#94a3b8' }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLine: { lineStyle: { color: '#475569' } },
+                    axisLabel: { color: '#94a3b8' },
+                    splitLine: { lineStyle: { color: '#334155' } }
+                },
+                series: [
+                    {
+                        name: 'Citation Rate',
+                        type: 'bar',
+                        data: [4.5, 3.8, 3.0, 1.8, 1.5],
+                        itemStyle: { color: '#60a5fa' }
+                    },
+                    {
+                        name: 'CTR',
+                        type: 'bar',
+                        data: [10.2, 9.5, 8.1, 6.2, 5.8],
+                        itemStyle: { color: '#a78bfa' }
+                    },
+                    {
+                        name: 'Conversion',
+                        type: 'bar',
+                        data: [3.2, 2.8, 2.2, 1.5, 1.3],
+                        itemStyle: { color: '#34d399' }
+                    }
+                ],
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                }
+            });
+
+            // Market Share Chart
+            const marketShareChart = echarts.init(document.getElementById('marketShareChart'));
+            marketShareChart.setOption({
+                tooltip: {
+                    trigger: 'axis'
+                },
+                radar: {
+                    indicator: [
+                        { name: 'USA', max: 100 },
+                        { name: 'Canada', max: 100 },
+                        { name: 'UK', max: 100 },
+                        { name: 'Germany', max: 100 },
+                        { name: 'France', max: 100 }
+                    ],
+                    axisName: { color: '#94a3b8' },
+                    splitLine: { lineStyle: { color: '#334155' } },
+                    splitArea: {
+                        areaStyle: {
+                            color: ['rgba(100, 116, 139, 0.1)', 'rgba(100, 116, 139, 0.05)']
+                        }
+                    }
+                },
+                series: [{
+                    type: 'radar',
+                    data: [
+                        {
+                            value: [85, 72, 67, 42, 38],
+                            name: 'Current Performance',
+                            lineStyle: { color: '#60a5fa', width: 2 },
+                            areaStyle: { color: 'rgba(96, 165, 250, 0.3)' }
+                        },
+                        {
+                            value: [95, 85, 80, 70, 65],
+                            name: 'Target',
+                            lineStyle: { color: '#34d399', width: 2, type: 'dashed' },
+                            areaStyle: { color: 'rgba(52, 211, 153, 0.1)' }
+                        }
+                    ]
+                }],
+                legend: {
+                    bottom: 0,
+                    textStyle: { color: '#94a3b8' }
+                }
+            });
+        }
+
+        // Competition Charts
+        function initCompetitionCharts() {
+            // Competitive Positioning
+            const competitiveChart = echarts.init(document.getElementById('competitiveChart'));
+            competitiveChart.setOption({
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'cross' }
+                },
+                xAxis: {
+                    type: 'value',
+                    name: 'AI Citation Rate (%)',
+                    nameLocation: 'middle',
+                    nameGap: 30,
+                    axisLine: { lineStyle: { color: '#475569' } },
+                    axisLabel: { color: '#94a3b8' },
+                    splitLine: { lineStyle: { color: '#334155' } }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Conversion Rate (%)',
+                    nameLocation: 'middle',
+                    nameGap: 30,
+                    axisLine: { lineStyle: { color: '#475569' } },
+                    axisLabel: { color: '#94a3b8' },
+                    splitLine: { lineStyle: { color: '#334155' } }
+                },
+                series: [{
+                    type: 'scatter',
+                    symbolSize: function (data) {
+                        return Math.sqrt(data[2]) * 5;
+                    },
+                    data: [
+                        [45, 4.2, 1000, 'iRobot'],
+                        [35, 3.8, 800, 'Neato'],
+                        [28, 3.5, 600, 'Roborock'],
+                        [12, 2.4, 400, 'Eureka'],
+                        [8, 2.0, 200, 'Others']
+                    ],
+                    label: {
+                        show: true,
+                        formatter: function(param) {
+                            return param.data[3];
+                        },
+                        position: 'top',
+                        color: '#e2e8f0'
+                    },
+                    itemStyle: {
+                        color: function(params) {
+                            const colors = ['#ef4444', '#f59e0b', '#fbbf24', '#60a5fa', '#94a3b8'];
+                            return colors[params.dataIndex];
+                        }
+                    }
+                }],
+                grid: {
+                    left: '10%',
+                    right: '10%',
+                    bottom: '10%',
+                    containLabel: true
+                }
+            });
+
+            // Feature Comparison
+            const featureComparisonChart = echarts.init(document.getElementById('featureComparisonChart'));
+            featureComparisonChart.setOption({
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                legend: {
+                    data: ['Eureka', 'iRobot', 'Neato'],
+                    textStyle: { color: '#94a3b8' }
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['Suction', 'Battery', 'Smart', 'Quiet', 'Pet'],
+                    axisLine: { lineStyle: { color: '#475569' } },
+                    axisLabel: { color: '#94a3b8' }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLine: { lineStyle: { color: '#475569' } },
+                    axisLabel: { color: '#94a3b8' },
+                    splitLine: { lineStyle: { color: '#334155' } }
+                },
+                series: [
+                    {
+                        name: 'Eureka',
+                        type: 'bar',
+                        data: [65, 70, 45, 80, 40],
+                        itemStyle: { color: '#60a5fa' }
+                    },
+                    {
+                        name: 'iRobot',
+                        type: 'bar',
+                        data: [90, 85, 95, 75, 88],
+                        itemStyle: { color: '#ef4444' }
+                    },
+                    {
+                        name: 'Neato',
+                        type: 'bar',
+                        data: [75, 80, 70, 70, 75],
+                        itemStyle: { color: '#f59e0b' }
+                    }
+                ],
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                }
+            });
+
+            // Authority Score
+            const authorityChart = echarts.init(document.getElementById('authorityChart'));
+            authorityChart.setOption({
+                tooltip: {
+                    trigger: 'item'
+                },
+                series: [{
+                    type: 'gauge',
+                    min: 0,
+                    max: 100,
+                    splitNumber: 10,
+                    radius: '80%',
+                    axisLine: {
+                        lineStyle: {
+                            width: 20,
+                            color: [
+                                [0.3, '#ef4444'],
+                                [0.7, '#fbbf24'],
+                                [1, '#10b981']
+                            ]
+                        }
+                    },
+                    pointer: {
+                        itemStyle: {
+                            color: '#60a5fa'
+                        }
+                    },
+                    axisTick: {
+                        distance: -20,
+                        length: 10,
+                        lineStyle: {
+                            color: '#475569',
+                            width: 2
+                        }
+                    },
+                    splitLine: {
+                        distance: -25,
+                        length: 25,
+                        lineStyle: {
+                            color: '#475569',
+                            width: 3
+                        }
+                    },
+                    axisLabel: {
+                        color: '#94a3b8',
+                        distance: 30,
+                        fontSize: 12
+                    },
+                    detail: {
+                        valueAnimation: true,
+                        formatter: '{value}',
+                        color: '#e2e8f0',
+                        fontSize: 24,
+                        offsetCenter: [0, '70%']
+                    },
+                    title: {
+                        color: '#94a3b8',
+                        fontSize: 14,
+                        offsetCenter: [0, '90%']
+                    },
+                    data: [{
+                        value: 42,
+                        name: 'Authority Score'
+                    }]
+                }]
+            });
+        }
+
+        // Content Charts
+        function initContentCharts() {
+            // Content Type Performance
+            const contentTypeChart = echarts.init(document.getElementById('contentTypeChart'));
+            contentTypeChart.setOption({
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'cross' }
+                },
+                legend: {
+                    data: ['Citation Rate', 'Engagement'],
+                    textStyle: { color: '#94a3b8' }
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['FAQ', 'Reviews', 'Specs', 'Guides', 'Blog'],
+                    axisLine: { lineStyle: { color: '#475569' } },
+                    axisLabel: { color: '#94a3b8' }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLine: { lineStyle: { color: '#475569' } },
+                    axisLabel: { color: '#94a3b8' },
+                    splitLine: { lineStyle: { color: '#334155' } }
+                },
+                series: [
+                    {
+                        name: 'Citation Rate',
+                        type: 'bar',
+                        data: [8.5, 6.2, 2.1, 5.8, 3.2],
+                        itemStyle: { 
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: '#60a5fa' },
+                                { offset: 1, color: '#3730a3' }
+                            ])
+                        }
+                    },
+                    {
+                        name: 'Engagement',
+                        type: 'line',
+                        data: [85, 72, 45, 68, 52],
+                        smooth: true,
+                        lineStyle: { color: '#a78bfa', width: 3 },
+                        itemStyle: { color: '#a78bfa' }
+                    }
+                ],
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                }
+            });
+
+            // Topic Coverage
+            const topicCoverageChart = echarts.init(document.getElementById('topicCoverageChart'));
+            const topics = [
+                { name: 'Pet Hair', value: 22 },
+                { name: 'Quiet Mode', value: 35 },
+                { name: 'Smart Home', value: 11 },
+                { name: 'Battery Life', value: 78 },
+                { name: 'Navigation', value: 65 },
+                { name: 'Maintenance', value: 89 },
+                { name: 'Price', value: 92 },
+                { name: 'Warranty', value: 45 }
+            ];
+            
+            topicCoverageChart.setOption({
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c}% coverage'
+                },
+                series: [{
+                    type: 'treemap',
+                    data: topics.map(topic => ({
+                        name: topic.name,
+                        value: topic.value,
+                        itemStyle: {
+                            color: topic.value < 40 ? '#ef4444' : 
+                                   topic.value < 70 ? '#fbbf24' : '#10b981'
+                        },
+                        label: {
+                            show: true,
+                            color: '#fff'
+                        }
+                    })),
+                    levels: [{
+                        itemStyle: {
+                            borderColor: '#1e293b',
+                            borderWidth: 2,
+                            gapWidth: 2
+                        }
+                    }]
+                }]
+            });
+        }
+
+        // Optimization Charts
+        function initOptimizationCharts() {
+            // Timeline Chart
+            const timelineChart = echarts.init(document.getElementById('timelineChart'));
+            const taskData = [
+                { name: 'AI Visibility Diagnosis', start: 0, end: 30, progress: 78 },
+                { name: 'Content Structure Optimization', start: 20, end: 60, progress: 45 },
+                { name: 'Technical SEO Implementation', start: 30, end: 70, progress: 25 },
+                { name: 'Landing Page Optimization', start: 50, end: 80, progress: 10 },
+                { name: 'Conversion Path Refinement', start: 70, end: 100, progress: 0 }
+            ];
+
+            timelineChart.setOption({
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                xAxis: {
+                    type: 'value',
+                    name: 'Days',
+                    max: 100,
+                    axisLine: { lineStyle: { color: '#475569' } },
+                    axisLabel: { color: '#94a3b8' },
+                    splitLine: { lineStyle: { color: '#334155' } }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: taskData.map(t => t.name),
+                    axisLine: { lineStyle: { color: '#475569' } },
+                    axisLabel: { color: '#94a3b8' }
+                },
+                series: [
+                    {
+                        type: 'custom',
+                        renderItem: function(params, api) {
+                            const categoryIndex = api.value(0);
+                            const start = api.coord([taskData[categoryIndex].start, categoryIndex]);
+                            const end = api.coord([taskData[categoryIndex].end, categoryIndex]);
+                            const height = api.size([0, 1])[1] * 0.6;
+                            
+                            const rectShape = echarts.graphic.clipRectByRect({
+                                x: start[0],
+                                y: start[1] - height / 2,
+                                width: end[0] - start[0],
+                                height: height
+                            }, {
+                                x: params.coordSys.x,
+                                y: params.coordSys.y,
+                                width: params.coordSys.width,
+                                height: params.coordSys.height
+                            });
+
+                            return rectShape && {
+                                type: 'rect',
+                                shape: rectShape,
+                                style: api.style({
+                                    fill: taskData[categoryIndex].progress > 50 ? '#10b981' : 
+                                          taskData[categoryIndex].progress > 20 ? '#fbbf24' : '#ef4444'
+                                })
+                            };
+                        },
+                        data: taskData.map((t, index) => index)
+                    }
+                ],
+                grid: {
+                    left: '20%',
+                    right: '5%',
+                    bottom: '10%',
+                    containLabel: true
+                }
+            });
+
+            // Task Status Chart
+            const taskStatusChart = echarts.init(document.getElementById('taskStatusChart'));
+            taskStatusChart.setOption({
+                tooltip: {
+                    trigger: 'item'
+                },
+                series: [{
+                    type: 'pie',
+                    radius: '60%',
+                    data: [
+                        { value: 15, name: 'Completed', itemStyle: { color: '#10b981' } },
+                        { value: 8, name: 'In Progress', itemStyle: { color: '#fbbf24' } },
+                        { value: 5, name: 'Pending', itemStyle: { color: '#60a5fa' } },
+                        { value: 2, name: 'Blocked', itemStyle: { color: '#ef4444' } }
+                    ],
+                    label: {
+                        color: '#e2e8f0'
+                    },
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }]
+            });
+
+            // Resource Allocation Chart
+            const resourceChart = echarts.init(document.getElementById('resourceChart'));
+            resourceChart.setOption({
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['PM', 'GEO Strategy', 'Content', 'Tech SEO', 'Data', 'CRO'],
+                    axisLine: { lineStyle: { color: '#475569' } },
+                    axisLabel: { color: '#94a3b8', rotate: 45 }
+                },
+                yAxis: {
+                    type: 'value',
+                    max: 100,
+                    axisLine: { lineStyle: { color: '#475569' } },
+                    axisLabel: { 
+                        color: '#94a3b8',
+                        formatter: '{value}%'
+                    },
+                    splitLine: { lineStyle: { color: '#334155' } }
+                },
+                series: [{
+                    type: 'bar',
+                    data: [
+                        { value: 85, itemStyle: { color: '#10b981' } },
+                        { value: 92, itemStyle: { color: '#ef4444' } },
+                        { value: 78, itemStyle: { color: '#fbbf24' } },
+                        { value: 95, itemStyle: { color: '#ef4444' } },
+                        { value: 65, itemStyle: { color: '#10b981' } },
+                        { value: 0, itemStyle: { color: '#64748b' } }
+                    ],
+                    label: {
+                        show: true,
+                        position: 'top',
+                        formatter: '{c}%',
+                        color: '#e2e8f0'
+                    }
+                }],
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '15%',
+                    containLabel: true
+                }
+            });
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initOverviewCharts();
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const charts = document.querySelectorAll('.chart');
+            charts.forEach(chartDom => {
+                const chart = echarts.getInstanceByDom(chartDom);
+                if (chart) {
+                    chart.resize();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

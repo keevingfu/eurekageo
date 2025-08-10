@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka扫地机器人 - GEO项目基线诊断报告</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .report-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+
+        .report-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 60px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .report-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.05" d="M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+            background-size: cover;
+        }
+
+        .report-header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .report-header .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .report-meta {
+            display: flex;
+            gap: 30px;
+            margin-top: 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .report-content {
+            padding: 40px;
+        }
+
+        .executive-summary {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+            border-left: 5px solid #1e3c72;
+        }
+
+        .executive-summary h2 {
+            color: #1e3c72;
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .summary-content {
+            color: #495057;
+            line-height: 1.8;
+        }
+
+        .summary-highlight {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .section {
+            margin-bottom: 50px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #e9ecef;
+        }
+
+        .section-number {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 15px rgba(30, 60, 114, 0.3);
+        }
+
+        .section-title {
+            color: #212529;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            border-color: #1e3c72;
+        }
+
+        .metric-card.zero-state {
+            background: #fff5f5;
+            border-color: #dc3545;
+        }
+
+        .metric-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #212529;
+            margin-bottom: 10px;
+        }
+
+        .metric-value.zero {
+            color: #dc3545;
+        }
+
+        .metric-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-critical {
+            background: #ffeaea;
+            color: #dc3545;
+        }
+
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .chart-container h3 {
+            color: #212529;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .chart {
+            width: 100%;
+            height: 400px;
+        }
+
+        .problem-list {
+            background: #fff5f5;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid #f8d7da;
+        }
+
+        .problem-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f8d7da;
+        }
+
+        .problem-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .problem-icon {
+            background: #dc3545;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .problem-content {
+            flex: 1;
+        }
+
+        .problem-title {
+            color: #721c24;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .problem-desc {
+            color: #721c24;
+            opacity: 0.9;
+            line-height: 1.8;
+        }
+
+        .recommendation-card {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid #b1dfbb;
+        }
+
+        .recommendation-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .recommendation-icon {
+            background: #28a745;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .recommendation-title {
+            color: #155724;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .recommendation-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .recommendation-list li {
+            padding: 12px 0;
+            padding-left: 35px;
+            position: relative;
+            color: #155724;
+            line-height: 1.8;
+        }
+
+        .recommendation-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 10px;
+            color: #28a745;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .platform-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .platform-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+
+        .platform-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .platform-logo {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 15px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .platform-name {
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 5px;
+        }
+
+        .platform-desc {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: -25px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            background: #1e3c72;
+            border-radius: 50%;
+            box-shadow: 0 0 0 4px rgba(30, 60, 114, 0.2);
+        }
+
+        .timeline-content {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .timeline-phase {
+            color: #1e3c72;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .timeline-desc {
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+
+        .alert-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .alert-icon {
+            color: #856404;
+            font-size: 1.5rem;
+        }
+
+        .alert-content {
+            flex: 1;
+            color: #856404;
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 30px 40px;
+            text-align: center;
+            color: #6c757d;
+            border-top: 1px solid #e9ecef;
+        }
+
+        @media (max-width: 768px) {
+            .report-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .report-content {
+                padding: 20px;
+            }
+            
+            .platform-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <div class="report-header">
+            <h1>Eureka 扫地机器人</h1>
+            <p class="subtitle">GEO 项目基线诊断报告</p>
+            <div class="report-meta">
+                <div class="meta-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="14" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span>报告日期：2025年8月</span>
+                </div>
+                <div class="meta-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                        <path d="M2 17l10 5 10-5"></path>
+                        <path d="M2 12l10 5 10-5"></path>
+                    </svg>
+                    <span>诊断阶段：基线测评</span>
+                </div>
+                <div class="meta-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 6v6l4 2"></path>
+                    </svg>
+                    <span>状态：待优化</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="report-content">
+            <!-- 执行摘要 -->
+            <div class="executive-summary">
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    执行摘要
+                </h2>
+                <div class="summary-content">
+                    <p>本报告为 Eureka 扫地机器人 GEO（生成式引擎优化）项目的基线诊断报告。通过对品牌在主要 AI 搜索平台的表现进行全面评估，我们发现：</p>
+                    <div class="summary-highlight">
+                        <strong>关键发现：</strong>Eureka 品牌目前在 AI 搜索领域尚未开展任何 GEO 优化工作，所有核心指标均为零基线状态。这意味着品牌在 ChatGPT、Bing Chat、Google Bard 等主流 AI 平台的可见度极低，错失了大量潜在的品牌曝光和转化机会。
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 1: 数据收集现状 -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">1</div>
+                    <h2 class="section-title">数据收集现状</h2>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-card zero-state">
+                        <div class="metric-label">监测平台接入</div>
+                        <div class="metric-value zero">0</div>
+                        <span class="metric-status status-critical">未接入</span>
+                    </div>
+                    <div class="metric-card zero-state">
+                        <div class="metric-label">数据采集点</div>
+                        <div class="metric-value zero">0</div>
+                        <span class="metric-status status-critical">未配置</span>
+                    </div>
+                    <div class="metric-card zero-state">
+                        <div class="metric-label">跟踪代码部署</div>
+                        <div class="metric-value zero">0%</div>
+                        <span class="metric-status status-critical">未部署</span>
+                    </div>
+                    <div class="metric-card zero-state">
+                        <div class="metric-label">历史数据积累</div>
+                        <div class="metric-value zero">无</div>
+                        <span class="metric-status status-critical">空白</span>
+                    </div>
+                </div>
+
+                <div class="alert-box">
+                    <div class="alert-icon">⚠️</div>
+                    <div class="alert-content">
+                        <strong>数据基础薄弱：</strong>当前缺乏任何 AI 搜索相关的数据监测和收集机制，无法获取品牌在 AI 平台的真实表现数据，亟需建立完整的数据采集体系。
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: 基线指标测评 -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">2</div>
+                    <h2 class="section-title">基线指标测评结果</h2>
+                </div>
+
+                <div class="chart-container">
+                    <h3>核心 KPI 基线状态</h3>
+                    <div id="baselineChart" class="chart"></div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card zero-state">
+                        <div class="metric-label">AI 回答引用率</div>
+                        <div class="metric-value zero">0%</div>
+                        <span class="metric-status status-critical">零引用</span>
+                    </div>
+                    <div class="metric-card zero-state">
+                        <div class="metric-label">品牌提及次数</div>
+                        <div class="metric-value zero">0</div>
+                        <span class="metric-status status-critical">无曝光</span>
+                    </div>
+                    <div class="metric-card zero-state">
+                        <div class="metric-label">AI 来源 CTR</div>
+                        <div class="metric-value zero">0%</div>
+                        <span class="metric-status status-critical">无流量</span>
+                    </div>
+                    <div class="metric-card zero-state">
+                        <div class="metric-label">AI 流量转化率</div>
+                        <div class="metric-value zero">0%</div>
+                        <span class="metric-status status-critical">无转化</span>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3>AI 平台覆盖度分析</h3>
+                    <div id="platformChart" class="chart"></div>
+                </div>
+            </div>
+
+            <!-- Section 3: 问题诊断 -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">3</div>
+                    <h2 class="section-title">核心问题诊断</h2>
+                </div>
+
+                <div class="problem-list">
+                    <div class="problem-item">
+                        <div class="problem-icon">!</div>
+                        <div class="problem-content">
+                            <div class="problem-title">监测盲区</div>
+                            <div class="problem-desc">尚未接入 Scrunch、AthenaHQ、Profound 等专业 AI 搜索监测平台，无法追踪品牌在 AI 答案中的表现。</div>
+                        </div>
+                    </div>
+                    <div class="problem-item">
+                        <div class="problem-icon">!</div>
+                        <div class="problem-content">
+                            <div class="problem-title">内容结构缺陷</div>
+                            <div class="problem-desc">网站内容缺乏结构化数据标记（Schema.org），AI 爬虫难以理解和抓取品牌信息，导致内容无法被引用。</div>
+                        </div>
+                    </div>
+                    <div class="problem-item">
+                        <div class="problem-icon">!</div>
+                        <div class="problem-content">
+                            <div class="problem-title">权威性不足</div>
+                            <div class="problem-desc">缺少 E-E-A-T（经验、专业、权威、可信）优化，品牌内容在 AI 算法中的可信度评分较低。</div>
+                        </div>
+                    </div>
+                    <div class="problem-item">
+                        <div class="problem-icon">!</div>
+                        <div class="problem-content">
+                            <div class="problem-title">流量追踪缺失</div>
+                            <div class="problem-desc">未建立 AI 引流识别机制，无法区分和追踪来自 AI 平台的访问流量及其转化表现。</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3>问题严重度分布</h3>
+                    <div id="problemChart" class="chart"></div>
+                </div>
+            </div>
+
+            <!-- Section 4: 优化建议 -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">4</div>
+                    <h2 class="section-title">优化建议与实施路径</h2>
+                </div>
+
+                <div class="recommendation-card">
+                    <div class="recommendation-header">
+                        <div class="recommendation-icon">🚀</div>
+                        <h3 class="recommendation-title">第一阶段：基础建设（1-2个月）</h3>
+                    </div>
+                    <ul class="recommendation-list">
+                        <li>接入 Scrunch、AthenaHQ、Profound 监测平台，建立 AI 搜索表现追踪体系</li>
+                        <li>部署 Schema.org 结构化数据标记，覆盖产品、FAQ、评价等核心页面</li>
+                        <li>配置 GA4 和 GTM，设置 AI 流量识别规则和转化追踪</li>
+                        <li>创建 AI 友好的内容格式（问答式、列表式、对比表格等）</li>
+                    </ul>
+                </div>
+
+                <div class="recommendation-card">
+                    <div class="recommendation-header">
+                        <div class="recommendation-icon">⚡</div>
+                        <h3 class="recommendation-title">第二阶段：内容优化（2-3个月）</h3>
+                    </div>
+                    <ul class="recommendation-list">
+                        <li>撰写高质量 FAQ 内容，覆盖用户常见问题场景</li>
+                        <li>创建产品对比页面，突出 Eureka 差异化优势</li>
+                        <li>发布行业报告和专业测评，提升内容权威性</li>
+                        <li>优化页面 E-E-A-T 信号，增加专家背书和用户评价</li>
+                    </ul>
+                </div>
+
+                <div class="recommendation-card">
+                    <div class="recommendation-header">
+                        <div class="recommendation-icon">📈</div>
+                        <h3 class="recommendation-title">第三阶段：转化提升（3-6个月）</h3>
+                    </div>
+                    <ul class="recommendation-list">
+                        <li>优化落地页体验，提高 AI 流量的页面相关性</li>
+                        <li>实施 A/B 测试，优化 CTA 和转化路径</li>
+                        <li>建立多语言内容体系，覆盖欧洲重点市场</li>
+                        <li>持续监测和迭代，基于数据优化策略</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Section 5: 监测平台建议 -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">5</div>
+                    <h2 class="section-title">推荐监测平台</h2>
+                </div>
+
+                <div class="platform-grid">
+                    <div class="platform-card">
+                        <div class="platform-logo">📊</div>
+                        <div class="platform-name">Scrunch</div>
+                        <div class="platform-desc">AI 内容表现监测</div>
+                    </div>
+                    <div class="platform-card">
+                        <div class="platform-logo">🎯</div>
+                        <div class="platform-name">AthenaHQ</div>
+                        <div class="platform-desc">AI 搜索排名追踪</div>
+                    </div>
+                    <div class="platform-card">
+                        <div class="platform-logo">🔍</div>
+                        <div class="platform-name">Profound</div>
+                        <div class="platform-desc">竞品 AI 表现分析</div>
+                    </div>
+                    <div class="platform-card">
+                        <div class="platform-logo">📈</div>
+                        <div class="platform-name">GA4 + GTM</div>
+                        <div class="platform-desc">流量与转化追踪</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 6: 实施时间线 -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">6</div>
+                    <h2 class="section-title">实施时间线</h2>
+                </div>
+
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-phase">Month 1：快速启动</div>
+                            <div class="timeline-desc">接入监测平台，部署基础追踪代码</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-phase">Month 2：结构优化</div>
+                            <div class="timeline-desc">完成 Schema 标记，优化内容结构</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-phase">Month 3-4：内容建设</div>
+                            <div class="timeline-desc">创建 AI 友好内容，提升权威性</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-phase">Month 5-6：转化优化</div>
+                            <div class="timeline-desc">优化落地页，提升转化率</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 预期成果 -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">7</div>
+                    <h2 class="section-title">预期成果</h2>
+                </div>
+
+                <div class="chart-container">
+                    <h3>6个月优化目标</h3>
+                    <div id="targetChart" class="chart"></div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">AI 引用率目标</div>
+                        <div class="metric-value" style="color: #28a745;">5%</div>
+                        <span class="metric-status status-success">可达成</span>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">品牌曝光提升</div>
+                        <div class="metric-value" style="color: #28a745;">500%</div>
+                        <span class="metric-status status-success">高增长</span>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">AI 流量占比</div>
+                        <div class="metric-value" style="color: #28a745;">10%</div>
+                        <span class="metric-status status-success">新增量</span>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">转化率目标</div>
+                        <div class="metric-value" style="color: #28a745;">2.5%</div>
+                        <span class="metric-status status-success">行业均值</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2025 Eureka Robot GEO Project - Baseline Diagnosis Report</p>
+            <p>本报告基于当前基线状态分析，建议尽快启动优化工作以抓住 AI 搜索增长机遇</p>
+        </div>
+    </div>
+
+    <script>
+        // 基线状态图表
+        const baselineChart = echarts.init(document.getElementById('baselineChart'));
+        baselineChart.setOption({
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' }
+            },
+            xAxis: {
+                type: 'category',
+                data: ['AI引用率', '品牌曝光', '落地页CTR', '转化率'],
+                axisLabel: { color: '#6c757d' }
+            },
+            yAxis: {
+                type: 'value',
+                max: 10,
+                axisLabel: { 
+                    color: '#6c757d',
+                    formatter: '{value}%'
+                }
+            },
+            series: [{
+                type: 'bar',
+                data: [0, 0, 0, 0],
+                itemStyle: {
+                    color: '#dc3545'
+                },
+                label: {
+                    show: true,
+                    position: 'top',
+                    formatter: '0%',
+                    color: '#dc3545'
+                }
+            }],
+            grid: {
+                left: '10%',
+                right: '10%',
+                bottom: '10%',
+                containLabel: true
+            }
+        });
+
+        // 平台覆盖度图表
+        const platformChart = echarts.init(document.getElementById('platformChart'));
+        platformChart.setOption({
+            tooltip: {
+                trigger: 'item'
+            },
+            series: [{
+                type: 'pie',
+                radius: ['40%', '70%'],
+                data: [
+                    { value: 100, name: 'ChatGPT', itemStyle: { color: '#e0e0e0' } },
+                    { value: 100, name: 'Bing Chat', itemStyle: { color: '#d0d0d0' } },
+                    { value: 100, name: 'Google Bard', itemStyle: { color: '#c0c0c0' } },
+                    { value: 100, name: 'Claude', itemStyle: { color: '#b0b0b0' } }
+                ],
+                label: {
+                    formatter: '{b}\n未覆盖',
+                    color: '#6c757d'
+                },
+                emphasis: {
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                }
+            }]
+        });
+
+        // 问题严重度图表
+        const problemChart = echarts.init(document.getElementById('problemChart'));
+        problemChart.setOption({
+            tooltip: {
+                trigger: 'axis'
+            },
+            radar: {
+                indicator: [
+                    { name: '数据监测', max: 100 },
+                    { name: '内容结构', max: 100 },
+                    { name: '品牌权威', max: 100 },
+                    { name: '流量追踪', max: 100 },
+                    { name: 'Schema标记', max: 100 }
+                ],
+                axisName: { color: '#6c757d' }
+            },
+            series: [{
+                type: 'radar',
+                data: [{
+                    value: [100, 95, 90, 100, 98],
+                    name: '问题严重度',
+                    areaStyle: {
+                        color: 'rgba(220, 53, 69, 0.3)'
+                    },
+                    lineStyle: {
+                        color: '#dc3545',
+                        width: 2
+                    },
+                    itemStyle: {
+                        color: '#dc3545'
+                    }
+                }]
+            }]
+        });
+
+        // 目标达成预测图表
+        const targetChart = echarts.init(document.getElementById('targetChart'));
+        const months = ['当前', 'Month 1', 'Month 2', 'Month 3', 'Month 4', 'Month 5', 'Month 6'];
+        targetChart.setOption({
+            tooltip: {
+                trigger: 'axis'
+            },
+            legend: {
+                data: ['AI引用率', '品牌曝光指数', 'CTR'],
+                textStyle: { color: '#6c757d' }
+            },
+            xAxis: {
+                type: 'category',
+                data: months,
+                axisLabel: { color: '#6c757d' }
+            },
+            yAxis: {
+                type: 'value',
+                axisLabel: { 
+                    color: '#6c757d',
+                    formatter: '{value}%'
+                }
+            },
+            series: [
+                {
+                    name: 'AI引用率',
+                    type: 'line',
+                    data: [0, 0.5, 1.2, 2.3, 3.5, 4.2, 5.0],
+                    smooth: true,
+                    lineStyle: { color: '#28a745', width: 3 },
+                    itemStyle: { color: '#28a745' }
+                },
+                {
+                    name: '品牌曝光指数',
+                    type: 'line',
+                    data: [0, 1, 3, 5, 7, 9, 10],
+                    smooth: true,
+                    lineStyle: { color: '#17a2b8', width: 3 },
+                    itemStyle: { color: '#17a2b8' }
+                },
+                {
+                    name: 'CTR',
+                    type: 'line',
+                    data: [0, 0.8, 2.5, 4.2, 6.0, 7.5, 8.7],
+                    smooth: true,
+                    lineStyle: { color: '#ffc107', width: 3 },
+                    itemStyle: { color: '#ffc107' }
+                }
+            ],
+            grid: {
+                left: '10%',
+                right: '10%',
+                bottom: '10%',
+                containLabel: true
+            }
+        });
+
+        // 响应式调整
+        window.addEventListener('resize', () => {
+            baselineChart.resize();
+            platformChart.resize();
+            problemChart.resize();
+            targetChart.resize();
+        });
+    </script>
+</body>
+</html>

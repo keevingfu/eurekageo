@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka GEO Scale Expansion Dashboard - Phase 3 Results</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #151b3d 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .dashboard-container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 48px;
+            margin-bottom: 32px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 50%);
+            animation: pulse 15s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header .subtitle {
+            color: #a5b4fc;
+            font-size: 1.25rem;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+        }
+
+        .kpi-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .kpi-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.8) 100%);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 28px;
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+            border-radius: 16px;
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s ease;
+        }
+
+        .kpi-card:hover::after {
+            opacity: 0.3;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .kpi-card .label {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .kpi-card .value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #e0e7ff 0%, #fce7f3 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .kpi-card .progress {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+        }
+
+        .kpi-card .progress.positive {
+            color: #34d399;
+        }
+
+        .kpi-card .progress.exceeded {
+            color: #f59e0b;
+        }
+
+        .achievement-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 12px;
+            border-radius: 24px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .achievement-badge.gold {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.2) 100%);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.4);
+        }
+
+        .achievement-badge.silver {
+            background: linear-gradient(135deg, rgba(156, 163, 175, 0.2) 0%, rgba(107, 114, 128, 0.2) 100%);
+            color: #d1d5db;
+            border: 1px solid rgba(156, 163, 175, 0.4);
+        }
+
+        .chart-section {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 36px;
+            margin-bottom: 32px;
+            border: 1px solid rgba(100, 116, 139, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .chart-section h2 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 450px;
+            margin-bottom: 24px;
+        }
+
+        .chart-container.small {
+            height: 300px;
+        }
+
+        .chart-container.large {
+            height: 600px;
+        }
+
+        .insight-box {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+            border-left: 4px solid #6366f1;
+            padding: 24px;
+            border-radius: 12px;
+            margin-top: 24px;
+        }
+
+        .insight-box h3 {
+            font-size: 1.125rem;
+            color: #a5b4fc;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .insight-box p {
+            color: #e2e8f0;
+            line-height: 1.8;
+        }
+
+        .recommendations {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%);
+            border-left: 4px solid #a855f7;
+            padding: 24px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .recommendations h3 {
+            font-size: 1.125rem;
+            color: #d8b4fe;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .recommendations ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .recommendations li {
+            color: #e2e8f0;
+            margin-bottom: 12px;
+            padding-left: 28px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .recommendations li:before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #a855f7;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+        }
+
+        .grid-3col {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+        }
+
+        @media (max-width: 1400px) {
+            .grid-3col {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .grid-2col, .grid-3col {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        .metric-comparison {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .metric-comparison .name {
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+
+        .metric-comparison .values {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .metric-comparison .before {
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+
+        .metric-comparison .arrow {
+            color: #6366f1;
+        }
+
+        .metric-comparison .after {
+            color: #34d399;
+            font-weight: 600;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #6366f1;
+            border-radius: 50%;
+            border: 3px solid #1e293b;
+        }
+
+        .success-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #34d399;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .phase-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
+            border-radius: 24px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #a5b4fc;
+            margin-bottom: 16px;
+        }
+
+        .knowledge-graph-legend {
+            display: flex;
+            gap: 24px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>Eureka GEO Scale Expansion Dashboard</h1>
+            <div class="subtitle">Phase 3: Full-Scale Implementation Results (November 2025 - January 2026)</div>
+        </div>
+
+        <!-- KPI Achievement Summary -->
+        <div class="kpi-summary">
+            <div class="kpi-card">
+                <div class="label">AI Mention Rate</div>
+                <div class="value">42.3%</div>
+                <div class="progress exceeded">
+                    <span>↑ 238% from baseline</span>
+                    <span class="achievement-badge gold">141% of target</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="label">Share of Voice Ranking</div>
+                <div class="value">#3</div>
+                <div class="progress positive">
+                    <span>↑ From #5</span>
+                    <span class="achievement-badge gold">Target Achieved</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="label">Content Coverage</div>
+                <div class="value">95%+</div>
+                <div class="progress positive">
+                    <span>Full-site optimization</span>
+                    <span class="achievement-badge gold">Complete</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="label">Knowledge Graph Coverage</div>
+                <div class="value">94.2%</div>
+                <div class="progress positive">
+                    <span>↑ From 0%</span>
+                    <span class="achievement-badge gold">Exceeds 90%</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="label">Organic Traffic Growth</div>
+                <div class="value">+312%</div>
+                <div class="progress exceeded">
+                    <span>YoY increase</span>
+                    <span class="achievement-badge gold">Historic High</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="label">ROI</div>
+                <div class="value">4.2:1</div>
+                <div class="progress exceeded">
+                    <span>↑ 40% above target</span>
+                    <span class="achievement-badge gold">Exceptional</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Line Transformation Results -->
+        <div class="chart-section">
+            <h2>
+                <span class="section-icon">📊</span>
+                Product Line GEO Transformation Impact
+            </h2>
+            <div class="chart-container" id="productLineChart"></div>
+            <div class="insight-box">
+                <h3>Transformation Insights</h3>
+                <p>The tiered approach to product line optimization yielded exceptional results. The Groove series showed the highest improvement rate at 180%, indicating untapped potential in the entry-level segment. E10s achieved 137% growth, successfully positioning it as the go-to mid-range option. The already-optimized J20 maintained its strong position while accessories showed surprising 209% growth, revealing a previously overlooked opportunity.</p>
+            </div>
+            <div class="recommendations">
+                <h3>Strategic Product Recommendations</h3>
+                <ul>
+                    <li>Leverage Groove's momentum to capture first-time robot vacuum buyers</li>
+                    <li>Position E10s as the "smart choice" for value-conscious consumers</li>
+                    <li>Develop accessory bundles to capitalize on the 209% growth</li>
+                    <li>Create product comparison tools to guide users across the portfolio</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Content Optimization Coverage -->
+        <div class="grid-2col">
+            <div class="chart-section">
+                <h2>
+                    <span class="section-icon">📝</span>
+                    Content Optimization Coverage Analysis
+                </h2>
+                <div class="chart-container" id="contentCoverageChart"></div>
+                <div class="insight-box">
+                    <h3>Coverage Analysis</h3>
+                    <p>Product pages achieved 100% optimization, forming a solid foundation. Support content at 91% and blog posts at 87% demonstrate comprehensive coverage. The addition of 12 interactive tools represents innovative content types that significantly enhance user engagement and AI comprehension.</p>
+                </div>
+            </div>
+            <div class="chart-section">
+                <h2>
+                    <span class="section-icon">🎯</span>
+                    Platform-Specific Strategy Effectiveness
+                </h2>
+                <div class="chart-container" id="platformStrategyChart"></div>
+                <div class="recommendations">
+                    <h3>Platform Optimization Insights</h3>
+                    <ul>
+                        <li>Perplexity responds best to data-rich tables and structured information</li>
+                        <li>ChatGPT favors conversational FAQ formats and dialogue scripts</li>
+                        <li>Gemini shows strong preference for visual content and infographics</li>
+                        <li>Claude values technical depth and logical document structure</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Knowledge Graph Visualization -->
+        <div class="chart-section">
+            <h2>
+                <span class="section-icon">🧠</span>
+                Eureka Knowledge Graph Architecture
+            </h2>
+            <div class="phase-badge">247 Entities | 1,832 Relationships | 5,426 Attributes</div>
+            <div class="chart-container large" id="knowledgeGraphChart"></div>
+            <div class="knowledge-graph-legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #6366f1;"></div>
+                    <span>Brand/Company</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #a855f7;"></div>
+                    <span>Products</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #ec4899;"></div>
+                    <span>Technologies</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #f59e0b;"></div>
+                    <span>People</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #10b981;"></div>
+                    <span>Features</span>
+                </div>
+            </div>
+            <div class="insight-box">
+                <h3>Knowledge Graph Impact</h3>
+                <p>The comprehensive knowledge graph with 94.2% query coverage enables AI platforms to understand complex relationships between Eureka products, technologies, and competitive positioning. The 1,832 relationship connections create a rich semantic network that dramatically improves AI response accuracy and completeness.</p>
+            </div>
+        </div>
+
+        <!-- Monthly Progress Timeline -->
+        <div class="chart-section">
+            <h2>
+                <span class="section-icon">📈</span>
+                6-Month Scale Expansion Timeline & Milestones
+            </h2>
+            <div class="chart-container" id="timelineChart"></div>
+            <div class="recommendations">
+                <h3>Phase Completion Analysis</h3>
+                <ul>
+                    <li>Month 4: Core product optimization created immediate impact with 137-180% improvements</li>
+                    <li>Month 5: Support content and platform-specific strategies amplified reach</li>
+                    <li>Month 6: Knowledge graph completion enabled semantic understanding at scale</li>
+                    <li>Cumulative effect: Each phase built upon previous gains, creating exponential growth</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Traffic and Conversion Impact -->
+        <div class="grid-2col">
+            <div class="chart-section">
+                <h2>
+                    <span class="section-icon">🚀</span>
+                    Traffic Source Evolution
+                </h2>
+                <div class="chart-container" id="trafficSourceChart"></div>
+                <div class="insight-box">
+                    <h3>Traffic Transformation</h3>
+                    <p>AI-referred traffic grew from negligible to 18% of total traffic, representing a new high-quality acquisition channel. The 312% organic growth demonstrates the compound effect of improved AI visibility on traditional search performance.</p>
+                </div>
+            </div>
+            <div class="chart-section">
+                <h2>
+                    <span class="section-icon">💰</span>
+                    Revenue Impact Analysis
+                </h2>
+                <div class="chart-container" id="revenueImpactChart"></div>
+                <div class="recommendations">
+                    <h3>Business Impact Insights</h3>
+                    <ul>
+                        <li>AI-referred visitors show 67% higher conversion rates</li>
+                        <li>Average order value increased 23% from AI traffic</li>
+                        <li>Customer lifetime value 45% higher for AI-acquired customers</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Long-tail Content Performance -->
+        <div class="chart-section">
+            <h2>
+                <span class="section-icon">🔍</span>
+                Long-tail Content Strategy Performance
+            </h2>
+            <div class="chart-container" id="longtailChart"></div>
+            <div class="insight-box">
+                <h3>Long-tail Success Factors</h3>
+                <p>Problem-solving content achieved the highest engagement with 156% improvement in AI citations. Comparison content and specific use cases also performed exceptionally well, validating the strategy of addressing specific user intents rather than generic topics.</p>
+            </div>
+        </div>
+
+        <!-- Competitive Position Evolution -->
+        <div class="chart-section">
+            <h2>
+                <span class="section-icon">🏆</span>
+                Market Position Evolution & Competitive Analysis
+            </h2>
+            <div class="chart-container" id="competitivePositionChart"></div>
+            <div class="grid-2col" style="margin-top: 24px;">
+                <div class="insight-box">
+                    <h3>Competitive Achievements</h3>
+                    <p>Eureka successfully climbed from 5th to 3rd position in AI Share of Voice, surpassing established competitors Shark and Dyson. The trajectory indicates potential to challenge Ecovacs for the #2 position within the next quarter.</p>
+                </div>
+                <div class="recommendations">
+                    <h3>Competitive Strategy</h3>
+                    <ul>
+                        <li>Focus on unique American heritage story to differentiate from Asian brands</li>
+                        <li>Leverage 111-year history for trust and reliability messaging</li>
+                        <li>Target iRobot's weakening position with aggressive comparison content</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROI and Investment Analysis -->
+        <div class="chart-section">
+            <h2>
+                <span class="section-icon">📊</span>
+                ROI & Investment Efficiency Analysis
+            </h2>
+            <div class="grid-3col">
+                <div class="chart-container small" id="roiChart"></div>
+                <div class="chart-container small" id="investmentChart"></div>
+                <div class="chart-container small" id="efficiencyChart"></div>
+            </div>
+            <div class="insight-box">
+                <h3>Financial Performance Analysis</h3>
+                <p>The 4.2:1 ROI significantly exceeds the 3:1 target, with cumulative investment of $125K generating $525K in attributable revenue. The efficiency curve shows diminishing returns beginning at Month 5, suggesting optimal investment levels have been identified. Cost per acquisition through AI channels is 45% lower than paid search, validating the long-term strategic value.</p>
+            </div>
+        </div>
+
+        <!-- Future Projections -->
+        <div class="chart-section">
+            <h2>
+                <span class="section-icon">🔮</span>
+                12-Month Forward Projections & Strategic Roadmap
+            </h2>
+            <div class="chart-container" id="futureProjectionChart"></div>
+            <div class="recommendations">
+                <h3>Strategic Roadmap for Sustained Growth</h3>
+                <ul>
+                    <li>Q1 2026: Launch Eureka AI Lab for continuous innovation in GEO strategies</li>
+                    <li>Q2 2026: Expand to emerging AI platforms (Anthropic, Cohere, etc.)</li>
+                    <li>Q3 2026: Develop proprietary GEO monitoring and optimization tools</li>
+                    <li>Q4 2026: Establish industry thought leadership through research publication</li>
+                    <li>Target: Achieve #1 position in robot vacuum AI visibility by end of 2026</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Product Line Transformation Chart
+        const productLineChart = echarts.init(document.getElementById('productLineChart'));
+        const productLineOption = {
+            tooltip: {
+                trigger: 'axis',
+                formatter: function(params) {
+                    let result = params[0].name + '<br/>';
+                    params.forEach(function(item) {
+                        result += item.marker + ' ' + item.seriesName + ': ' + item.value + '%<br/>';
+                    });
+                    return result;
+                }
+            },
+            legend: {
+                data: ['Before GEO', 'After GEO', 'Improvement Rate'],
+                textStyle: { color: '#e2e8f0' }
+            },
+            grid: {
+                left: '3%',
+                right: '15%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: ['J20 (Premium)', 'E10s (Mid-range)', 'Groove (Entry)', 'Accessories'],
+                axisLabel: { 
+                    color: '#94a3b8',
+                    rotate: 15
+                }
+            },
+            yAxis: [
+                {
+                    type: 'value',
+                    name: 'AI Mention Rate %',
+                    axisLabel: { 
+                        color: '#94a3b8',
+                        formatter: '{value}%'
+                    },
+                    splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+                },
+                {
+                    type: 'value',
+                    name: 'Improvement %',
+                    position: 'right',
+                    axisLabel: { 
+                        color: '#94a3b8',
+                        formatter: '{value}%'
+                    }
+                }
+            ],
+            series: [
+                {
+                    name: 'Before GEO',
+                    type: 'bar',
+                    data: [24.8, 8.3, 5.1, 2.2],
+                    itemStyle: { 
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                            offset: 0,
+                            color: 'rgba(239, 68, 68, 0.8)'
+                        }, {
+                            offset: 1,
+                            color: 'rgba(220, 38, 38, 0.8)'
+                        }])
+                    }
+                },
+                {
+                    name: 'After GEO',
+                    type: 'bar',
+                    data: [24.8, 19.7, 14.3, 6.8],
+                    itemStyle: { 
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                            offset: 0,
+                            color: 'rgba(34, 197, 94, 0.8)'
+                        }, {
+                            offset: 1,
+                            color: 'rgba(22, 163, 74, 0.8)'
+                        }])
+                    }
+                },
+                {
+                    name: 'Improvement Rate',
+                    type: 'line',
+                    yAxisIndex: 1,
+                    data: [0, 137, 180, 209],
+                    smooth: true,
+                    symbol: 'circle',
+                    symbolSize: 10,
+                    lineStyle: {
+                        color: '#6366f1',
+                        width: 3
+                    },
+                    itemStyle: {
+                        color: '#6366f1',
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: true,
+                        position: 'top',
+                        formatter: '+{c}%',
+                        color: '#e2e8f0'
+                    }
+                }
+            ]
+        };
+        productLineChart.setOption(productLineOption);
+
+        // Content Coverage Chart
+        const contentCoverageChart = echarts.init(document.getElementById('contentCoverageChart'));
+        const contentCoverageOption = {
+            tooltip: {
+                trigger: 'item',
+                formatter: function(params) {
+                    return params.name + '<br/>Total: ' + params.data.total + 
+                           '<br/>Optimized: ' + params.data.value + 
+                           '<br/>Coverage: ' + params.data.percentage + '%';
+                }
+            },
+            series: [
+                {
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    center: ['50%', '50%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: {
+                        borderRadius: 10,
+                        borderColor: '#1e293b',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: true,
+                        position: 'outside',
+                        formatter: '{b}\n{d}%',
+                        color: '#e2e8f0'
+                    },
+                    labelLine: {
+                        show: true,
+                        lineStyle: {
+                            color: '#64748b'
+                        }
+                    },
+                    data: [
+                        { 
+                            value: 23, 
+                            name: 'Product Pages',
+                            total: 23,
+                            percentage: 100,
+                            itemStyle: { color: '#6366f1' }
+                        },
+                        { 
+                            value: 142, 
+                            name: 'Support Content',
+                            total: 156,
+                            percentage: 91,
+                            itemStyle: { color: '#a855f7' }
+                        },
+                        { 
+                            value: 76, 
+                            name: 'Blog Posts',
+                            total: 87,
+                            percentage: 87,
+                            itemStyle: { color: '#ec4899' }
+                        },
+                        { 
+                            value: 12, 
+                            name: 'Interactive Tools',
+                            total: 12,
+                            percentage: 100,
+                            itemStyle: { color: '#f59e0b' }
+                        }
+                    ]
+                }
+            ]
+        };
+        contentCoverageChart.setOption(contentCoverageOption);
+
+        // Platform Strategy Effectiveness Chart
+        const platformStrategyChart = echarts.init(document.getElementById('platformStrategyChart'));
+        const platformStrategyOption = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow'
+                }
+            },
+            legend: {
+                data: ['Content Type Effectiveness'],
+                textStyle: { color: '#e2e8f0' }
+            },
+            radar: {
+                indicator: [
+                    { name: 'ChatGPT', max: 100 },
+                    { name: 'Perplexity', max: 100 },
+                    { name: 'Gemini', max: 100 },
+                    { name: 'Claude', max: 100 },
+                    { name: 'Bing Chat', max: 100 }
+                ],
+                center: ['50%', '50%'],
+                radius: '65%',
+                axisName: {
+                    color: '#94a3b8'
+                },
+                splitLine: {
+                    lineStyle: {
+                        color: 'rgba(255,255,255,0.1)'
+                    }
+                },
+                splitArea: {
+                    areaStyle: {
+                        color: ['rgba(99,102,241,0.05)', 'rgba(168,85,247,0.05)']
+                    }
+                }
+            },
+            series: [
+                {
+                    type: 'radar',
+                    data: [
+                        {
+                            value: [85, 75, 60, 70, 72],
+                            name: 'Conversational',
+                            lineStyle: { color: '#6366f1' },
+                            areaStyle: { color: 'rgba(99, 102, 241, 0.3)' }
+                        },
+                        {
+                            value: [70, 95, 65, 80, 75],
+                            name: 'Data Tables',
+                            lineStyle: { color: '#a855f7' },
+                            areaStyle: { color: 'rgba(168, 85, 247, 0.3)' }
+                        },
+                        {
+                            value: [65, 70, 90, 60, 85],
+                            name: 'Visual Content',
+                            lineStyle: { color: '#ec4899' },
+                            areaStyle: { color: 'rgba(236, 72, 153, 0.3)' }
+                        },
+                        {
+                            value: [75, 80, 70, 95, 65],
+                            name: 'Technical Docs',
+                            lineStyle: { color: '#f59e0b' },
+                            areaStyle: { color: 'rgba(245, 158, 11, 0.3)' }
+                        }
+                    ]
+                }
+            ]
+        };
+        platformStrategyChart.setOption(platformStrategyOption);
+
+        // Knowledge Graph Visualization
+        const knowledgeGraphChart = echarts.init(document.getElementById('knowledgeGraphChart'));
+        
+        // Generate node data
+        const categories = [
+            { name: 'Brand/Company', itemStyle: { color: '#6366f1' } },
+            { name: 'Products', itemStyle: { color: '#a855f7' } },
+            { name: 'Technologies', itemStyle: { color: '#ec4899' } },
+            { name: 'People', itemStyle: { color: '#f59e0b' } },
+            { name: 'Features', itemStyle: { color: '#10b981' } }
+        ];
+
+        const nodes = [
+            // Core brand node
+            { id: 'eureka', name: 'Eureka', category: 0, symbolSize: 80, x: 0, y: 0 },
+            
+            // Product nodes
+            { id: 'j20', name: 'J20', category: 1, symbolSize: 60 },
+            { id: 'e10s', name: 'E10s', category: 1, symbolSize: 60 },
+            { id: 'groove', name: 'Groove', category: 1, symbolSize: 60 },
+            
+            // Technology nodes
+            { id: 'lidar', name: 'LiDAR', category: 2, symbolSize: 40 },
+            { id: 'lds', name: 'LDS', category: 2, symbolSize: 40 },
+            { id: 'hepa', name: 'HEPA Filter', category: 2, symbolSize: 40 },
+            { id: 'app', name: 'Smart App', category: 2, symbolSize: 40 },
+            
+            // People nodes
+            { id: 'chen', name: 'Dr. Chen', category: 3, symbolSize: 40 },
+            { id: 'wardell', name: 'Fred Wardell', category: 3, symbolSize: 40 },
+            
+            // Feature nodes
+            { id: '4000pa', name: '4000Pa Suction', category: 4, symbolSize: 30 },
+            { id: 'mopping', name: 'Mopping', category: 4, symbolSize: 30 },
+            { id: 'navigation', name: 'Smart Navigation', category: 4, symbolSize: 30 },
+            { id: 'voice', name: 'Voice Control', category: 4, symbolSize: 30 }
+        ];
+
+        const links = [
+            // Brand to products
+            { source: 'eureka', target: 'j20' },
+            { source: 'eureka', target: 'e10s' },
+            { source: 'eureka', target: 'groove' },
+            
+            // Products to technologies
+            { source: 'j20', target: 'lidar' },
+            { source: 'j20', target: 'hepa' },
+            { source: 'j20', target: 'app' },
+            { source: 'e10s', target: 'lds' },
+            { source: 'e10s', target: 'hepa' },
+            { source: 'e10s', target: 'app' },
+            
+            // Brand to people
+            { source: 'eureka', target: 'chen' },
+            { source: 'eureka', target: 'wardell' },
+            
+            // Products to features
+            { source: 'j20', target: '4000pa' },
+            { source: 'j20', target: 'navigation' },
+            { source: 'j20', target: 'voice' },
+            { source: 'e10s', target: '4000pa' },
+            { source: 'e10s', target: 'mopping' },
+            { source: 'e10s', target: 'navigation' }
+        ];
+
+        const knowledgeGraphOption = {
+            tooltip: {
+                trigger: 'item',
+                formatter: function(params) {
+                    if (params.dataType === 'node') {
+                        return params.data.category + '<br/>' + params.data.name;
+                    }
+                    return params.data.source + ' → ' + params.data.target;
+                }
+            },
+            animationDuration: 1500,
+            animationEasingUpdate: 'quinticInOut',
+            series: [{
+                name: 'Knowledge Graph',
+                type: 'graph',
+                layout: 'force',
+                data: nodes,
+                links: links,
+                categories: categories,
+                roam: true,
+                draggable: true,
+                label: {
+                    show: true,
+                    position: 'bottom',
+                    formatter: '{b}',
+                    color: '#e2e8f0'
+                },
+                force: {
+                    repulsion: 300,
+                    gravity: 0.1,
+                    edgeLength: 150
+                },
+                lineStyle: {
+                    color: 'source',
+                    curveness: 0.3,
+                    width: 2
+                }
+            }]
+        };
+        knowledgeGraphChart.setOption(knowledgeGraphOption);
+
+        // Timeline Chart
+        const timelineChart = echarts.init(document.getElementById('timelineChart'));
+        const timelineOption = {
+            tooltip: {
+                trigger: 'axis',
+                formatter: function(params) {
+                    let result = params[0].name + '<br/>';
+                    params.forEach(function(item) {
+                        result += item.marker + ' ' + item.seriesName + ': ' + item.value[1] + '%<br/>';
+                    });
+                    return result;
+                }
+            },
+            legend: {
+                data: ['Mention Rate', 'Content Coverage', 'Major Milestones'],
+                textStyle: { color: '#e2e8f0' }
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '10%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan'],
+                axisLabel: { color: '#94a3b8' }
+            },
+            yAxis: {
+                type: 'value',
+                axisLabel: { 
+                    color: '#94a3b8',
+                    formatter: '{value}%'
+                },
+                splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+            },
+            series: [
+                {
+                    name: 'Mention Rate',
+                    type: 'line',
+                    data: [[0, 12.5], [1, 15.2], [2, 24.8], [3, 28.5], [4, 35.2], [5, 42.3]],
+                    smooth: true,
+                    symbol: 'circle',
+                    symbolSize: 8,
+                    lineStyle: {
+                        color: '#6366f1',
+                        width: 3
+                    },
+                    itemStyle: {
+                        color: '#6366f1'
+                    },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                            offset: 0,
+                            color: 'rgba(99, 102, 241, 0.4)'
+                        }, {
+                            offset: 1,
+                            color: 'rgba(99, 102, 241, 0.1)'
+                        }])
+                    }
+                },
+                {
+                    name: 'Content Coverage',
+                    type: 'line',
+                    data: [[0, 5], [1, 25], [2, 45], [3, 65], [4, 85], [5, 95]],
+                    smooth: true,
+                    lineStyle: {
+                        color: '#a855f7',
+                        width: 2
+                    },
+                    itemStyle: {
+                        color: '#a855f7'
+                    }
+                },
+                {
+                    name: 'Major Milestones',
+                    type: 'scatter',
+                    symbolSize: 20,
+                    data: [
+                        [1, 15.2], // Schema implementation
+                        [2, 24.8], // Authority building
+                        [3, 28.5], // Core products optimized
+                        [4, 35.2], // Platform strategies
+                        [5, 42.3]  // Knowledge graph complete
+                    ],
+                    itemStyle: {
+                        color: '#f59e0b',
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: true,
+                        position: 'top',
+                        formatter: function(params) {
+                            const labels = ['Schema', 'Authority', 'Products', 'Platforms', 'Knowledge'];
+                            return labels[params.dataIndex];
+                        },
+                        color: '#e2e8f0',
+                        fontSize: 10
+                    }
+                }
+            ]
+        };
+        timelineChart.setOption(timelineOption);
+
+        // Traffic Source Chart
+        const trafficSourceChart = echarts.init(document.getElementById('trafficSourceChart'));
+        const trafficSourceOption = {
+            tooltip: {
+                trigger: 'item',
+                formatter: '{a} <br/>{b}: {c}%'
+            },
+            legend: {
+                orient: 'vertical',
+                right: 10,
+                top: 'center',
+                textStyle: { color: '#e2e8f0' }
+            },
+            series: [
+                {
+                    name: 'Before GEO',
+                    type: 'pie',
+                    radius: ['30%', '45%'],
+                    center: ['25%', '50%'],
+                    data: [
+                        { value: 45, name: 'Direct', itemStyle: { color: '#6366f1' } },
+                        { value: 35, name: 'Organic Search', itemStyle: { color: '#a855f7' } },
+                        { value: 15, name: 'Paid Search', itemStyle: { color: '#ec4899' } },
+                        { value: 5, name: 'Social', itemStyle: { color: '#f59e0b' } },
+                        { value: 0, name: 'AI Platforms', itemStyle: { color: '#10b981' } }
+                    ],
+                    label: {
+                        position: 'outside',
+                        formatter: '{b}: {c}%',
+                        color: '#e2e8f0'
+                    }
+                },
+                {
+                    name: 'After GEO',
+                    type: 'pie',
+                    radius: ['30%', '45%'],
+                    center: ['75%', '50%'],
+                    data: [
+                        { value: 25, name: 'Direct', itemStyle: { color: '#6366f1' } },
+                        { value: 42, name: 'Organic Search', itemStyle: { color: '#a855f7' } },
+                        { value: 10, name: 'Paid Search', itemStyle: { color: '#ec4899' } },
+                        { value: 5, name: 'Social', itemStyle: { color: '#f59e0b' } },
+                        { value: 18, name: 'AI Platforms', itemStyle: { color: '#10b981' } }
+                    ],
+                    label: {
+                        position: 'outside',
+                        formatter: '{b}: {c}%',
+                        color: '#e2e8f0'
+                    }
+                }
+            ]
+        };
+        trafficSourceChart.setOption(trafficSourceOption);
+
+        // Revenue Impact Chart
+        const revenueImpactChart = echarts.init(document.getElementById('revenueImpactChart'));
+        const revenueImpactOption = {
+            tooltip: {
+                trigger: 'axis',
+                formatter: function(params) {
+                    let result = params[0].name + '<br/>';
+                    params.forEach(function(item) {
+                        const value = item.seriesName.includes('Revenue') ? '$' + item.value + 'K' : item.value + '%';
+                        result += item.marker + ' ' + item.seriesName + ': ' + value + '<br/>';
+                    });
+                    return result;
+                }
+            },
+            legend: {
+                data: ['Monthly Revenue', 'AI Traffic %', 'Conversion Rate'],
+                textStyle: { color: '#e2e8f0' }
+            },
+            grid: {
+                left: '3%',
+                right: '10%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan'],
+                axisLabel: { color: '#94a3b8' }
+            },
+            yAxis: [
+                {
+                    type: 'value',
+                    name: 'Revenue ($K)',
+                    position: 'left',
+                    axisLabel: { 
+                        color: '#94a3b8',
+                        formatter: '${value}K'
+                    },
+                    splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+                },
+                {
+                    type: 'value',
+                    name: 'Percentage',
+                    position: 'right',
+                    axisLabel: { 
+                        color: '#94a3b8',
+                        formatter: '{value}%'
+                    }
+                }
+            ],
+            series: [
+                {
+                    name: 'Monthly Revenue',
+                    type: 'bar',
+                    data: [320, 350, 380, 420, 480, 525],
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                            offset: 0,
+                            color: '#10b981'
+                        }, {
+                            offset: 1,
+                            color: '#059669'
+                        }])
+                    }
+                },
+                {
+                    name: 'AI Traffic %',
+                    type: 'line',
+                    yAxisIndex: 1,
+                    data: [0, 2, 5, 10, 15, 18],
+                    smooth: true,
+                    itemStyle: { color: '#6366f1' }
+                },
+                {
+                    name: 'Conversion Rate',
+                    type: 'line',
+                    yAxisIndex: 1,
+                    data: [2.1, 2.3, 2.8, 3.2, 3.5, 3.8],
+                    smooth: true,
+                    itemStyle: { color: '#ec4899' }
+                }
+            ]
+        };
+        revenueImpactChart.setOption(revenueImpactOption);
+
+        // Long-tail Content Performance Chart
+        const longtailChart = echarts.init(document.getElementById('longtailChart'));
+        const longtailOption = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow'
+                }
+            },
+            legend: {
+                data: ['AI Citations', 'Traffic Growth'],
+                textStyle: { color: '#e2e8f0' }
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'value',
+                axisLabel: { 
+                    color: '#94a3b8',
+                    formatter: '{value}%'
+                },
+                splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+            },
+            yAxis: {
+                type: 'category',
+                data: ['Problem Solving', 'Comparisons', 'Use Cases', 'How-to Guides', 'Technical Specs', 'General Info'],
+                axisLabel: { color: '#94a3b8' }
+            },
+            series: [
+                {
+                    name: 'AI Citations',
+                    type: 'bar',
+                    data: [156, 142, 138, 125, 98, 67],
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{
+                            offset: 0,
+                            color: '#6366f1'
+                        }, {
+                            offset: 1,
+                            color: '#a855f7'
+                        }])
+                    }
+                },
+                {
+                    name: 'Traffic Growth',
+                    type: 'bar',
+                    data: [145, 138, 125, 112, 89, 62],
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{
+                            offset: 0,
+                            color: '#10b981'
+                        }, {
+                            offset: 1,
+                            color: '#34d399'
+                        }])
+                    }
+                }
+            ]
+        };
+        longtailChart.setOption(longtailOption);
+
+        // Competitive Position Chart
+        const competitivePositionChart = echarts.init(document.getElementById('competitivePositionChart'));
+        const competitivePositionOption = {
+            tooltip: {
+                trigger: 'axis',
+                formatter: function(params) {
+                    let result = params[0].name + '<br/>';
+                    params.forEach(function(item) {
+                        result += item.marker + ' ' + item.seriesName + ': ' + item.value + '%<br/>';
+                    });
+                    return result;
+                }
+            },
+            legend: {
+                data: ['Eureka', 'iRobot', 'Roborock', 'Ecovacs', 'Shark', 'Dyson'],
+                textStyle: { color: '#e2e8f0' }
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan'],
+                axisLabel: { color: '#94a3b8' }
+            },
+            yAxis: {
+                type: 'value',
+                name: 'AI Share of Voice %',
+                axisLabel: { 
+                    color: '#94a3b8',
+                    formatter: '{value}%'
+                },
+                splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+            },
+            series: [
+                {
+                    name: 'Eureka',
+                    type: 'line',
+                    data: [8.7, 14.2, 18.5, 25.3, 32.8, 42.3],
+                    smooth: true,
+                    lineStyle: { width: 4 },
+                    itemStyle: { color: '#6366f1' },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                            offset: 0,
+                            color: 'rgba(99, 102, 241, 0.4)'
+                        }, {
+                            offset: 1,
+                            color: 'rgba(99, 102, 241, 0.1)'
+                        }])
+                    }
+                },
+                {
+                    name: 'iRobot',
+                    type: 'line',
+                    data: [45.2, 44.8, 43.5, 42.1, 40.8, 39.2],
+                    smooth: true,
+                    itemStyle: { color: '#ef4444' }
+                },
+                {
+                    name: 'Roborock',
+                    type: 'line',
+                    data: [38.5, 39.0, 39.5, 40.2, 41.0, 41.8],
+                    smooth: true,
+                    itemStyle: { color: '#f59e0b' }
+                },
+                {
+                    name: 'Ecovacs',
+                    type: 'line',
+                    data: [35.2, 35.8, 36.5, 37.2, 38.0, 38.8],
+                    smooth: true,
+                    itemStyle: { color: '#a855f7' }
+                },
+                {
+                    name: 'Shark',
+                    type: 'line',
+                    data: [15.8, 15.5, 15.2, 14.8, 14.2, 13.5],
+                    smooth: true,
+                    itemStyle: { color: '#10b981' }
+                },
+                {
+                    name: 'Dyson',
+                    type: 'line',
+                    data: [12.5, 12.2, 11.8, 11.5, 11.0, 10.5],
+                    smooth: true,
+                    itemStyle: { color: '#ec4899' }
+                }
+            ]
+        };
+        competitivePositionChart.setOption(competitivePositionOption);
+
+        // ROI Chart
+        const roiChart = echarts.init(document.getElementById('roiChart'));
+        const roiOption = {
+            title: {
+                text: 'ROI Evolution',
+                textStyle: { color: '#e2e8f0', fontSize: 14 },
+                left: 'center'
+            },
+            tooltip: {
+                trigger: 'axis',
+                formatter: '{b}: {c}:1'
+            },
+            xAxis: {
+                type: 'category',
+                data: ['M1', 'M2', 'M3', 'M4', 'M5', 'M6'],
+                axisLabel: { color: '#94a3b8' }
+            },
+            yAxis: {
+                type: 'value',
+                axisLabel: { 
+                    color: '#94a3b8',
+                    formatter: '{value}:1'
+                },
+                splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+            },
+            series: [{
+                type: 'line',
+                data: [1.2, 2.1, 2.8, 3.5, 4.0, 4.2],
+                smooth: true,
+                areaStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                        offset: 0,
+                        color: 'rgba(16, 185, 129, 0.4)'
+                    }, {
+                        offset: 1,
+                        color: 'rgba(16, 185, 129, 0.1)'
+                    }])
+                },
+                itemStyle: { color: '#10b981' },
+                markLine: {
+                    data: [
+                        { type: 'average', name: 'Target: 3:1' }
+                    ],
+                    lineStyle: { color: '#f59e0b' }
+                }
+            }]
+        };
+        roiChart.setOption(roiOption);
+
+        // Investment Chart
+        const investmentChart = echarts.init(document.getElementById('investmentChart'));
+        const investmentOption = {
+            title: {
+                text: 'Cumulative Investment',
+                textStyle: { color: '#e2e8f0', fontSize: 14 },
+                left: 'center'
+            },
+            tooltip: {
+                trigger: 'axis',
+                formatter: 'Month {b}: ${c}K'
+            },
+            xAxis: {
+                type: 'category',
+                data: ['M1', 'M2', 'M3', 'M4', 'M5', 'M6'],
+                axisLabel: { color: '#94a3b8' }
+            },
+            yAxis: {
+                type: 'value',
+                axisLabel: { 
+                    color: '#94a3b8',
+                    formatter: '${value}K'
+                },
+                splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+            },
+            series: [{
+                type: 'bar',
+                data: [15, 35, 60, 85, 105, 125],
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                        offset: 0,
+                        color: '#f59e0b'
+                    }, {
+                        offset: 1,
+                        color: '#d97706'
+                    }])
+                }
+            }]
+        };
+        investmentChart.setOption(investmentOption);
+
+        // Efficiency Chart
+        const efficiencyChart = echarts.init(document.getElementById('efficiencyChart'));
+        const efficiencyOption = {
+            title: {
+                text: 'Cost per Acquisition',
+                textStyle: { color: '#e2e8f0', fontSize: 14 },
+                left: 'center'
+            },
+            tooltip: {
+                trigger: 'axis',
+                formatter: function(params) {
+                    return params[0].name + '<br/>' +
+                           params[0].marker + ' AI Channel: $' + params[0].value + '<br/>' +
+                           params[1].marker + ' Paid Search: $' + params[1].value;
+                }
+            },
+            legend: {
+                data: ['AI Channel', 'Paid Search'],
+                textStyle: { color: '#e2e8f0' },
+                bottom: 10
+            },
+            xAxis: {
+                type: 'category',
+                data: ['M1', 'M2', 'M3', 'M4', 'M5', 'M6'],
+                axisLabel: { color: '#94a3b8' }
+            },
+            yAxis: {
+                type: 'value',
+                axisLabel: { 
+                    color: '#94a3b8',
+                    formatter: '${value}'
+                },
+                splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+            },
+            series: [
+                {
+                    name: 'AI Channel',
+                    type: 'line',
+                    data: [125, 95, 75, 62, 55, 48],
+                    smooth: true,
+                    itemStyle: { color: '#6366f1' }
+                },
+                {
+                    name: 'Paid Search',
+                    type: 'line',
+                    data: [85, 87, 90, 92, 95, 98],
+                    smooth: true,
+                    itemStyle: { color: '#ef4444' }
+                }
+            ]
+        };
+        efficiencyChart.setOption(efficiencyOption);
+
+        // Future Projection Chart
+        const futureProjectionChart = echarts.init(document.getElementById('futureProjectionChart'));
+        const futureProjectionOption = {
+            tooltip: {
+                trigger: 'axis',
+                formatter: function(params) {
+                    let result = params[0].name + '<br/>';
+                    params.forEach(function(item) {
+                        result += item.marker + ' ' + item.seriesName + ': ' + 
+                                  (item.seriesName === 'Market Position' ? '#' : '') + item.value + 
+                                  (item.seriesName !== 'Market Position' ? '%' : '') + '<br/>';
+                    });
+                    return result;
+                }
+            },
+            legend: {
+                data: ['AI Mention Rate', 'Market Position', 'Revenue Growth'],
+                textStyle: { color: '#e2e8f0' }
+            },
+            grid: {
+                left: '5%',
+                right: '10%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: ['Current', 'Q1 2026', 'Q2 2026', 'Q3 2026', 'Q4 2026'],
+                axisLabel: { color: '#94a3b8' }
+            },
+            yAxis: [
+                {
+                    type: 'value',
+                    name: 'Percentage',
+                    position: 'left',
+                    axisLabel: { 
+                        color: '#94a3b8',
+                        formatter: '{value}%'
+                    },
+                    splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+                },
+                {
+                    type: 'value',
+                    name: 'Market Position',
+                    position: 'right',
+                    inverse: true,
+                    min: 1,
+                    max: 5,
+                    axisLabel: { 
+                        color: '#94a3b8',
+                        formatter: '#{value}'
+                    }
+                }
+            ],
+            series: [
+                {
+                    name: 'AI Mention Rate',
+                    type: 'line',
+                    data: [42.3, 48, 54, 60, 65],
+                    smooth: true,
+                    lineStyle: { width: 3 },
+                    itemStyle: { color: '#6366f1' },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                            offset: 0,
+                            color: 'rgba(99, 102, 241, 0.4)'
+                        }, {
+                            offset: 1,
+                            color: 'rgba(99, 102, 241, 0.1)'
+                        }])
+                    }
+                },
+                {
+                    name: 'Market Position',
+                    type: 'line',
+                    yAxisIndex: 1,
+                    data: [3, 3, 2, 2, 1],
+                    step: 'end',
+                    itemStyle: { color: '#f59e0b' },
+                    lineStyle: { width: 3 }
+                },
+                {
+                    name: 'Revenue Growth',
+                    type: 'bar',
+                    data: [64, 85, 110, 135, 160],
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                            offset: 0,
+                            color: 'rgba(16, 185, 129, 0.8)'
+                        }, {
+                            offset: 1,
+                            color: 'rgba(16, 185, 129, 0.3)'
+                        }])
+                    }
+                }
+            ]
+        };
+        futureProjectionChart.setOption(futureProjectionOption);
+
+        // Make charts responsive
+        window.addEventListener('resize', function() {
+            productLineChart.resize();
+            contentCoverageChart.resize();
+            platformStrategyChart.resize();
+            knowledgeGraphChart.resize();
+            timelineChart.resize();
+            trafficSourceChart.resize();
+            revenueImpactChart.resize();
+            longtailChart.resize();
+            competitivePositionChart.resize();
+            roiChart.resize();
+            investmentChart.resize();
+            efficiencyChart.resize();
+            futureProjectionChart.resize();
+        });
+    </script>
+</body>
+</html>
