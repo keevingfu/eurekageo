@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka US Market GEO Opportunity Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1890ff;
+            --primary-dark: #0050b3;
+            --success: #52c41a;
+            --warning: #faad14;
+            --error: #f5222d;
+            --purple: #722ed1;
+            --cyan: #13c2c2;
+            --orange: #fa8c16;
+            --text-primary: #262626;
+            --text-secondary: #8c8c8c;
+            --border: #d9d9d9;
+            --background: #f0f2f5;
+            --card-bg: #ffffff;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-success: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 24px 0;
+            box-shadow: var(--shadow-md);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        /* KPI Cards */
+        .kpi-section {
+            max-width: 1400px;
+            margin: 32px auto;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+        }
+
+        .kpi-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .kpi-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .kpi-change {
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .kpi-change.positive {
+            color: var(--success);
+        }
+
+        .kpi-change.negative {
+            color: var(--error);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px 48px;
+        }
+
+        /* Chart Containers */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .chart-header {
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .chart-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .chart-box {
+            width: 100%;
+            height: 400px;
+        }
+
+        /* Insights Section */
+        .insights-box {
+            margin-top: 20px;
+            padding: 16px;
+            background: var(--background);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .insights-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .insights-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .insights-list li {
+            padding: 4px 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .insights-list li:before {
+            content: "•";
+            color: var(--primary);
+            font-weight: bold;
+            display: inline-block;
+            width: 1em;
+            margin-left: 0.5em;
+        }
+
+        /* Full Width Chart */
+        .full-width-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 32px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .kpi-section {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .chart-box {
+                height: 300px;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1>Eureka US Market GEO Opportunity Analysis</h1>
+            <p>AI Search Engine Optimization Dashboard - Robot Vacuum Market Intelligence</p>
+        </div>
+    </header>
+
+    <!-- KPI Cards -->
+    <section class="kpi-section">
+        <div class="kpi-card">
+            <div class="kpi-label">Total Addressable Searches</div>
+            <div class="kpi-value" style="color: var(--primary);">156K</div>
+            <div class="kpi-change positive">
+                <span>↑ 23% YoY</span>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Average Commercial Value</div>
+            <div class="kpi-value" style="color: var(--success);">7.2/10</div>
+            <div class="kpi-change positive">
+                <span>High conversion potential</span>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Brand Visibility Gap</div>
+            <div class="kpi-value" style="color: var(--warning);">68%</div>
+            <div class="kpi-change negative">
+                <span>Improvement opportunity</span>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">AI Platform Coverage</div>
+            <div class="kpi-value" style="color: var(--purple);">4/4</div>
+            <div class="kpi-change positive">
+                <span>All major platforms analyzed</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Chart Grid -->
+        <div class="chart-grid">
+            <!-- Search Intent Distribution -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">Search Intent Distribution</h2>
+                    <p class="chart-subtitle">Query categories by search volume and commercial value</p>
+                </div>
+                <div id="intentChart" class="chart-box"></div>
+                <div class="insights-box">
+                    <h3 class="insights-title">Key Insights & Recommendations</h3>
+                    <ul class="insights-list">
+                        <li>Recommendation queries show highest commercial value (8.8/10 avg)</li>
+                        <li>Focus content creation on "best robot vacuum for pet hair" - highest ROI potential</li>
+                        <li>Information queries have low competition but build trust and authority</li>
+                        <li>Prioritize comparison content to capture high-intent shoppers</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Platform Query Distribution -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">AI Platform Query Patterns</h2>
+                    <p class="chart-subtitle">User behavior across different AI search engines</p>
+                </div>
+                <div id="platformChart" class="chart-box"></div>
+                <div class="insights-box">
+                    <h3 class="insights-title">Key Insights & Recommendations</h3>
+                    <ul class="insights-list">
+                        <li>ChatGPT users seek personalized recommendations (40%) - create conversational content</li>
+                        <li>Perplexity favors detailed technical information - develop comprehensive guides</li>
+                        <li>Gemini users prefer data-driven comparisons - build comparison matrices</li>
+                        <li>Optimize content format based on platform preferences for maximum visibility</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Keyword Performance Heatmap -->
+        <div class="full-width-container">
+            <div class="chart-header">
+                <h2 class="chart-title">Keyword Performance Matrix</h2>
+                <p class="chart-subtitle">Search volume vs. commercial value analysis</p>
+            </div>
+            <div id="heatmapChart" class="chart-box" style="height: 500px;"></div>
+            <div class="insights-box">
+                <h3 class="insights-title">Strategic Insights & Action Items</h3>
+                <ul class="insights-list">
+                    <li>High-value opportunity: "best robot vacuum for pet hair" combines high volume with maximum commercial intent</li>
+                    <li>Quick wins: Target low competition keywords like "lidar vs camera navigation" for rapid ranking gains</li>
+                    <li>Brand building: Invest in "Eureka vs Roomba" content to establish competitive positioning</li>
+                    <li>Budget segment dominance: Create comprehensive content for sub-$300 market segment</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Competition Analysis -->
+        <div class="chart-grid">
+            <!-- Competition Landscape -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">Competition Landscape Analysis</h2>
+                    <p class="chart-subtitle">Difficulty levels across keyword categories</p>
+                </div>
+                <div id="competitionChart" class="chart-box"></div>
+                <div class="insights-box">
+                    <h3 class="insights-title">Key Insights & Recommendations</h3>
+                    <ul class="insights-list">
+                        <li>Problem-solving queries have lowest competition - establish authority with troubleshooting content</li>
+                        <li>Information queries offer balanced opportunity - moderate competition with good volume</li>
+                        <li>Comparison queries are highly contested - differentiate with unique data and testing</li>
+                        <li>Focus initial efforts on low-competition, high-value niches</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ROI Projection -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">6-Month ROI Projection</h2>
+                    <p class="chart-subtitle">Expected returns from GEO implementation</p>
+                </div>
+                <div id="roiChart" class="chart-box"></div>
+                <div class="insights-box">
+                    <h3 class="insights-title">Key Insights & Recommendations</h3>
+                    <ul class="insights-list">
+                        <li>AI visibility expected to reach 300% improvement by month 6</li>
+                        <li>Brand mentions will show fastest early growth (150% by month 3)</li>
+                        <li>Conversion rate improvements lag but provide sustained value</li>
+                        <li>Focus on content velocity in months 1-3 for maximum impact</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Priority Matrix -->
+        <div class="full-width-container">
+            <div class="chart-header">
+                <h2 class="chart-title">Content Priority Matrix</h2>
+                <p class="chart-subtitle">Implementation roadmap based on effort vs. impact</p>
+            </div>
+            <div id="priorityChart" class="chart-box" style="height: 500px;"></div>
+            <div class="insights-box">
+                <h3 class="insights-title">Implementation Strategy</h3>
+                <ul class="insights-list">
+                    <li>Quick Wins (Low Effort, High Impact): Start with pet hair content and budget comparisons</li>
+                    <li>Strategic Investments (High Effort, High Impact): Build comprehensive brand comparison framework</li>
+                    <li>Foundation Building (Low Effort, Low Impact): Create troubleshooting guides for long-term trust</li>
+                    <li>Allocate 60% resources to high-impact initiatives, 40% to foundation building</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Initialize all charts when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initIntentChart();
+            initPlatformChart();
+            initHeatmapChart();
+            initCompetitionChart();
+            initROIChart();
+            initPriorityChart();
+        });
+
+        // Search Intent Distribution Chart
+        function initIntentChart() {
+            const chart = echarts.init(document.getElementById('intentChart'));
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                legend: {
+                    data: ['Search Volume (K)', 'Commercial Value (x10K)'],
+                    top: 0
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['Information', 'Comparison', 'Recommendation', 'Problem-solving']
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Volume (K searches/month)'
+                },
+                series: [
+                    {
+                        name: 'Search Volume (K)',
+                        type: 'bar',
+                        data: [28, 34, 31, 17],
+                        itemStyle: { color: '#1890ff' }
+                    },
+                    {
+                        name: 'Commercial Value (x10K)',
+                        type: 'bar',
+                        data: [62, 84, 88, 46],
+                        itemStyle: { color: '#52c41a' }
+                    }
+                ]
+            };
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        // Platform Query Distribution Chart
+        function initPlatformChart() {
+            const chart = echarts.init(document.getElementById('platformChart'));
+            const option = {
+                tooltip: { trigger: 'item' },
+                legend: {
+                    orient: 'vertical',
+                    left: 'left',
+                    data: ['Information', 'Comparison', 'Recommendation', 'Problem']
+                },
+                radar: {
+                    indicator: [
+                        { name: 'Perplexity', max: 50 },
+                        { name: 'ChatGPT', max: 50 },
+                        { name: 'Gemini', max: 50 },
+                        { name: 'Google AI', max: 50 }
+                    ]
+                },
+                series: [{
+                    type: 'radar',
+                    data: [
+                        {
+                            value: [35, 20, 30, 25],
+                            name: 'Information',
+                            itemStyle: { color: '#1890ff' }
+                        },
+                        {
+                            value: [25, 20, 35, 30],
+                            name: 'Comparison',
+                            itemStyle: { color: '#722ed1' }
+                        },
+                        {
+                            value: [25, 40, 20, 30],
+                            name: 'Recommendation',
+                            itemStyle: { color: '#52c41a' }
+                        },
+                        {
+                            value: [15, 20, 15, 15],
+                            name: 'Problem',
+                            itemStyle: { color: '#fa8c16' }
+                        }
+                    ]
+                }]
+            };
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        // Keyword Performance Heatmap
+        function initHeatmapChart() {
+            const chart = echarts.init(document.getElementById('heatmapChart'));
+            
+            const keywords = [
+                'best robot vacuum for pet hair',
+                'best robot vacuum brands 2024',
+                'budget robot vacuum under $300',
+                'recommended robot vacuum hardwood',
+                'robot vacuum comparison chart',
+                'what to look for robot vacuum',
+                'best value robot vacuum Reddit',
+                'robot vacuum keeps getting stuck',
+                'why robot vacuum not charging',
+                'Eureka vs Roomba comparison',
+                'robot vacuum navigation tech',
+                'how maintain robot vacuum',
+                'lidar vs camera navigation',
+                'robot vacuum suction guide',
+                'which robot vacuum small apartment',
+                'Eureka E10s vs competitors',
+                'robot vacuum error codes',
+                'AI recommended robot vacuum',
+                'Eureka troubleshooting guide'
+            ];
+            
+            const data = [
+                [0, 0, 15, 10], [1, 0, 20, 9], [2, 0, 8, 8], [3, 0, 8, 9],
+                [0, 1, 4, 8], [1, 1, 8, 8], [2, 1, 6, 8], [3, 1, 6, 4],
+                [0, 2, 5, 4], [1, 2, 2, 9], [2, 2, 3, 6], [3, 2, 3, 5],
+                [0, 3, 3, 7], [1, 3, 2, 6], [2, 3, 3, 7], [3, 3, 1, 8],
+                [0, 4, 2, 4], [1, 4, 1, 6], [2, 4, 1, 6]
+            ];
+
+            const option = {
+                tooltip: {
+                    position: 'top',
+                    formatter: function(params) {
+                        const keywordIndex = params.value[0] * 5 + params.value[1];
+                        return `${keywords[keywordIndex]}<br/>Volume: ${params.value[2]}K/month<br/>Value: ${params.value[3]}/10`;
+                    }
+                },
+                grid: {
+                    height: '70%',
+                    top: '10%'
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['High Volume', 'Medium-High', 'Medium', 'Low'],
+                    splitArea: { show: true }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: ['Very High Value', 'High Value', 'Medium Value', 'Low Value'],
+                    splitArea: { show: true }
+                },
+                visualMap: {
+                    min: 0,
+                    max: 20,
+                    calculable: true,
+                    orient: 'horizontal',
+                    left: 'center',
+                    bottom: '5%',
+                    color: ['#f5222d', '#fa8c16', '#faad14', '#52c41a', '#1890ff']
+                },
+                series: [{
+                    name: 'Keywords',
+                    type: 'heatmap',
+                    data: data,
+                    label: { show: true },
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }]
+            };
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        // Competition Landscape Chart
+        function initCompetitionChart() {
+            const chart = echarts.init(document.getElementById('competitionChart'));
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                legend: {
+                    data: ['Low Competition', 'Medium Competition', 'High Competition'],
+                    top: 0
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value',
+                    name: 'Number of Keywords'
+                },
+                yAxis: {
+                    type: 'category',
+                    data: ['Problem-solving', 'Information', 'Comparison', 'Recommendation']
+                },
+                series: [
+                    {
+                        name: 'Low Competition',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [5, 2, 1, 2],
+                        itemStyle: { color: '#52c41a' }
+                    },
+                    {
+                        name: 'Medium Competition',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [0, 2, 3, 2],
+                        itemStyle: { color: '#faad14' }
+                    },
+                    {
+                        name: 'High Competition',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [0, 1, 1, 1],
+                        itemStyle: { color: '#f5222d' }
+                    }
+                ]
+            };
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        // ROI Projection Chart
+        function initROIChart() {
+            const chart = echarts.init(document.getElementById('roiChart'));
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'cross' }
+                },
+                legend: {
+                    data: ['AI Visibility', 'Brand Mentions', 'Conversion Rate', 'Cost Reduction'],
+                    top: 0
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: ['Month 1', 'Month 2', 'Month 3', 'Month 4', 'Month 5', 'Month 6']
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Improvement %',
+                    axisLabel: {
+                        formatter: '{value}%'
+                    }
+                },
+                series: [
+                    {
+                        name: 'AI Visibility',
+                        type: 'line',
+                        data: [30, 70, 150, 200, 250, 300],
+                        smooth: true,
+                        itemStyle: { color: '#1890ff' }
+                    },
+                    {
+                        name: 'Brand Mentions',
+                        type: 'line',
+                        data: [20, 50, 90, 110, 130, 150],
+                        smooth: true,
+                        itemStyle: { color: '#722ed1' }
+                    },
+                    {
+                        name: 'Conversion Rate',
+                        type: 'line',
+                        data: [5, 10, 15, 20, 25, 30],
+                        smooth: true,
+                        itemStyle: { color: '#52c41a' }
+                    },
+                    {
+                        name: 'Cost Reduction',
+                        type: 'line',
+                        data: [5, 10, 20, 25, 32, 40],
+                        smooth: true,
+                        itemStyle: { color: '#fa8c16' }
+                    }
+                ]
+            };
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        // Priority Matrix Chart
+        function initPriorityChart() {
+            const chart = echarts.init(document.getElementById('priorityChart'));
+            
+            const data = [
+                // Quick Wins (Low Effort, High Impact)
+                { name: 'Pet Hair Content', value: [2, 9, 10], category: 0 },
+                { name: 'Budget Comparisons', value: [3, 8, 8], category: 0 },
+                { name: 'Small Apartment Guide', value: [2, 7, 7], category: 0 },
+                
+                // Strategic (High Effort, High Impact)
+                { name: 'Brand Comparison Matrix', value: [8, 9, 9], category: 1 },
+                { name: 'Tech Knowledge Base', value: [7, 7, 6], category: 1 },
+                { name: 'Video Content Series', value: [9, 8, 8], category: 1 },
+                
+                // Foundation (Low Effort, Low Impact)
+                { name: 'Troubleshooting Guides', value: [2, 4, 5], category: 2 },
+                { name: 'Error Code Database', value: [3, 3, 4], category: 2 },
+                { name: 'Maintenance Tips', value: [2, 5, 5], category: 2 },
+                
+                // Consider Later (High Effort, Low Impact)
+                { name: 'Community Forum', value: [8, 4, 3], category: 3 },
+                { name: 'Mobile App', value: [9, 3, 4], category: 3 }
+            ];
+
+            const option = {
+                tooltip: {
+                    formatter: function(params) {
+                        return `${params.data.name}<br/>Effort: ${params.data.value[0]}/10<br/>Impact: ${params.data.value[1]}/10<br/>Value: ${params.data.value[2]}/10`;
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '7%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value',
+                    name: 'Implementation Effort',
+                    nameLocation: 'middle',
+                    nameGap: 30,
+                    min: 0,
+                    max: 10,
+                    splitLine: {
+                        lineStyle: { type: 'dashed' }
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Business Impact',
+                    nameLocation: 'middle',
+                    nameGap: 30,
+                    min: 0,
+                    max: 10,
+                    splitLine: {
+                        lineStyle: { type: 'dashed' }
+                    }
+                },
+                series: [{
+                    type: 'scatter',
+                    symbolSize: function(data) {
+                        return data[2] * 8;
+                    },
+                    data: data,
+                    itemStyle: {
+                        color: function(params) {
+                            const colors = ['#52c41a', '#1890ff', '#faad14', '#8c8c8c'];
+                            return colors[params.data.category];
+                        }
+                    },
+                    label: {
+                        show: true,
+                        formatter: '{b}',
+                        position: 'top'
+                    },
+                    emphasis: {
+                        focus: 'series',
+                        label: {
+                            show: true,
+                            formatter: '{b}',
+                            position: 'bottom'
+                        }
+                    }
+                }]
+            };
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+    </script>
+</body>
+</html>

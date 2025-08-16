@@ -6,210 +6,198 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Eureka GEO Project Management System** is a comprehensive web-based platform for managing Generative Engine Optimization (GEO) strategies. The system monitors and optimizes brand visibility across AI platforms like ChatGPT, Perplexity, Gemini, and Claude, providing real-time analytics, competitive intelligence, and content optimization tools.
 
-## Architecture & Technical Stack
-
-### Frontend Architecture
-- **Framework**: Vanilla HTML/CSS/JavaScript with ECharts v5.4.3 for data visualization
-- **Design Pattern**: Self-contained HTML files with inline styles and scripts
-- **Styling**: Custom CSS with modern design system (CSS variables, gradients, glassmorphism effects)
-- **Charts**: ECharts for all data visualizations (line charts, bar charts, radar charts, etc.)
-- **Language**: Chinese interface with some English technical terms
-
-### Project Structure
-```
-geopm/
-├── geo-pm.html                          # Main login and project management interface
-├── eureka-geo-overview.html             # Analytics dashboard with dark theme
-├── eureka-geo-system.html               # System monitoring dashboard
-├── eureka-geo-phase[1-4].html          # Phase-specific dashboards
-├── eureka-geo-phase[1-4]-report.html   # Phase-specific report generators
-├── eureka-geo-phace1-*.html           # Phase 1 specific tools (diagnostic, baseline, etc.)
-├── eureka-geo-phace2-*.html           # Phase 2 optimization tools
-└── geo-des.html                        # Additional design/visualization page
-```
-
-### Key System Modules
-
-1. **Project Management Module** (`geo-pm.html`)
-   - Login system and authentication
-   - Task management with kanban boards
-   - Project phase tracking (4 phases: 基础诊断, 试点优化, 规模扩展, 持续优化)
-   - Team collaboration features
-
-2. **Analytics Dashboards** 
-   - Real-time metrics visualization
-   - Multi-platform performance tracking
-   - Competitive analysis
-   - Conversion funnel analysis
-
-3. **Diagnostic Tools**
-   - AI platform performance diagnostics
-   - Brand mention monitoring
-   - Content effectiveness analysis
-   - Baseline establishment tools
-
-4. **Content Optimization Tools**
-   - E-E-A-T optimization modules
-   - FAQ content generators
-   - Schema markup tools
-   - Content performance tracking
-
-5. **Reporting System**
-   - Automated report generation
-   - Phase-specific insights
-   - Export capabilities
-   - Executive summaries
-
 ## Development Commands
 
 This is a static HTML project with no build process. To work with the project:
 
 ```bash
 # Open any HTML file directly in a browser
-open eureka-geo-overview.html
+open index.html  # Opens the main portal
 
 # For local development with live reload (optional)
 python -m http.server 8000
 # or
 npx http-server
+
+# Validate HTML syntax (if needed)
+# Note: No linting or build commands exist for this static project
 ```
 
-## Data Visualization Standards
+## Architecture Overview
 
-### Color Scheme
-```css
---primary-color: #2563eb;    /* Blue */
---success-color: #22c55e;    /* Green */
---warning-color: #f59e0b;    /* Amber */
---danger-color: #ef4444;     /* Red */
---background: #f8fafc;       /* Light gray */
---text-primary: #1e293b;     /* Dark text */
-```
+This is a **static HTML demonstration** of the Eureka GEO system. Each HTML file is self-contained with inline CSS and JavaScript, requiring no build process or external dependencies except for ECharts CDN.
 
-### Chart Configuration
-- All charts use ECharts v5.4.3 from CDN
-- Chart initialization pattern:
+### Technical Stack
+- **Frontend**: Vanilla HTML/CSS/JavaScript
+- **Charts**: ECharts v5.4.3 (loaded from CDN)
+- **Portal**: iFrame-based navigation system (`index.html`)
+- **Language**: Chinese interface with English navigation in portal
+- **Styling**: Modern CSS with variables, gradients, glassmorphism effects
+
+### High-Level Architecture
+
+The system follows a 4-phase GEO optimization methodology, with each phase having dedicated tools and dashboards:
+
+1. **Portal System** (`index.html`)
+   - Central navigation hub with left sidebar menu
+   - iFrame-based content loading system
+   - All other pages are loaded within this portal frame
+   - Navigation items trigger `loadPage()` function to update iFrame src
+
+2. **Phase-Based Organization**
+   - **Phase 1 (基础诊断)**: Baseline establishment and diagnostics
+   - **Phase 2 (试点优化)**: Content optimization and E-E-A-T improvements
+   - **Phase 3 (规模扩展)**: Scaling and multi-platform expansion
+   - **Phase 4 (持续优化)**: Continuous monitoring and ROI optimization
+
+3. **Key Architectural Patterns**
+   - Each HTML file contains all required CSS/JS inline (no external files)
+   - Chart data is embedded as JavaScript objects (no API calls)
+   - Responsive design using CSS Grid and Flexbox
+   - Consistent color scheme and design language across all pages
+   - No external dependencies except ECharts CDN (v5.4.3)
+
+
+## Working with Charts and Data
+
+### ECharts Integration
+All data visualizations use ECharts v5.4.3 loaded from CDN. Charts are initialized with embedded data (no external API calls).
+
 ```javascript
+// Standard chart initialization pattern
 const chart = echarts.init(document.getElementById('chartId'));
-const option = { /* chart configuration */ };
+const option = {
+    // Chart configuration with inline data
+    series: [{
+        data: [/* embedded data points */]
+    }]
+};
 chart.setOption(option);
+
+// Responsive handling
+window.addEventListener('resize', () => chart.resize());
 ```
 
-### Key Metrics Tracked
-- **AI提及率 (AI Mention Rate)**: Brand mention percentage in AI responses
+### Key GEO Metrics
+The system tracks these core metrics across AI platforms:
+- **AI提及率 (AI Mention Rate)**: % of queries where brand is mentioned
 - **SoV-AI (Share of Voice)**: Brand's word count share in AI responses
-- **引用分数 (Citation Score)**: Quality and authority of citations
-- **转化率 (Conversion Rate)**: From AI mention to purchase conversion
-- **平台覆盖率 (Platform Coverage)**: Brand presence across AI platforms
+- **引用分数 (Citation Score)**: Weighted score of citation quality/authority
+- **转化率 (Conversion Rate)**: AI mention → purchase conversion rate
+- **平台覆盖率 (Platform Coverage)**: Brand presence across different AI platforms
 
 ## Code Patterns & Conventions
 
-### HTML Structure
-- Each file is self-contained with inline CSS and JavaScript
-- Consistent use of semantic HTML5 elements
-- Mobile-responsive design using CSS Grid and Flexbox
+### Working with the Portal System
+The `index.html` portal uses iFrame navigation. When adding new pages:
+1. Create self-contained HTML file with all CSS/JS inline
+2. Add navigation item to appropriate section in `index.html`
+3. Ensure the page works correctly within the iFrame context
 
-### JavaScript Patterns
-- Chart data is typically embedded as JavaScript objects
-- Event handlers are added inline or via addEventListener
-- No external JavaScript dependencies except ECharts
+### Adding New Visualizations
+When creating new charts or dashboards:
+```javascript
+// 1. Create container with unique ID
+<div id="myChart" style="width: 100%; height: 400px;"></div>
 
-### CSS Architecture
-- CSS variables for theming and consistency
-- Responsive breakpoints for mobile compatibility
-- Modern CSS features (gradients, backdrop-filter, transforms)
+// 2. Initialize after DOM ready
+document.addEventListener('DOMContentLoaded', function() {
+    const chart = echarts.init(document.getElementById('myChart'));
+    
+    // 3. Use consistent option structure
+    const option = {
+        title: { text: '图表标题' },
+        tooltip: { trigger: 'axis' },
+        series: [{ 
+            type: 'line',  // or 'bar', 'pie', etc.
+            data: [/* your data */]
+        }]
+    };
+    
+    chart.setOption(option);
+});
+```
 
-## Working with Charts
+### CSS Design System
+All pages use consistent CSS variables defined in each file:
+```css
+:root {
+    --primary-color: #2563eb;
+    --success-color: #22c55e;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --background: #f8fafc;
+    --text-primary: #1e293b;
+}
+```
 
-### Adding New Charts
-1. Add a container div with unique ID
-2. Initialize chart with `echarts.init()`
-3. Configure options following existing patterns
-4. Call `chart.setOption(option)`
+## Navigation Structure
 
-### Updating Chart Data
-- Modify the data arrays in chart options
-- Call `chart.setOption()` with updated data
-- Use `chart.resize()` for responsive behavior
+The portal system (`index.html`) provides organized access to all system features:
 
-## Important Considerations
+- **Dashboard Section**
+  - Design Showcase (`geo-des.html`)
+  - System Monitor (`eureka-geo-system.html`)
+  - Analytics Overview (`eureka-geo-overview.html`)
 
-1. **Language**: Interface is primarily in Chinese - maintain consistency in terminology
-2. **Performance**: Keep inline data reasonable to avoid large file sizes
-3. **Browser Compatibility**: Requires modern browsers with ES6 support
-4. **Chart Performance**: Limit data points for smooth animations
-5. **Mobile Support**: Test all interfaces on mobile devices
-6. **Data Security**: No sensitive data should be hardcoded in HTML files
+- **Strategy & Analysis** (New Section)
+  - Market Opportunity (`01-eureka-geo-opportunity.html`)
+  - GEO Strategy (`02-eureka-geo-strategy.html`)
+  - 3-Step Methodology (`eureka-geo-optimization-strategy.html`)
+  - Strategy Dashboard (`eureka-geo-strategy-dashboard.html`)
 
-## Phase-Specific Features
+- **AI Channel Analysis** (New Section)
+  - Channel Dashboard (`eureka-ai-channel-dashboard.html`)
+  - Channel Diagnostic (`eureka-ai-channel-diagnostic.html`)
 
-### Phase 1 (基础诊断)
-- Baseline establishment
-- Initial diagnostics
-- Data collection tools
-- Competitive analysis setup
+- **Phase 1 - 基础诊断 (Foundation & Diagnosis)**
+  - Phase 1 Guide (`eureka-geo-phase1-guide.html`)
+  - Phase 1 Checklist (`eureka-geo-phace1-checklist.html`)
+  - Data Collection (`eureka-geo-phace1-datacollection.html`)
+  - Baseline Analysis (`eureka-geo-phase1-baseline02.html`)
+  - Tactical Execution Plan (`eureka-geo-implementation-guide.html`)
+  - GEO Asset Library (`eureka-geo-dam.html`)
 
-### Phase 2 (试点优化)
-- E-E-A-T optimization
-- Content improvement
-- FAQ development
-- A/B testing setup
+- **Phase 2 - 试点优化 (Pilot Optimization)**
+  - FAQ Content (`eureka-geo-phace2-faq-content.html`)
+  - Comparison Analysis (`eureka-geo-phace2-comparison.html`)
+  - E-E-A-T Optimization (`eureka-geo-phace2-eeat-optimization.html`)
+  - Phase 2 Report (`eureka-geo-phase2-report.html`)
 
-### Phase 3 (规模扩展)
-- Multi-platform expansion
-- Automation implementation
-- Scale optimization
-- Performance monitoring
+- **Phase 3 & 4 - Scale & Continuous Optimization**
+  - Phase dashboards and reports for scaling and ongoing optimization
 
-### Phase 4 (持续优化)
-- Continuous monitoring
-- Automated reporting
-- Innovation testing
-- ROI optimization
+## Important Notes
 
-## Current Project Status (Updated: 2025-08-10)
+1. **Language**: All content pages use Chinese interface. Only the portal navigation is in English.
+2. **File Naming**: Note the inconsistent spelling "phace" vs "phase" in filenames - maintain existing names to avoid breaking links.
+3. **No Build Process**: This is a static demonstration. Simply open files in a browser.
+4. **Repository**: https://github.com/keevingfu/eurekageo
+5. **Future Architecture**: The Chinese documentation (`Eureka GEO 项目管理系统.md`) describes a planned full-stack implementation with React + Node.js + MongoDB + Redis, but the current implementation is static HTML only.
 
-### Completed Features
-1. **Portal System** (`index.html`)
-   - English-only navigation portal with left sidebar menu
-   - iFrame-based content display system
-   - Organized navigation structure with 4 phase sections
-   - Welcome screen with feature overview
+## Current Project Status (Updated: 2025-01-16)
 
-2. **Navigation Structure**
-   - **Dashboard**: Design Showcase, System Monitor, Analytics Overview
-   - **Phase 1**: Phase 1 Guide, Phase 1 Checklist, Data Collection, Baseline Analysis
-   - **Phase 2**: FAQ Content, Comparison Analysis, E-E-A-T Optimization, Phase 2 Report
-   - **Phase 3**: Phase 3 Dashboard, Phase 3 Report
-   - **Phase 4**: Phase 4 Dashboard, Phase 4 Report
+### Recent Updates
+1. **Navigation Categories in index.html**:
+   - **Strategy & Analysis**: Market Opportunity, GEO Strategy, 3-Step Methodology, and Strategy Dashboard
+   - **AI Channel Analysis**: Channel Dashboard and Channel Diagnostic
 
-3. **Recent Updates**
-   - Removed Project Management menu item from Dashboard
-   - Reordered Dashboard menu items (Design Showcase first)
-   - Streamlined Phase 1 menu to only 4 essential items
-   - Reordered Phase 2 menu items with FAQ Content first
-   - Added brand logos to comparison table (Eureka, Roborock, iRobot, Ecovacs)
-   - Removed "成功案例" section from geo-des.html
-   - All navigation items verified to have corresponding HTML files
-
-4. **Repository Status**
-   - Git repository initialized and connected to GitHub
-   - All files committed and pushed to https://github.com/keevingfu/eurekageo
-   - Repository contains 26 files including all HTML pages and documentation
+2. **Key Pages**:
+   - `01-eureka-geo-opportunity.html` - US Market GEO Opportunity Dashboard
+   - `02-eureka-geo-strategy.html` - GEO Optimization Strategy Dashboard  
+   - `eureka-geo-optimization-strategy.html` - 3-Step Methodology
+   - `eureka-geo-strategy-dashboard.html` - Strategy Dashboard
+   - `eureka-ai-channel-dashboard.html` - AI Search Channel Analysis
+   - `eureka-ai-channel-diagnostic.html` - AI Search Results Channel Diagnostic
+   - `eureka-geo-implementation-guide.html` - Tactical Execution Plan (Phase 1)
+   - `eureka-geo-dam.html` - GEO Asset Library visualization (Phase 1)
 
 ### File Inventory
-- 24 HTML files (including index.html portal)
+- 31 HTML files (all self-contained with inline CSS/JS)
 - 2 Markdown documentation files (CLAUDE.md, Eureka GEO 项目管理系统.md)
-- All files use Chinese interface with English navigation in portal
+- All files are static - no compilation or build required
 
-## Future Enhancements
-
-The documentation suggests planned features for a full-stack implementation:
-- React + Node.js architecture
-- MongoDB for data persistence
-- Real-time API integrations
-- User authentication system
-- Automated alert system
-- Slack/email notifications
-
-Currently, the project consists of static HTML demonstrations of the planned interface.
+### Recent Git Activity
+- Latest commit: Update CLAUDE.md with current project status
+- 8 new HTML files added for Strategy & AI Channel features
+- No configuration files or build tools present

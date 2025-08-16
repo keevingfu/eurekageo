@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka GEO Optimization Strategy Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4a90e2;
+            --primary-dark: #357abd;
+            --success: #7ed321;
+            --warning: #f5a623;
+            --error: #d0021b;
+            --purple: #9013fe;
+            --cyan: #50e3c2;
+            --orange: #f8923b;
+            --pink: #ff6b9d;
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --border: #e0e6ed;
+            --background: #f7f9fc;
+            --card-bg: #ffffff;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-success: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-warning: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        .header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 32px 0;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 18px;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            max-width: 1400px;
+            margin: 32px auto 0;
+            padding: 0 24px;
+            display: flex;
+            gap: 8px;
+            border-bottom: 2px solid var(--border);
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            padding: 16px 24px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .nav-tab:hover {
+            color: var(--primary);
+            background: rgba(74, 144, 226, 0.05);
+        }
+
+        .nav-tab.active {
+            color: var(--primary);
+        }
+
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 3px 3px 0 0;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Strategy Cards */
+        .strategy-section {
+            max-width: 1400px;
+            margin: 32px auto;
+            padding: 0 24px;
+        }
+
+        .strategy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .strategy-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .strategy-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+
+        .strategy-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+
+        .strategy-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .strategy-description {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .strategy-metrics {
+            display: flex;
+            gap: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .metric {
+            flex: 1;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Chart Containers */
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+        }
+
+        .chart-header {
+            margin-bottom: 24px;
+        }
+
+        .chart-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .chart-subtitle {
+            font-size: 16px;
+            color: var(--text-secondary);
+        }
+
+        .chart-box {
+            width: 100%;
+            height: 450px;
+        }
+
+        /* Insights Section */
+        .insights-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+
+        .insights-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .insights-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .insights-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+
+        .insight-item {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .insight-item h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .insight-item p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Content Calendar */
+        .calendar-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .month-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .month-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            background: var(--background);
+        }
+
+        .month-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        .week-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 8px;
+            border-left: 3px solid var(--success);
+            transition: all 0.2s ease;
+        }
+
+        .week-item:hover {
+            transform: translateX(4px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .week-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .week-content {
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .header p {
+                font-size: 16px;
+            }
+
+            .strategy-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-box {
+                height: 350px;
+            }
+
+            .nav-tabs {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        /* Loading State */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1>Eureka GEO Optimization Strategy</h1>
+            <p>Systematic Three-Step Approach for AI Search Engine Dominance</p>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+        <button class="nav-tab active" onclick="showTab('step1')">Step 1: Keyword Analysis</button>
+        <button class="nav-tab" onclick="showTab('step2')">Step 2: Content Strategy</button>
+        <button class="nav-tab" onclick="showTab('step3')">Step 3: Channel Strategy</button>
+        <button class="nav-tab" onclick="showTab('overview')">Strategy Overview</button>
+    </div>
+
+    <!-- Step 1: Keyword Analysis -->
+    <div id="step1" class="tab-content active">
+        <div class="strategy-section">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">TOP 50 Keywords by Category & AI Mention Potential</h2>
+                    <p class="chart-subtitle">Strategic keyword prioritization based on AI visibility potential</p>
+                </div>
+                <div id="keywordChart" class="chart-box"></div>
+            </div>
+
+            <div class="strategy-grid">
+                <div class="strategy-card">
+                    <div class="strategy-icon" style="background: rgba(82, 196, 26, 0.1); color: var(--success);">
+                        🎯
+                    </div>
+                    <h3 class="strategy-title">Product Features</h3>
+                    <p class="strategy-description">Technical specifications and capabilities that AI engines prioritize when answering "how it works" queries.</p>
+                    <div class="strategy-metrics">
+                        <div class="metric">
+                            <div class="metric-value">12</div>
+                            <div class="metric-label">Keywords</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">7.1</div>
+                            <div class="metric-label">Avg. AI Score</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="strategy-card">
+                    <div class="strategy-icon" style="background: rgba(250, 173, 20, 0.1); color: var(--warning);">
+                        🏠
+                    </div>
+                    <h3 class="strategy-title">Use Cases</h3>
+                    <p class="strategy-description">Scenario-based queries that match specific user needs and environments for higher conversion rates.</p>
+                    <div class="strategy-metrics">
+                        <div class="metric">
+                            <div class="metric-value">12</div>
+                            <div class="metric-label">Keywords</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">7.8</div>
+                            <div class="metric-label">Avg. AI Score</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="strategy-card">
+                    <div class="strategy-icon" style="background: rgba(24, 144, 255, 0.1); color: var(--primary);">
+                        ⚖️
+                    </div>
+                    <h3 class="strategy-title">Comparisons</h3>
+                    <p class="strategy-description">Head-to-head brand and model comparisons that capture high-intent shoppers in decision phase.</p>
+                    <div class="strategy-metrics">
+                        <div class="metric">
+                            <div class="metric-value">12</div>
+                            <div class="metric-label">Keywords</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">8.2</div>
+                            <div class="metric-label">Avg. AI Score</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="strategy-card">
+                    <div class="strategy-icon" style="background: rgba(114, 46, 209, 0.1); color: var(--purple);">
+                        💰
+                    </div>
+                    <h3 class="strategy-title">Purchase Decisions</h3>
+                    <p class="strategy-description">Budget-focused and value-oriented queries that directly influence buying behavior.</p>
+                    <div class="strategy-metrics">
+                        <div class="metric">
+                            <div class="metric-value">14</div>
+                            <div class="metric-label">Keywords</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">7.4</div>
+                            <div class="metric-label">Avg. AI Score</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">AI Mention Potential Heat Map</h2>
+                    <p class="chart-subtitle">Keyword opportunities mapped by search volume and AI visibility potential</p>
+                </div>
+                <div id="heatmapChart" class="chart-box"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 2: Content Strategy -->
+    <div id="step2" class="tab-content">
+        <div class="strategy-section">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">Content Framework Architecture</h2>
+                    <p class="chart-subtitle">AI-optimized content structures for maximum visibility</p>
+                </div>
+                <div id="contentChart" class="chart-box"></div>
+            </div>
+
+            <div class="insights-section">
+                <div class="insights-header">
+                    <div class="insights-icon">💡</div>
+                    <h3 class="insights-title">Content Optimization Templates</h3>
+                </div>
+                <div class="insights-grid">
+                    <div class="insight-item">
+                        <h4>FAQ Structure</h4>
+                        <p>Q&A format with schema markup, 50-100 word answers, evidence links, related questions</p>
+                    </div>
+                    <div class="insight-item">
+                        <h4>Comparison Tables</h4>
+                        <p>Standardized metrics, visual indicators, price-value ratios, feature matrices</p>
+                    </div>
+                    <div class="insight-item">
+                        <h4>Schema Implementation</h4>
+                        <p>Product, FAQ, Review, HowTo, Video, and Comparison schemas for rich snippets</p>
+                    </div>
+                    <div class="insight-item">
+                        <h4>Authority Signals</h4>
+                        <p>Citations, certifications, test data, industry standards, partner reviews</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calendar-container" style="margin-top: 32px;">
+                <div class="calendar-header">
+                    <h2 class="chart-title">6-Month Content Calendar</h2>
+                    <p class="chart-subtitle">Strategic content rollout plan</p>
+                </div>
+                <div class="month-grid">
+                    <div class="month-card">
+                        <h3 class="month-title">Month 1-2: Foundation</h3>
+                        <div class="week-item">
+                            <div class="week-label">Week 1-2</div>
+                            <div class="week-content">Core competitor comparisons (Eureka vs Top 3)</div>
+                        </div>
+                        <div class="week-item">
+                            <div class="week-label">Week 3-4</div>
+                            <div class="week-content">Pet hair performance deep dive content</div>
+                        </div>
+                        <div class="week-item">
+                            <div class="week-label">Week 5-6</div>
+                            <div class="week-content">Budget-friendly positioning articles</div>
+                        </div>
+                        <div class="week-item">
+                            <div class="week-label">Week 7-8</div>
+                            <div class="week-content">Technical feature explanations</div>
+                        </div>
+                    </div>
+
+                    <div class="month-card">
+                        <h3 class="month-title">Month 3-4: Expansion</h3>
+                        <div class="week-item">
+                            <div class="week-label">Week 9-10</div>
+                            <div class="week-content">Use case guides (apartments, floors)</div>
+                        </div>
+                        <div class="week-item">
+                            <div class="week-label">Week 11-12</div>
+                            <div class="week-content">Troubleshooting & maintenance library</div>
+                        </div>
+                        <div class="week-item">
+                            <div class="week-label">Week 13-14</div>
+                            <div class="week-content">Video content production launch</div>
+                        </div>
+                        <div class="week-item">
+                            <div class="week-label">Week 15-16</div>
+                            <div class="week-content">User testimonial integration</div>
+                        </div>
+                    </div>
+
+                    <div class="month-card">
+                        <h3 class="month-title">Month 5-6: Optimization</h3>
+                        <div class="week-item">
+                            <div class="week-label">Week 17-18</div>
+                            <div class="week-content">AI-optimized FAQ compilation</div>
+                        </div>
+                        <div class="week-item">
+                            <div class="week-label">Week 19-20</div>
+                            <div class="week-content">Interactive comparison tools</div>
+                        </div>
+                        <div class="week-item">
+                            <div class="week-label">Week 21-22</div>
+                            <div class="week-content">Seasonal buying guides</div>
+                        </div>
+                        <div class="week-item">
+                            <div class="week-label">Week 23-24</div>
+                            <div class="week-content">Performance benchmarks release</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 3: Channel Strategy -->
+    <div id="step3" class="tab-content">
+        <div class="strategy-section">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">AI Citation Source Distribution</h2>
+                    <p class="chart-subtitle">Where AI engines pull information from</p>
+                </div>
+                <div id="channelChart" class="chart-box"></div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">Competitor Channel Performance Gap Analysis</h2>
+                    <p class="chart-subtitle">Eureka's opportunities across key platforms</p>
+                </div>
+                <div id="competitorChart" class="chart-box"></div>
+            </div>
+
+            <div class="strategy-grid">
+                <div class="strategy-card">
+                    <div class="strategy-icon" style="background: rgba(255, 87, 34, 0.1); color: #ff5722;">
+                        📱
+                    </div>
+                    <h3 class="strategy-title">Reddit Strategy</h3>
+                    <p class="strategy-description">Build authentic presence in r/VacuumCleaners and r/BuyItForLife. Share test results, answer questions, engage in discussions.</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 35%;"></div>
+                    </div>
+                </div>
+
+                <div class="strategy-card">
+                    <div class="strategy-icon" style="background: rgba(255, 0, 0, 0.1); color: #ff0000;">
+                        📹
+                    </div>
+                    <h3 class="strategy-title">YouTube Partnerships</h3>
+                    <p class="strategy-description">Collaborate with mid-tier reviewers (50K-200K subscribers) for authentic product demonstrations and comparisons.</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 20%;"></div>
+                    </div>
+                </div>
+
+                <div class="strategy-card">
+                    <div class="strategy-icon" style="background: rgba(255, 153, 0, 0.1); color: #ff9900;">
+                        🛒
+                    </div>
+                    <h3 class="strategy-title">Amazon Optimization</h3>
+                    <p class="strategy-description">Enhanced Q&A responses, video uploads, detailed comparison charts in product listings.</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 15%;"></div>
+                    </div>
+                </div>
+
+                <div class="strategy-card">
+                    <div class="strategy-icon" style="background: rgba(0, 123, 255, 0.1); color: #007bff;">
+                        ✍️
+                    </div>
+                    <h3 class="strategy-title">Blog Outreach</h3>
+                    <p class="strategy-description">Guest posts on home automation and cleaning blogs, technical deep-dives on engineering sites.</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 12%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Strategy Overview -->
+    <div id="overview" class="tab-content">
+        <div class="strategy-section">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">Integrated GEO Strategy Timeline</h2>
+                    <p class="chart-subtitle">6-month implementation roadmap with milestones</p>
+                </div>
+                <div id="timelineChart" class="chart-box"></div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">Expected ROI & Performance Metrics</h2>
+                    <p class="chart-subtitle">Projected improvements across key performance indicators</p>
+                </div>
+                <div id="roiChart" class="chart-box"></div>
+            </div>
+
+            <div class="insights-section">
+                <div class="insights-header">
+                    <div class="insights-icon">🚀</div>
+                    <h3 class="insights-title">Key Success Factors</h3>
+                </div>
+                <div class="insights-grid">
+                    <div class="insight-item">
+                        <h4>Quick Wins</h4>
+                        <p>Focus on low-competition, high-value keywords like pet hair solutions and budget comparisons for rapid gains.</p>
+                    </div>
+                    <div class="insight-item">
+                        <h4>Content Velocity</h4>
+                        <p>Maintain consistent publishing schedule with 3-4 high-quality pieces per week during foundation phase.</p>
+                    </div>
+                    <div class="insight-item">
+                        <h4>Platform Diversity</h4>
+                        <p>Distribute content across multiple high-authority platforms to maximize AI citation opportunities.</p>
+                    </div>
+                    <div class="insight-item">
+                        <h4>Data-Driven Iteration</h4>
+                        <p>Monitor AI mention rates weekly and adjust content strategy based on performance data.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        function showTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all nav tabs
+            document.querySelectorAll('.nav-tab').forEach(navTab => {
+                navTab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabId).classList.add('active');
+            
+            // Add active class to clicked nav tab
+            event.target.classList.add('active');
+            
+            // Initialize charts for the active tab
+            setTimeout(() => {
+                if (tabId === 'step1') {
+                    initKeywordChart();
+                    initHeatmapChart();
+                } else if (tabId === 'step2') {
+                    initContentChart();
+                } else if (tabId === 'step3') {
+                    initChannelChart();
+                    initCompetitorChart();
+                } else if (tabId === 'overview') {
+                    initTimelineChart();
+                    initROIChart();
+                }
+            }, 100);
+        }
+
+        // Initialize charts on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initKeywordChart();
+            initHeatmapChart();
+        });
+
+        // Keyword Analysis Chart
+        function initKeywordChart() {
+            const chart = echarts.init(document.getElementById('keywordChart'));
+            
+            const categories = ['Product Features', 'Use Cases', 'Comparisons', 'Purchase Decisions'];
+            const keywords = {
+                'Product Features': [
+                    { name: 'self-emptying robot vacuum', value: 9 },
+                    { name: 'lidar navigation', value: 8 },
+                    { name: 'suction power comparison', value: 8 },
+                    { name: 'mapping technology', value: 7 },
+                    { name: 'obstacle avoidance', value: 7 }
+                ],
+                'Use Cases': [
+                    { name: 'best for pet hair', value: 10 },
+                    { name: 'hardwood floors', value: 9 },
+                    { name: 'thick carpet', value: 8 },
+                    { name: 'small apartments', value: 8 },
+                    { name: 'for allergies', value: 8 }
+                ],
+                'Comparisons': [
+                    { name: 'best brands 2024', value: 10 },
+                    { name: 'Eureka vs Roomba', value: 9 },
+                    { name: 'comparison chart', value: 9 },
+                    { name: 'budget comparison', value: 9 },
+                    { name: 'Eureka vs Shark', value: 8 }
+                ],
+                'Purchase Decisions': [
+                    { name: 'best under $300', value: 10 },
+                    { name: 'best value 2024', value: 9 },
+                    { name: 'buying guide', value: 9 },
+                    { name: 'worth buying', value: 8 },
+                    { name: 'cheapest worth it', value: 8 }
+                ]
+            };
+
+            const series = categories.map((category, index) => ({
+                name: category,
+                type: 'bar',
+                data: keywords[category].map(k => k.value),
+                itemStyle: {
+                    color: ['#4a90e2', '#7ed321', '#f5a623', '#9013fe'][index]
+                }
+            }));
+
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                legend: {
+                    data: categories,
+                    top: 0
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '15%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: keywords['Product Features'].map(k => k.name),
+                    axisLabel: {
+                        interval: 0,
+                        rotate: 45,
+                        textStyle: {
+                            fontSize: 11
+                        }
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'AI Mention Potential Score',
+                    max: 10
+                },
+                series: series
+            };
+
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        // Heatmap Chart
+        function initHeatmapChart() {
+            const chart = echarts.init(document.getElementById('heatmapChart'));
+            
+            const hours = ['Very High', 'High', 'Medium', 'Low'];
+            const days = ['Features', 'Use Cases', 'Comparisons', 'Decisions'];
+            
+            const data = [
+                [0, 0, 2], [0, 1, 5], [0, 2, 2], [0, 3, 2],
+                [1, 0, 3], [1, 1, 4], [1, 2, 3], [1, 3, 4],
+                [2, 0, 4], [2, 1, 3], [2, 2, 4], [2, 3, 3],
+                [3, 0, 3], [3, 1, 0], [3, 2, 1], [3, 3, 3]
+            ].map(function (item) {
+                return [item[1], item[0], item[2] || '-'];
+            });
+
+            const option = {
+                tooltip: {
+                    position: 'top'
+                },
+                grid: {
+                    height: '70%',
+                    top: '10%'
+                },
+                xAxis: {
+                    type: 'category',
+                    data: days,
+                    splitArea: {
+                        show: true
+                    }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: hours,
+                    splitArea: {
+                        show: true
+                    }
+                },
+                visualMap: {
+                    min: 0,
+                    max: 5,
+                    calculable: true,
+                    orient: 'horizontal',
+                    left: 'center',
+                    bottom: '5%',
+                    color: ['#d0021b', '#f5a623', '#f8e71c', '#7ed321', '#4a90e2']
+                },
+                series: [{
+                    name: 'Keywords',
+                    type: 'heatmap',
+                    data: data,
+                    label: {
+                        show: true
+                    },
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }]
+            };
+
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        // Content Strategy Chart
+        function initContentChart() {
+            const chart = echarts.init(document.getElementById('contentChart'));
+            
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c}%'
+                },
+                series: [
+                    {
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        center: ['25%', '50%'],
+                        data: [
+                            { value: 35, name: 'FAQ Content', itemStyle: { color: '#4a90e2' } },
+                            { value: 25, name: 'Comparison Tables', itemStyle: { color: '#7ed321' } },
+                            { value: 20, name: 'How-To Guides', itemStyle: { color: '#f5a623' } },
+                            { value: 20, name: 'Video Scripts', itemStyle: { color: '#9013fe' } }
+                        ],
+                        label: {
+                            position: 'outside'
+                        }
+                    },
+                    {
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        center: ['75%', '50%'],
+                        data: [
+                            { value: 40, name: 'Product Schema', itemStyle: { color: '#50e3c2' } },
+                            { value: 25, name: 'FAQ Schema', itemStyle: { color: '#ff6b9d' } },
+                            { value: 20, name: 'Review Schema', itemStyle: { color: '#f8923b' } },
+                            { value: 15, name: 'Video Schema', itemStyle: { color: '#c471ed' } }
+                        ],
+                        label: {
+                            position: 'outside'
+                        }
+                    }
+                ]
+            };
+
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        // Channel Distribution Chart
+        function initChannelChart() {
+            const chart = echarts.init(document.getElementById('channelChart'));
+            
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{a} <br/>{b}: {c}%'
+                },
+                legend: {
+                    orient: 'vertical',
+                    left: 'left'
+                },
+                series: [
+                    {
+                        name: 'AI Citation Sources',
+                        type: 'pie',
+                        radius: '70%',
+                        data: [
+                            { value: 35, name: 'Reddit', itemStyle: { color: '#ff5722' } },
+                            { value: 20, name: 'YouTube', itemStyle: { color: '#ff0000' } },
+                            { value: 15, name: 'Amazon Reviews', itemStyle: { color: '#ff9900' } },
+                            { value: 12, name: 'Tech Blogs', itemStyle: { color: '#4a90e2' } },
+                            { value: 10, name: 'Manufacturer Sites', itemStyle: { color: '#7ed321' } },
+                            { value: 5, name: 'Consumer Reports', itemStyle: { color: '#9013fe' } },
+                            { value: 3, name: 'Forums', itemStyle: { color: '#50e3c2' } }
+                        ],
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    }
+                ]
+            };
+
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        // Competitor Gap Analysis Chart
+        function initCompetitorChart() {
+            const chart = echarts.init(document.getElementById('competitorChart'));
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                legend: {
+                    data: ['Eureka Current', 'Opportunity Gap'],
+                    top: 0
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value',
+                    max: 100
+                },
+                yAxis: {
+                    type: 'category',
+                    data: ['Reddit', 'YouTube', 'Amazon', 'Tech Blogs', 'Forums', 'Review Sites']
+                },
+                series: [
+                    {
+                        name: 'Eureka Current',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [15, 10, 40, 20, 5, 10],
+                        itemStyle: { color: '#4a90e2' }
+                    },
+                    {
+                        name: 'Opportunity Gap',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [60, 50, 30, 40, 45, 40],
+                        itemStyle: { color: '#e0e0e0' }
+                    }
+                ]
+            };
+
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        // Timeline Chart
+        function initTimelineChart() {
+            const chart = echarts.init(document.getElementById('timelineChart'));
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'cross' }
+                },
+                legend: {
+                    data: ['Content Creation', 'Channel Building', 'Optimization'],
+                    top: 0
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: ['Month 1', 'Month 2', 'Month 3', 'Month 4', 'Month 5', 'Month 6']
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Progress %'
+                },
+                series: [
+                    {
+                        name: 'Content Creation',
+                        type: 'line',
+                        smooth: true,
+                        data: [20, 40, 60, 75, 85, 95],
+                        areaStyle: { opacity: 0.3 },
+                        itemStyle: { color: '#4a90e2' }
+                    },
+                    {
+                        name: 'Channel Building',
+                        type: 'line',
+                        smooth: true,
+                        data: [10, 25, 45, 65, 80, 90],
+                        areaStyle: { opacity: 0.3 },
+                        itemStyle: { color: '#7ed321' }
+                    },
+                    {
+                        name: 'Optimization',
+                        type: 'line',
+                        smooth: true,
+                        data: [5, 15, 30, 50, 70, 85],
+                        areaStyle: { opacity: 0.3 },
+                        itemStyle: { color: '#f5a623' }
+                    }
+                ]
+            };
+
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        // ROI Projection Chart
+        function initROIChart() {
+            const chart = echarts.init(document.getElementById('roiChart'));
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                legend: {
+                    data: ['AI Visibility', 'Brand Mentions', 'Conversion Rate', 'Cost Reduction'],
+                    top: 0
+                },
+                radar: {
+                    indicator: [
+                        { name: 'Month 1', max: 300 },
+                        { name: 'Month 2', max: 300 },
+                        { name: 'Month 3', max: 300 },
+                        { name: 'Month 4', max: 300 },
+                        { name: 'Month 5', max: 300 },
+                        { name: 'Month 6', max: 300 }
+                    ]
+                },
+                series: [{
+                    type: 'radar',
+                    data: [
+                        {
+                            value: [30, 70, 150, 200, 250, 300],
+                            name: 'AI Visibility',
+                            itemStyle: { color: '#4a90e2' }
+                        },
+                        {
+                            value: [20, 50, 90, 110, 130, 150],
+                            name: 'Brand Mentions',
+                            itemStyle: { color: '#7ed321' }
+                        },
+                        {
+                            value: [5, 10, 15, 20, 25, 30],
+                            name: 'Conversion Rate',
+                            itemStyle: { color: '#f5a623' }
+                        },
+                        {
+                            value: [5, 10, 20, 25, 32, 40],
+                            name: 'Cost Reduction',
+                            itemStyle: { color: '#9013fe' }
+                        }
+                    ]
+                }]
+            };
+
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+    </script>
+</body>
+</html>

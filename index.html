@@ -147,6 +147,59 @@
             justify-content: space-between;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
+        
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--background);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .logout-btn {
+            padding: 8px 16px;
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .logout-btn:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        }
 
         .breadcrumb {
             display: flex;
@@ -325,6 +378,40 @@
                 </a>
             </div>
 
+            <!-- Strategy & Opportunities Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">Strategy & Analysis</div>
+                <a class="nav-item" onclick="loadPage('01-eureka-geo-opportunity.html', 'Market Opportunity')">
+                    <span class="nav-item-icon">💡</span>
+                    Market Opportunity
+                </a>
+                <a class="nav-item" onclick="loadPage('02-eureka-geo-strategy.html', 'GEO Strategy')">
+                    <span class="nav-item-icon">🎯</span>
+                    GEO Strategy
+                </a>
+                <a class="nav-item" onclick="loadPage('eureka-geo-optimization-strategy.html', '3-Step Methodology')">
+                    <span class="nav-item-icon">📋</span>
+                    3-Step Methodology
+                </a>
+                <a class="nav-item" onclick="loadPage('eureka-geo-strategy-dashboard.html', 'Strategy Dashboard')">
+                    <span class="nav-item-icon">📊</span>
+                    Strategy Dashboard
+                </a>
+            </div>
+
+            <!-- AI Channel Analysis Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">AI Channel Analysis</div>
+                <a class="nav-item" onclick="loadPage('eureka-ai-channel-dashboard.html', 'Channel Dashboard')">
+                    <span class="nav-item-icon">🤖</span>
+                    Channel Dashboard
+                </a>
+                <a class="nav-item" onclick="loadPage('eureka-ai-channel-diagnostic.html', 'Channel Diagnostic')">
+                    <span class="nav-item-icon">🔍</span>
+                    Channel Diagnostic
+                </a>
+            </div>
+
             <!-- Phase 1 Section -->
             <div class="nav-section">
                 <div class="nav-section-title">Phase 1: Foundation</div>
@@ -343,6 +430,14 @@
                 <a class="nav-item" onclick="loadPage('eureka-geo-phace1-baseline01.html', 'Baseline Analysis')">
                     <span class="nav-item-icon">📏</span>
                     Baseline Analysis
+                </a>
+                <a class="nav-item" onclick="loadPage('eureka-geo-implementation-guide.html', 'Implementation Guide')">
+                    <span class="nav-item-icon">🛠️</span>
+                    Implementation Guide
+                </a>
+                <a class="nav-item" onclick="loadPage('eureka-geo-dam.html', 'GEO Asset Library')">
+                    <span class="nav-item-icon">🗄️</span>
+                    GEO Asset Library
                 </a>
             </div>
 
@@ -397,10 +492,19 @@
         <!-- Main Content Area -->
         <main class="main-content">
             <div class="top-bar">
-                <div class="breadcrumb">
-                    <span>Home</span>
-                    <span class="breadcrumb-separator">/</span>
-                    <span class="current-page" id="currentPage">Welcome</span>
+                <div class="top-bar-left">
+                    <div class="breadcrumb">
+                        <span>Home</span>
+                        <span class="breadcrumb-separator">/</span>
+                        <span class="current-page" id="currentPage">Welcome</span>
+                    </div>
+                </div>
+                <div class="user-menu">
+                    <div class="user-info">
+                        <div class="user-avatar" id="userAvatar">U</div>
+                        <span id="userName">User</span>
+                    </div>
+                    <button class="logout-btn" onclick="logout()">退出登录</button>
                 </div>
             </div>
 
@@ -457,6 +561,60 @@
     </div>
 
     <script>
+        // Check authentication on page load
+        function checkAuth() {
+            const authToken = sessionStorage.getItem('authToken') || localStorage.getItem('authToken');
+            if (!authToken) {
+                // Not authenticated, redirect to login
+                window.location.href = 'login.html';
+                return false;
+            }
+            
+            // Verify token is valid (basic check)
+            try {
+                const tokenData = JSON.parse(atob(authToken));
+                const tokenAge = Date.now() - tokenData.timestamp;
+                
+                // Token expires after 24 hours
+                if (tokenAge > 24 * 60 * 60 * 1000) {
+                    logout();
+                    return false;
+                }
+                
+                // Display user info
+                displayUserInfo();
+                return true;
+            } catch (e) {
+                logout();
+                return false;
+            }
+        }
+        
+        // Display user information
+        function displayUserInfo() {
+            const userInfo = JSON.parse(sessionStorage.getItem('userInfo') || localStorage.getItem('userInfo') || '{}');
+            if (userInfo.username) {
+                // Update user display
+                document.getElementById('userName').textContent = userInfo.username;
+                document.getElementById('userAvatar').textContent = userInfo.username.charAt(0).toUpperCase();
+                console.log('Logged in as:', userInfo.username);
+            }
+        }
+        
+        // Logout function
+        function logout() {
+            sessionStorage.clear();
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userInfo');
+            window.location.href = 'login.html';
+        }
+        
+        // Check auth immediately
+        if (!checkAuth()) {
+            // Stop execution if not authenticated
+            throw new Error('Not authenticated');
+        }
+        
         // Set active navigation item
         function setActiveNav(element) {
             // Remove active class from all nav items

@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka GEO资产库高级可视化系统</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e27;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        /* 宇宙星空背景 */
+        .bg-animation {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: #0a0e27;
+            z-index: -2;
+            overflow: hidden;
+        }
+        
+        /* 星星效果 */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+        
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
+            animation: twinkle linear infinite;
+        }
+        
+        @keyframes twinkle {
+            0% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.5); }
+        }
+        
+        /* 流星效果 */
+        .shooting-star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: linear-gradient(45deg, transparent, white, transparent);
+            animation: shoot linear infinite;
+        }
+        
+        @keyframes shoot {
+            0% {
+                transform: translateX(-100px) translateY(-100px) rotate(45deg);
+                opacity: 1;
+            }
+            70% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(1920px) translateY(1080px) rotate(45deg);
+                opacity: 0;
+            }
+        }
+        
+        /* 星云效果 */
+        .nebula {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 30%, rgba(120, 119, 198, 0.15) 0%, transparent 40%),
+                radial-gradient(ellipse at 60% 70%, rgba(255, 107, 107, 0.1) 0%, transparent 40%),
+                radial-gradient(ellipse at 90% 20%, rgba(78, 205, 196, 0.1) 0%, transparent 40%);
+            opacity: 0.7;
+            animation: nebulaPulse 20s ease-in-out infinite;
+        }
+        
+        @keyframes nebulaPulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 0.4; }
+        }
+        
+        /* 网格背景 */
+        .grid-bg {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+        }
+        
+        /* 头部样式 */
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .header h1 {
+            font-size: 3em;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glow 3s ease-in-out infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* 控制面板 */
+        .control-panel {
+            position: fixed;
+            top: 120px;
+            right: 20px;
+            background: rgba(26, 31, 58, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            min-width: 200px;
+        }
+        
+        .control-btn {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .control-btn.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        /* 图表容器 */
+        .chart-container {
+            margin: 20px;
+            padding: 30px;
+            background: rgba(26, 31, 58, 0.6);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chart-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c);
+            border-radius: 20px;
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s ease;
+        }
+        
+        .chart-container:hover::before {
+            opacity: 0;
+            /* 移除所有光晕效果 */
+        }
+        
+        .chart-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #fff;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 600px;
+        }
+        
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(26, 31, 58, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.3) 0%, transparent 70%);
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(102, 126, 234, 0.5);
+        }
+        
+        .stat-card:hover::after {
+            opacity: 1;
+            transform: rotate(45deg);
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9em;
+        }
+        
+        /* 加载动画 */
+        .loader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            z-index: 1000;
+        }
+        
+        .loader-circle {
+            width: 100%;
+            height: 100%;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2em; }
+            .control-panel { 
+                position: static; 
+                margin: 20px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .control-btn { 
+                flex: 1; 
+                min-width: 120px;
+            }
+            .chart-wrapper { height: 400px; }
+        }
+        
+        /* 提示框样式 */
+        .tooltip {
+            position: absolute;
+            background: rgba(26, 31, 58, 0.95);
+            border: 1px solid rgba(102, 126, 234, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            color: #fff;
+            font-size: 14px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        
+        .tooltip.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- 宇宙星空背景 -->
+    <div class="bg-animation">
+        <div class="stars" id="stars"></div>
+        <div class="nebula"></div>
+    </div>
+    <div class="grid-bg"></div>
+    
+    <!-- 加载动画 -->
+    <div class="loader" id="loader">
+        <div class="loader-circle"></div>
+    </div>
+    
+    <!-- 头部 -->
+    <div class="header">
+        <h1>Eureka GEO资产库可视化系统</h1>
+        <p>探索AI时代的内容资产全景图</p>
+    </div>
+    
+    <!-- 控制面板 -->
+    <div class="control-panel">
+        <button class="control-btn active" onclick="showView('sunburst')">资产体系结构</button>
+        <button class="control-btn" onclick="showView('graph')">资产关联网络</button>
+        <button class="control-btn" onclick="showView('sankey')">价值流动路径</button>
+        <button class="control-btn" onclick="showView('force')">资产协同网络</button>
+        <button class="control-btn" onclick="showView('heatmap')">资产绩效热图</button>
+    </div>
+    
+    <!-- 统计卡片 -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">58</div>
+            <div class="stat-label">标准化资产</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">10</div>
+            <div class="stat-label">资产类型</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">18</div>
+            <div class="stat-label">覆盖渠道</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">4.3</div>
+            <div class="stat-label">平均AAO评分</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">35%</div>
+            <div class="stat-label">AI引用率</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">384%</div>
+            <div class="stat-label">投资回报率</div>
+        </div>
+    </div>
+    
+    <!-- 主视图容器 -->
+    <div id="sunburstView" class="chart-container">
+        <h2 class="chart-title">GEO资产体系旭日图</h2>
+        <div class="chart-wrapper">
+            <div id="sunburstChart" style="width: 100%; height: 100%;"></div>
+        </div>
+    </div>
+    
+    <div id="graphView" class="chart-container" style="display: none;">
+        <h2 class="chart-title">资产关联网络图</h2>
+        <div class="chart-wrapper">
+            <div id="graphChart" style="width: 100%; height: 100%;"></div>
+        </div>
+    </div>
+    
+    <div id="sankeyView" class="chart-container" style="display: none;">
+        <h2 class="chart-title">价值流动桑基图</h2>
+        <div class="chart-wrapper">
+            <div id="sankeyChart" style="width: 100%; height: 100%;"></div>
+        </div>
+    </div>
+    
+    <div id="forceView" class="chart-container" style="display: none;">
+        <h2 class="chart-title">资产协同关系网络</h2>
+        <div class="chart-wrapper">
+            <div id="forceChart" style="width: 100%; height: 100%;"></div>
+        </div>
+    </div>
+    
+    <div id="heatmapView" class="chart-container" style="display: none;">
+        <h2 class="chart-title">资产绩效评估热图</h2>
+        <div class="chart-wrapper">
+            <div id="heatmapChart" style="width: 100%; height: 100%;"></div>
+        </div>
+    </div>
+    
+    <script>
+        // 隐藏加载动画
+        window.onload = function() {
+            setTimeout(() => {
+                document.getElementById('loader').style.display = 'none';
+            }, 1000);
+            
+            // 生成星空背景
+            createStarfield();
+        };
+        
+        // 创建星空效果
+        function createStarfield() {
+            const starsContainer = document.getElementById('stars');
+            const numberOfStars = 200;
+            
+            // 创建星星
+            for (let i = 0; i < numberOfStars; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                
+                // 随机位置
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                
+                // 随机大小
+                const size = Math.random() * 3 + 1;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                
+                // 随机动画延迟和持续时间
+                star.style.animationDelay = Math.random() * 5 + 's';
+                star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                
+                // 随机亮度
+                star.style.opacity = Math.random() * 0.8 + 0.2;
+                
+                starsContainer.appendChild(star);
+            }
+            
+            // 创建流星
+            createShootingStars();
+        }
+        
+        // 创建流星效果
+        function createShootingStars() {
+            const starsContainer = document.getElementById('stars');
+            
+            setInterval(() => {
+                const shootingStar = document.createElement('div');
+                shootingStar.className = 'shooting-star';
+                
+                // 随机起始位置
+                const startX = Math.random() * window.innerWidth;
+                const startY = Math.random() * window.innerHeight * 0.5;
+                
+                shootingStar.style.left = startX + 'px';
+                shootingStar.style.top = startY + 'px';
+                
+                // 流星尾巴长度
+                shootingStar.style.width = Math.random() * 100 + 50 + 'px';
+                shootingStar.style.height = '1px';
+                
+                // 动画持续时间
+                shootingStar.style.animationDuration = (Math.random() * 1 + 0.5) + 's';
+                
+                starsContainer.appendChild(shootingStar);
+                
+                // 动画结束后移除
+                setTimeout(() => {
+                    shootingStar.remove();
+                }, 1500);
+            }, 3000);
+        }
+        
+        // 视图切换
+        function showView(viewName) {
+            // 隐藏所有视图
+            const views = ['sunburst', 'graph', 'sankey', 'force', 'heatmap'];
+            views.forEach(view => {
+                const element = document.getElementById(view + 'View');
+                if (element) element.style.display = 'none';
+            });
+            
+            // 显示选中视图
+            const selectedView = document.getElementById(viewName + 'View');
+            if (selectedView) selectedView.style.display = 'block';
+            
+            // 更新按钮状态
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 初始化对应图表
+            switch(viewName) {
+                case 'sunburst': initSunburst(); break;
+                case 'graph': initGraph(); break;
+                case 'sankey': initSankey(); break;
+                case 'force': initForce(); break;
+                case 'heatmap': initHeatmap(); break;
+            }
+        }
+        
+        // 1. 旭日图 - 展示资产体系结构
+        function initSunburst() {
+            const chart = echarts.init(document.getElementById('sunburstChart'));
+            
+            const data = [{
+                name: 'Eureka GEO资产库',
+                value: 58,
+                itemStyle: { color: '#667eea' },
+                children: [{
+                    name: '认知类资产',
+                    value: 27,
+                    itemStyle: { color: '#764ba2' },
+                    children: [{
+                        name: 'FAQ卡',
+                        value: 22,
+                        itemStyle: { color: '#f093fb' },
+                        children: [
+                            { name: '产品功能FAQ', value: 8 },
+                            { name: '技术原理FAQ', value: 6 },
+                            { name: '使用问题FAQ', value: 5 },
+                            { name: '售后服务FAQ', value: 3 }
+                        ]
+                    }, {
+                        name: 'TL;DR摘要',
+                        value: 5,
+                        itemStyle: { color: '#f5576c' }
+                    }]
+                }, {
+                    name: '决策类资产',
+                    value: 14,
+                    itemStyle: { color: '#4ecdc4' },
+                    children: [{
+                        name: '对比卡',
+                        value: 6,
+                        children: [
+                            { name: 'VS iRobot', value: 2 },
+                            { name: 'VS Roborock', value: 2 },
+                            { name: '功能对比表', value: 2 }
+                        ]
+                    }, {
+                        name: '数据卡',
+                        value: 4
+                    }, {
+                        name: '评测卡',
+                        value: 4
+                    }]
+                }, {
+                    name: '操作类资产',
+                    value: 10,
+                    itemStyle: { color: '#ffe66d' },
+                    children: [{
+                        name: '步骤卡',
+                        value: 8,
+                        children: [
+                            { name: '初始设置', value: 3 },
+                            { name: '日常使用', value: 3 },
+                            { name: '维护保养', value: 2 }
+                        ]
+                    }, {
+                        name: '视频脚本',
+                        value: 2
+                    }]
+                }, {
+                    name: '互动类资产',
+                    value: 7,
+                    itemStyle: { color: '#ff6b6b' },
+                    children: [{
+                        name: '讨论串',
+                        value: 3
+                    }, {
+                        name: 'AMA脚本',
+                        value: 1
+                    }, {
+                        name: 'Action卡',
+                        value: 3
+                    }]
+                }]
+            }];
+            
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: function(params) {
+                        const path = params.treePathInfo.map(item => item.name).join(' > ');
+                        return `<div style="padding: 10px;">
+                            <div style="font-weight: bold; margin-bottom: 5px;">${path}</div>
+                            <div>资产数量: ${params.value}个</div>
+                            <div>占比: ${(params.value / 58 * 100).toFixed(1)}%</div>
+                        </div>`;
+                    }
+                },
+                series: [{
+                    type: 'sunburst',
+                    data: data,
+                    radius: [0, '90%'],
+                    label: {
+                        rotate: 'radial',
+                        color: '#fff'
+                    },
+                    emphasis: {
+                        focus: 'ancestor'
+                    },
+                    levels: [{}, {
+                        r0: '15%',
+                        r: '35%',
+                        itemStyle: { borderWidth: 2 },
+                        label: { rotate: 'tangential' }
+                    }, {
+                        r0: '35%',
+                        r: '70%',
+                        label: { align: 'right' }
+                    }, {
+                        r0: '70%',
+                        r: '72%',
+                        label: { position: 'outside', padding: 3, silent: false },
+                        itemStyle: { borderWidth: 3 }
+                    }]
+                }]
+            };
+            
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+        
+        // 2. 关系网络图 - 展示资产之间的关联
+        function initGraph() {
+            const chart = echarts.init(document.getElementById('graphChart'));
+            
+            // 构建节点数据
+            const nodes = [
+                { id: 'center', name: 'GEO核心', value: 100, category: 0, symbolSize: 100 },
+                // FAQ节点
+                { id: 'faq1', name: '激光雷达FAQ', value: 80, category: 1, symbolSize: 60 },
+                { id: 'faq2', name: '清扫效果FAQ', value: 75, category: 1, symbolSize: 55 },
+                { id: 'faq3', name: '维护指南FAQ', value: 70, category: 1, symbolSize: 50 },
+                // 对比节点
+                { id: 'compare1', name: 'Eureka vs iRobot', value: 85, category: 2, symbolSize: 65 },
+                { id: 'compare2', name: '选购指南', value: 80, category: 2, symbolSize: 60 },
+                // 步骤节点
+                { id: 'howto1', name: '首次设置', value: 90, category: 3, symbolSize: 70 },
+                { id: 'howto2', name: 'APP使用', value: 85, category: 3, symbolSize: 65 },
+                // 数据节点
+                { id: 'data1', name: '性能测试', value: 88, category: 4, symbolSize: 68 },
+                { id: 'data2', name: '用户评测', value: 82, category: 4, symbolSize: 62 },
+                // Action节点
+                { id: 'action1', name: '立即购买', value: 95, category: 5, symbolSize: 75 },
+                { id: 'action2', name: '预约演示', value: 90, category: 5, symbolSize: 70 }
+            ];
+            
+            // 构建关系数据
+            const links = [
+                // 从核心到各类资产
+                { source: 'center', target: 'faq1', value: 10 },
+                { source: 'center', target: 'faq2', value: 9 },
+                { source: 'center', target: 'faq3', value: 8 },
+                { source: 'center', target: 'compare1', value: 10 },
+                { source: 'center', target: 'compare2', value: 9 },
+                { source: 'center', target: 'howto1', value: 10 },
+                { source: 'center', target: 'howto2', value: 9 },
+                { source: 'center', target: 'data1', value: 9 },
+                { source: 'center', target: 'data2', value: 8 },
+                { source: 'center', target: 'action1', value: 10 },
+                { source: 'center', target: 'action2', value: 9 },
+                // 资产间的关联
+                { source: 'faq1', target: 'compare1', value: 7 },
+                { source: 'faq2', target: 'howto1', value: 6 },
+                { source: 'compare1', target: 'data1', value: 8 },
+                { source: 'compare2', target: 'action1', value: 9 },
+                { source: 'howto1', target: 'action2', value: 7 },
+                { source: 'data1', target: 'action1', value: 8 },
+                { source: 'data2', target: 'compare1', value: 6 }
+            ];
+            
+            const categories = [
+                { name: '核心' },
+                { name: 'FAQ类' },
+                { name: '对比类' },
+                { name: '步骤类' },
+                { name: '数据类' },
+                { name: 'Action类' }
+            ];
+            
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: function(params) {
+                        if (params.dataType === 'node') {
+                            return `<div style="padding: 10px;">
+                                <div style="font-weight: bold;">${params.data.name}</div>
+                                <div>权重值: ${params.data.value}</div>
+                                <div>类别: ${categories[params.data.category].name}</div>
+                            </div>`;
+                        }
+                        return `${params.data.source} → ${params.data.target}`;
+                    }
+                },
+                legend: {
+                    data: categories.map(c => c.name),
+                    textStyle: { color: '#fff' },
+                    top: 20
+                },
+                animationDuration: 1500,
+                animationEasingUpdate: 'quinticInOut',
+                series: [{
+                    type: 'graph',
+                    layout: 'force',
+                    data: nodes,
+                    links: links,
+                    categories: categories,
+                    roam: true,
+                    draggable: true,
+                    force: {
+                        edgeLength: [100, 200],
+                        repulsion: 500,
+                        gravity: 0.1
+                    },
+                    label: {
+                        show: true,
+                        position: 'bottom',
+                        color: '#fff'
+                    },
+                    lineStyle: {
+                        color: 'source',
+                        curveness: 0.3,
+                        width: 2
+                    },
+                    emphasis: {
+                        focus: 'adjacency',
+                        lineStyle: { width: 5 }
+                    }
+                }]
+            };
+            
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+        
+        // 3. 桑基图 - 展示价值流动路径
+        function initSankey() {
+            const chart = echarts.init(document.getElementById('sankeyChart'));
+            
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    triggerOn: 'mousemove',
+                    formatter: function(params) {
+                        if (params.dataType === 'edge') {
+                            return `${params.data.source} → ${params.data.target}<br/>流量: ${params.value}`;
+                        }
+                        return params.name;
+                    }
+                },
+                series: [{
+                    type: 'sankey',
+                    layout: 'none',
+                    emphasis: {
+                        focus: 'adjacency'
+                    },
+                    data: [
+                        { name: '用户搜索', itemStyle: { color: '#667eea' } },
+                        { name: 'AI引擎', itemStyle: { color: '#764ba2' } },
+                        { name: '搜索引擎', itemStyle: { color: '#f093fb' } },
+                        { name: '社交媒体', itemStyle: { color: '#f5576c' } },
+                        // 资产层
+                        { name: 'FAQ资产', itemStyle: { color: '#4ecdc4' } },
+                        { name: '对比资产', itemStyle: { color: '#ffe66d' } },
+                        { name: '步骤资产', itemStyle: { color: '#ff6b6b' } },
+                        { name: '数据资产', itemStyle: { color: '#4ecdc4' } },
+                        // 渠道层
+                        { name: 'Reddit', itemStyle: { color: '#667eea' } },
+                        { name: 'YouTube', itemStyle: { color: '#764ba2' } },
+                        { name: '官网', itemStyle: { color: '#f093fb' } },
+                        { name: 'Quora', itemStyle: { color: '#f5576c' } },
+                        // 转化层
+                        { name: '产品页', itemStyle: { color: '#4ecdc4' } },
+                        { name: '免费试用', itemStyle: { color: '#ffe66d' } },
+                        { name: '购买转化', itemStyle: { color: '#10b981' } }
+                    ],
+                    links: [
+                        // 流量来源到资产
+                        { source: '用户搜索', target: 'FAQ资产', value: 30 },
+                        { source: '用户搜索', target: '对比资产', value: 25 },
+                        { source: 'AI引擎', target: 'FAQ资产', value: 35 },
+                        { source: 'AI引擎', target: '数据资产', value: 20 },
+                        { source: '搜索引擎', target: '步骤资产', value: 28 },
+                        { source: '社交媒体', target: '对比资产', value: 22 },
+                        // 资产到渠道
+                        { source: 'FAQ资产', target: 'Reddit', value: 25 },
+                        { source: 'FAQ资产', target: '官网', value: 40 },
+                        { source: '对比资产', target: 'YouTube', value: 30 },
+                        { source: '对比资产', target: 'Quora', value: 17 },
+                        { source: '步骤资产', target: 'YouTube', value: 20 },
+                        { source: '步骤资产', target: '官网', value: 8 },
+                        { source: '数据资产', target: 'Reddit', value: 15 },
+                        { source: '数据资产', target: '官网', value: 5 },
+                        // 渠道到转化
+                        { source: 'Reddit', target: '产品页', value: 30 },
+                        { source: 'YouTube', target: '产品页', value: 35 },
+                        { source: '官网', target: '免费试用', value: 38 },
+                        { source: 'Quora', target: '产品页', value: 12 },
+                        { source: '产品页', target: '免费试用', value: 55 },
+                        { source: '产品页', target: '购买转化', value: 22 },
+                        { source: '免费试用', target: '购买转化', value: 68 }
+                    ],
+                    lineStyle: {
+                        color: 'gradient',
+                        curveness: 0.5
+                    },
+                    label: {
+                        color: '#fff',
+                        fontSize: 14
+                    },
+                    itemStyle: {
+                        borderWidth: 1,
+                        borderColor: '#333'
+                    }
+                }]
+            };
+            
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+        
+        // 5. 资产协同网络 - 展示资产间的关联关系
+        function initForce() {
+            const chart = echarts.init(document.getElementById('forceChart'));
+            
+            // 创建更复杂的网络结构
+            const nodes = [];
+            const links = [];
+            const categories = [
+                { name: '核心资产', itemStyle: { color: '#667eea' } },
+                { name: 'FAQ类', itemStyle: { color: '#764ba2' } },
+                { name: '教程类', itemStyle: { color: '#f093fb' } },
+                { name: '数据类', itemStyle: { color: '#4ecdc4' } },
+                { name: '转化类', itemStyle: { color: '#10b981' } }
+            ];
+            
+            // 添加中心节点
+            nodes.push({
+                id: '0',
+                name: 'Eureka X1',
+                symbolSize: 80,
+                category: 0,
+                value: 100,
+                x: 400,
+                y: 300,
+                fixed: true
+            });
+            
+            // 添加各类资产节点（使用固定布局）
+            const assetTypes = [
+                { prefix: 'FAQ', count: 22, category: 1, baseSize: 30 },
+                { prefix: 'HowTo', count: 8, category: 2, baseSize: 35 },
+                { prefix: 'Data', count: 7, category: 3, baseSize: 40 },
+                { prefix: 'Action', count: 4, category: 4, baseSize: 45 }
+            ];
+            
+            let nodeId = 1;
+            let angleStep = (Math.PI * 2) / 41; // 总共41个节点
+            let currentAngle = 0;
+            
+            assetTypes.forEach((type, typeIndex) => {
+                const radius = 150 + typeIndex * 50; // 不同类型在不同半径上
+                
+                for (let i = 0; i < type.count; i++) {
+                    const id = nodeId.toString();
+                    const x = 400 + radius * Math.cos(currentAngle);
+                    const y = 300 + radius * Math.sin(currentAngle);
+                    
+                    nodes.push({
+                        id: id,
+                        name: `${type.prefix}_${i + 1}`,
+                        symbolSize: type.baseSize + Math.random() * 20,
+                        category: type.category,
+                        value: Math.random() * 50 + 50,
+                        x: x,
+                        y: y,
+                        fixed: true
+                    });
+                    
+                    // 连接到中心
+                    links.push({
+                        source: '0',
+                        target: id,
+                        value: Math.random() * 10 + 5,
+                        lineStyle: {
+                            width: 2,
+                            opacity: 0.6
+                        }
+                    });
+                    
+                    // 随机连接到其他节点
+                    if (Math.random() > 0.5 && nodeId > 1) {
+                        links.push({
+                            source: id,
+                            target: Math.floor(Math.random() * (nodeId - 1) + 1).toString(),
+                            value: Math.random() * 5 + 1,
+                            lineStyle: {
+                                width: 1,
+                                opacity: 0.4
+                            }
+                        });
+                    }
+                    
+                    currentAngle += angleStep;
+                    nodeId++;
+                }
+            });
+            
+            const option = {
+                tooltip: {
+                    formatter: '{b}: {c}'
+                },
+                legend: {
+                    data: categories.map(c => c.name),
+                    textStyle: { color: '#fff' },
+                    top: 20
+                },
+                animation: false,
+                series: [{
+                    type: 'graph',
+                    layout: 'none', // 改为none，使用预定义的坐标
+                    data: nodes,
+                    links: links,
+                    categories: categories,
+                    roam: true,
+                    draggable: false, // 禁止拖动节点
+                    focusNodeAdjacency: true,
+                    label: {
+                        show: true,
+                        position: 'right',
+                        formatter: '{b}',
+                        fontSize: 10,
+                        color: '#fff'
+                    },
+                    lineStyle: {
+                        color: 'source',
+                        curveness: 0.3
+                    },
+                    emphasis: {
+                        focus: 'adjacency',
+                        lineStyle: {
+                            width: 5
+                        }
+                    }
+                }]
+            };
+            
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+        
+        // 6. 资产绩效热图 - 资产在各渠道的表现分析
+        function initHeatmap() {
+            const chart = echarts.init(document.getElementById('heatmapChart'));
+            
+            const hours = ['12am', '2am', '4am', '6am', '8am', '10am', '12pm', 
+                          '2pm', '4pm', '6pm', '8pm', '10pm'];
+            const days = ['Reddit', 'YouTube', 'LinkedIn', 'Quora', '官网', 'Medium', 'Twitter'];
+            
+            // 生成资产绩效数据
+            const data = [];
+            for (let i = 0; i < days.length; i++) {
+                for (let j = 0; j < hours.length; j++) {
+                    // 模拟不同时间段的活跃度
+                    let value = 0;
+                    if (j >= 8 && j <= 20) { // 白天时间
+                        value = Math.round(Math.random() * 70 + 30);
+                    } else {
+                        value = Math.round(Math.random() * 30);
+                    }
+                    data.push([j, i, value]);
+                }
+            }
+            
+            const option = {
+                tooltip: {
+                    position: 'top',
+                    formatter: function(params) {
+                        return `${days[params.value[1]]} ${hours[params.value[0]]}<br/>活跃度: ${params.value[2]}%`;
+                    }
+                },
+                animation: false,
+                grid: {
+                    height: '70%',
+                    top: '10%'
+                },
+                xAxis: {
+                    type: 'category',
+                    data: hours,
+                    splitArea: {
+                        show: true
+                    },
+                    axisLabel: { color: '#fff' }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: days,
+                    splitArea: {
+                        show: true
+                    },
+                    axisLabel: { color: '#fff' }
+                },
+                visualMap: {
+                    min: 0,
+                    max: 100,
+                    calculable: true,
+                    orient: 'horizontal',
+                    left: 'center',
+                    bottom: '5%',
+                    inRange: {
+                        color: ['#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', 
+                                '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026']
+                    },
+                    textStyle: { color: '#fff' }
+                },
+                series: [{
+                    name: '活跃度',
+                    type: 'heatmap',
+                    data: data,
+                    label: {
+                        show: true,
+                        formatter: function(params) {
+                            return params.value[2];
+                        },
+                        color: '#000',
+                        fontSize: 10
+                    },
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }]
+            };
+            
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+        
+        // 初始化第一个视图
+        initSunburst();
+    </script>
+</body>
+</html>

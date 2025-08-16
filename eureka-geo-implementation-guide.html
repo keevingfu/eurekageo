@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka GEO Implementation Guide - Tactical Execution Plan</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #5b6cef;
+            --primary-dark: #4453db;
+            --success: #06d6a0;
+            --warning: #ffd166;
+            --error: #ef476f;
+            --purple: #c77dff;
+            --cyan: #7dd3fc;
+            --orange: #fb923c;
+            --pink: #f472b6;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --background: #f8fafc;
+            --card-bg: #ffffff;
+            --code-bg: #f1f5f9;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-success: linear-gradient(135deg, #06d6a0 0%, #1b9aaa 100%);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 24px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .header-subtitle {
+            font-size: 16px;
+            color: var(--text-secondary);
+        }
+
+        .implementation-status {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .status-item {
+            text-align: center;
+        }
+
+        .status-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .status-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Main Layout */
+        .main-container {
+            max-width: 1400px;
+            margin: 32px auto;
+            padding: 0 24px;
+        }
+
+        /* Section Headers */
+        .section {
+            margin-bottom: 48px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .section-number {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .section-title h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Content Templates */
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .template-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+        }
+
+        .template-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .template-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--code-bg);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .template-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .template-content {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow-x: auto;
+        }
+
+        .template-tag {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-bottom: 8px;
+        }
+
+        /* Channel Tactics */
+        .channel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .channel-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.3s ease;
+        }
+
+        .channel-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .channel-header {
+            padding: 20px;
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .channel-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .channel-priority {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .channel-content {
+            padding: 20px;
+        }
+
+        .tactic-list {
+            list-style: none;
+        }
+
+        .tactic-item {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .tactic-item:last-child {
+            border-bottom: none;
+        }
+
+        .tactic-check {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--primary);
+            border-radius: 4px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .tactic-text {
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        /* Metrics Dashboard */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .metric-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            text-align: center;
+        }
+
+        .metric-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--code-bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 24px;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .metric-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .metric-change {
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .metric-change.positive {
+            color: var(--success);
+        }
+
+        .metric-change.negative {
+            color: var(--error);
+        }
+
+        /* Budget Allocation */
+        .budget-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .budget-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .budget-table th {
+            background: var(--code-bg);
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .budget-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .budget-table tr:hover {
+            background: var(--code-bg);
+        }
+
+        .budget-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .budget-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 4px;
+        }
+
+        /* Team Structure */
+        .team-chart {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 32px;
+        }
+
+        .org-chart {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .role-card {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 16px 24px;
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .role-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .role-count {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .team-level {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Charts */
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 32px;
+        }
+
+        .chart-header {
+            margin-bottom: 24px;
+        }
+
+        .chart-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .chart-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .chart-box {
+            width: 100%;
+            height: 400px;
+        }
+
+        /* Risk Matrix */
+        .risk-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 24px;
+        }
+
+        .risk-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--error);
+        }
+
+        .risk-card.low {
+            border-left-color: var(--success);
+        }
+
+        .risk-card.medium {
+            border-left-color: var(--warning);
+        }
+
+        .risk-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .risk-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .risk-mitigation {
+            font-size: 14px;
+            padding: 8px;
+            background: var(--code-bg);
+            border-radius: 4px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+
+            .template-grid,
+            .channel-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-box {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-title">
+                <h1>GEO Implementation Guide</h1>
+                <p class="header-subtitle">Tactical Execution Plan for Eureka Robot Vacuum</p>
+            </div>
+            <div class="implementation-status">
+                <div class="status-item">
+                    <div class="status-value">24</div>
+                    <div class="status-label">Weeks</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value">156</div>
+                    <div class="status-label">Content Pieces</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value">$48K</div>
+                    <div class="status-label">Budget</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <!-- Section 1: Content Templates -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">1</div>
+                <div class="section-title">
+                    <h2>AI-Optimized Content Templates</h2>
+                </div>
+            </div>
+
+            <div class="template-grid">
+                <!-- FAQ Template -->
+                <div class="template-card">
+                    <div class="template-header">
+                        <div class="template-icon">❓</div>
+                        <h3 class="template-title">FAQ Content Template</h3>
+                    </div>
+                    <div class="template-content">
+                        <span class="template-tag">OPTIMIZED FOR AI</span><br>
+                        <strong>Q: What makes Eureka robot vacuums good for pet hair?</strong><br><br>
+                        A: Eureka robot vacuums excel at pet hair removal through:<br>
+                        • Tangle-free brush design preventing hair wrapping<br>
+                        • 2000Pa suction power (40% stronger than average)<br>
+                        • HEPA filtration capturing 99.97% of pet dander<br>
+                        • Wide 11-inch cleaning path for efficiency<br>
+                        • Anti-allergen seal technology<br><br>
+                        <em>Independent testing shows 95% pet hair removal in single pass (Source: Home Cleaning Lab 2024)</em>
+                    </div>
+                </div>
+
+                <!-- Comparison Template -->
+                <div class="template-card">
+                    <div class="template-header">
+                        <div class="template-icon">📊</div>
+                        <h3 class="template-title">Comparison Table Template</h3>
+                    </div>
+                    <div class="template-content">
+                        <span class="template-tag">STRUCTURED DATA</span><br>
+                        <strong>Eureka E10s vs Roomba 694 Comparison</strong><br><br>
+                        | Feature | Eureka E10s | Roomba 694 |<br>
+                        |---------|------------|------------|<br>
+                        | Price | $159 | $274 |<br>
+                        | Suction | 2000Pa | 1700Pa |<br>
+                        | Battery | 100 min | 90 min |<br>
+                        | Mapping | Smart Path | Random |<br>
+                        | Pet Hair | ★★★★★ | ★★★★☆ |<br>
+                        | Value Score | 9.2/10 | 7.8/10 |
+                    </div>
+                </div>
+
+                <!-- Schema Markup Template -->
+                <div class="template-card">
+                    <div class="template-header">
+                        <div class="template-icon">🔧</div>
+                        <h3 class="template-title">Product Schema Template</h3>
+                    </div>
+                    <div class="template-content">
+                        <span class="template-tag">JSON-LD SCHEMA</span><br>
+                        {<br>
+                        &nbsp;&nbsp;"@context": "https://schema.org",<br>
+                        &nbsp;&nbsp;"@type": "Product",<br>
+                        &nbsp;&nbsp;"name": "Eureka E10s Robot Vacuum",<br>
+                        &nbsp;&nbsp;"brand": "Eureka",<br>
+                        &nbsp;&nbsp;"offers": {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;"price": "159.99",<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;"priceCurrency": "USD"<br>
+                        &nbsp;&nbsp;},<br>
+                        &nbsp;&nbsp;"aggregateRating": {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;"ratingValue": "4.5",<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;"reviewCount": "2847"<br>
+                        &nbsp;&nbsp;}<br>
+                        }
+                    </div>
+                </div>
+
+                <!-- How-To Template -->
+                <div class="template-card">
+                    <div class="template-header">
+                        <div class="template-icon">📝</div>
+                        <h3 class="template-title">How-To Guide Template</h3>
+                    </div>
+                    <div class="template-content">
+                        <span class="template-tag">STEP-BY-STEP</span><br>
+                        <strong>How to Set Up Eureka Robot Vacuum</strong><br><br>
+                        Total Time: 10 minutes<br>
+                        Difficulty: Easy<br><br>
+                        Step 1: Charge the vacuum (2 hours)<br>
+                        Step 2: Download Eureka app<br>
+                        Step 3: Connect to WiFi<br>
+                        Step 4: Map your home<br>
+                        Step 5: Set cleaning schedule<br><br>
+                        Pro Tip: Clear floor obstacles first
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Channel Tactics -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">2</div>
+                <div class="section-title">
+                    <h2>Channel-Specific Engagement Tactics</h2>
+                </div>
+            </div>
+
+            <div class="channel-grid">
+                <!-- Reddit Strategy -->
+                <div class="channel-card">
+                    <div class="channel-header">
+                        <div class="channel-name">Reddit Strategy</div>
+                        <div class="channel-priority">Priority: CRITICAL</div>
+                    </div>
+                    <div class="channel-content">
+                        <ul class="tactic-list">
+                            <li class="tactic-item">
+                                <div class="tactic-check"></div>
+                                <span class="tactic-text">Create authentic account with 3-month history before promoting</span>
+                            </li>
+                            <li class="tactic-item">
+                                <div class="tactic-check"></div>
+                                <span class="tactic-text">Answer 5 questions daily in r/VacuumCleaners without mentioning Eureka</span>
+                            </li>
+                            <li class="tactic-item">
+                                <div class="tactic-check"></div>
+                                <span class="tactic-text">Share detailed comparison posts with data tables and testing results</span>
+                            </li>
+                            <li class="tactic-item">
+                                <div class="tactic-check"></div>
+                                <span class="tactic-text">Host AMA as "Robot Vacuum Engineer" focusing on technology</span>
+                            </li>
+                            <li class="tactic-item">
+                                <div class="tactic-check"></div>
+                                <span class="tactic-text">Create "Budget Robot Vacuum Guide" as pinned resource</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- YouTube Strategy -->
+                <div class="channel-card">
+                    <div class="channel-header">
+                        <div class="channel-name">YouTube Partnerships</div>
+                        <div class="channel-priority">Priority: HIGH</div>
+                    </div>
+                    <div class="channel-content">
+                        <ul class="tactic-list">
+                            <li class="tactic-item">
+                                <div class="tactic-check"></div>
+                                <span class="tactic-text">Partner with 5 reviewers (50K-200K subscribers)</span>
+                            </li>
+                            <li class="tactic-item">
+                                <div class="tactic-check"></div>
+                                <span class="tactic-text">Provide exclusive "torture test" challenges for content</span>
+                            </li>
+                            <li class="tactic-item">
+                                <div class="tactic-check"></div>
+                                <span class="tactic-text">Create official channel with weekly maintenance tips</span>
+                            </li>
+                            <li class="tactic-item">
+                                <div class="tactic-check"></div>
+                                <span class="tactic-text">Sponsor "Pet Hair Challenge" series with pet channels</span>
+                            </li>
+                            <li class="tactic-item">
+                                <div class="tactic-check"></div>
+                                <span class="tactic-text">Produce 360° teardown videos showing build quality</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Amazon Strategy -->
+                <div class="channel-card">
+                    <div class="channel-header">
+                        <div class="channel-name">Amazon Optimization</div>
+                        <div class="channel-priority">Priority: HIGH</div>
+                    </div>
+                    <div class="channel-content">
+                        <ul class="tactic-list">
+                            <li class="tactic-item">
+                                <div class="tactic-check"></div>
+                                <span class="tactic-text">Pre-answer 100+ common questions in Q&A section</span>
+                            </li>
+                            <li class="tactic-item">
+                                <div class="tactic-check"></div>
+                                <span class="tactic-text">Upload 5 comparison videos to product pages</span>
+                            </li>
+                            <li class="tactic-item">
+                                <div class="tactic-check"></div>
+                                <span class="tactic-text">A+ Content with interactive comparison charts</span>
+                            </li>
+                            <li class="tactic-item">
+                                <div class="tactic-check"></div>
+                                <span class="tactic-text">Vine program for authentic early reviews</span>
+                            </li>
+                            <li class="tactic-item">
+                                <div class="tactic-check"></div>
+                                <span class="tactic-text">Bundle deals with pet-specific accessories</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Blog Outreach -->
+                <div class="channel-card">
+                    <div class="channel-header">
+                        <div class="channel-name">Blog & Media Outreach</div>
+                        <div class="channel-priority">Priority: MEDIUM</div>
+                    </div>
+                    <div class="channel-content">
+                        <ul class="tactic-list">
+                            <li class="tactic-item">
+                                <div class="tactic-check"></div>
+                                <span class="tactic-text">Guest posts on top 10 home automation blogs</span>
+                            </li>
+                            <li class="tactic-item">
+                                <div class="tactic-check"></div>
+                                <span class="tactic-text">Exclusive data studies for Wirecutter pitch</span>
+                            </li>
+                            <li class="tactic-item">
+                                <div class="tactic-check"></div>
+                                <span class="tactic-text">HARO responses 3x weekly for authority links</span>
+                            </li>
+                            <li class="tactic-item">
+                                <div class="tactic-check"></div>
+                                <span class="tactic-text">Infographic series on cleaning efficiency</span>
+                            </li>
+                            <li class="tactic-item">
+                                <div class="tactic-check"></div>
+                                <span class="tactic-text">Press releases for new budget-friendly models</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Measurement Framework -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">3</div>
+                <div class="section-title">
+                    <h2>Measurement & Tracking Framework</h2>
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-icon">📈</div>
+                    <div class="metric-value">0%</div>
+                    <div class="metric-label">AI Citation Rate</div>
+                    <div class="metric-change positive">Target: 45% in 6 months</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">🔍</div>
+                    <div class="metric-value">15</div>
+                    <div class="metric-label">Ranking Keywords</div>
+                    <div class="metric-change positive">Target: 150 keywords</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">💬</div>
+                    <div class="metric-value">5%</div>
+                    <div class="metric-label">Brand Mention Share</div>
+                    <div class="metric-change positive">Target: 25% share</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">🛒</div>
+                    <div class="metric-value">2.1%</div>
+                    <div class="metric-label">Conversion Rate</div>
+                    <div class="metric-change positive">Target: 3.5% CVR</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">Weekly Tracking Dashboard</h3>
+                    <p class="chart-subtitle">Key performance indicators monitoring</p>
+                </div>
+                <div id="trackingChart" class="chart-box"></div>
+            </div>
+        </section>
+
+        <!-- Section 4: Budget Allocation -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">4</div>
+                <div class="section-title">
+                    <h2>Budget Allocation & Resources</h2>
+                </div>
+            </div>
+
+            <div class="budget-container">
+                <h3>6-Month Budget Breakdown: $48,000</h3>
+                <table class="budget-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Allocation</th>
+                            <th>Percentage</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Content Creation</td>
+                            <td>$15,000</td>
+                            <td>
+                                31%
+                                <div class="budget-bar">
+                                    <div class="budget-fill" style="width: 31%;"></div>
+                                </div>
+                            </td>
+                            <td>156 pieces @ ~$96/piece</td>
+                        </tr>
+                        <tr>
+                            <td>YouTube Partnerships</td>
+                            <td>$12,000</td>
+                            <td>
+                                25%
+                                <div class="budget-bar">
+                                    <div class="budget-fill" style="width: 25%;"></div>
+                                </div>
+                            </td>
+                            <td>5 creators @ $2,400 each</td>
+                        </tr>
+                        <tr>
+                            <td>Reddit Community Management</td>
+                            <td>$6,000</td>
+                            <td>
+                                13%
+                                <div class="budget-bar">
+                                    <div class="budget-fill" style="width: 13%;"></div>
+                                </div>
+                            </td>
+                            <td>Part-time community manager</td>
+                        </tr>
+                        <tr>
+                            <td>Blog Outreach & PR</td>
+                            <td>$5,000</td>
+                            <td>
+                                10%
+                                <div class="budget-bar">
+                                    <div class="budget-fill" style="width: 10%;"></div>
+                                </div>
+                            </td>
+                            <td>Guest posts, HARO, PR</td>
+                        </tr>
+                        <tr>
+                            <td>Tools & Software</td>
+                            <td>$4,000</td>
+                            <td>
+                                8%
+                                <div class="budget-bar">
+                                    <div class="budget-fill" style="width: 8%;"></div>
+                                </div>
+                            </td>
+                            <td>Analytics, monitoring tools</td>
+                        </tr>
+                        <tr>
+                            <td>Testing & Data Collection</td>
+                            <td>$3,000</td>
+                            <td>
+                                6%
+                                <div class="budget-bar">
+                                    <div class="budget-fill" style="width: 6%;"></div>
+                                </div>
+                            </td>
+                            <td>Product testing, surveys</td>
+                        </tr>
+                        <tr>
+                            <td>Contingency</td>
+                            <td>$3,000</td>
+                            <td>
+                                6%
+                                <div class="budget-bar">
+                                    <div class="budget-fill" style="width: 6%;"></div>
+                                </div>
+                            </td>
+                            <td>Unexpected opportunities</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Section 5: Team Structure -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">5</div>
+                <div class="section-title">
+                    <h2>Team Structure & Responsibilities</h2>
+                </div>
+            </div>
+
+            <div class="team-chart">
+                <div class="org-chart">
+                    <div class="role-card">
+                        <div class="role-title">GEO Strategy Lead</div>
+                        <div class="role-count">1 FTE</div>
+                    </div>
+                    <div class="team-level">
+                        <div class="role-card">
+                            <div class="role-title">Content Manager</div>
+                            <div class="role-count">1 FTE</div>
+                        </div>
+                        <div class="role-card">
+                            <div class="role-title">Channel Specialists</div>
+                            <div class="role-count">2 FTE</div>
+                        </div>
+                        <div class="role-card">
+                            <div class="role-title">Data Analyst</div>
+                            <div class="role-count">0.5 FTE</div>
+                        </div>
+                    </div>
+                    <div class="team-level">
+                        <div class="role-card">
+                            <div class="role-title">Content Writers</div>
+                            <div class="role-count">3 Contractors</div>
+                        </div>
+                        <div class="role-card">
+                            <div class="role-title">Community Manager</div>
+                            <div class="role-count">1 Part-time</div>
+                        </div>
+                        <div class="role-card">
+                            <div class="role-title">Video Producer</div>
+                            <div class="role-count">1 Contractor</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">Weekly Time Allocation by Role</h3>
+                    <p class="chart-subtitle">Hours per week breakdown</p>
+                </div>
+                <div id="timeChart" class="chart-box"></div>
+            </div>
+        </section>
+
+        <!-- Section 6: Risk Management -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">6</div>
+                <div class="section-title">
+                    <h2>Risk Mitigation Strategy</h2>
+                </div>
+            </div>
+
+            <div class="risk-grid">
+                <div class="risk-card">
+                    <h4 class="risk-title">Platform Policy Changes</h4>
+                    <p class="risk-description">Reddit or YouTube changing content policies</p>
+                    <div class="risk-mitigation">
+                        <strong>Mitigation:</strong> Diversify across 6+ platforms, maintain authentic engagement, follow all guidelines strictly
+                    </div>
+                </div>
+                <div class="risk-card medium">
+                    <h4 class="risk-title">Competitor Response</h4>
+                    <p class="risk-description">Major brands copying GEO strategy</p>
+                    <div class="risk-mitigation">
+                        <strong>Mitigation:</strong> First-mover advantage, focus on unique value props, build strong community loyalty
+                    </div>
+                </div>
+                <div class="risk-card low">
+                    <h4 class="risk-title">Content Quality Issues</h4>
+                    <p class="risk-description">AI detecting low-quality or duplicate content</p>
+                    <div class="risk-mitigation">
+                        <strong>Mitigation:</strong> Rigorous QA process, unique data/testing, expert review before publishing
+                    </div>
+                </div>
+                <div class="risk-card medium">
+                    <h4 class="risk-title">Budget Overruns</h4>
+                    <p class="risk-description">Costs exceeding allocated budget</p>
+                    <div class="risk-mitigation">
+                        <strong>Mitigation:</strong> Weekly budget reviews, 6% contingency fund, phased rollout approach
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 7: Success Metrics -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">7</div>
+                <div class="section-title">
+                    <h2>Success Metrics & KPIs</h2>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">6-Month Success Trajectory</h3>
+                    <p class="chart-subtitle">Expected performance across key metrics</p>
+                </div>
+                <div id="successChart" class="chart-box"></div>
+            </div>
+
+            <div class="metrics-grid" style="margin-top: 32px;">
+                <div class="metric-card">
+                    <div class="metric-icon">🎯</div>
+                    <div class="metric-value">45%</div>
+                    <div class="metric-label">AI Citation Target</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">📊</div>
+                    <div class="metric-value">300%</div>
+                    <div class="metric-label">Visibility Increase</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">💰</div>
+                    <div class="metric-value">5:1</div>
+                    <div class="metric-label">ROI Target</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">⏱️</div>
+                    <div class="metric-value">90</div>
+                    <div class="metric-label">Days to First Win</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Initialize charts
+        document.addEventListener('DOMContentLoaded', function() {
+            initTrackingChart();
+            initTimeChart();
+            initSuccessChart();
+        });
+
+        // Weekly Tracking Dashboard
+        function initTrackingChart() {
+            const chart = echarts.init(document.getElementById('trackingChart'));
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'cross' }
+                },
+                legend: {
+                    data: ['Content Published', 'AI Citations', 'Brand Mentions', 'Conversions'],
+                    top: 0
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8']
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Cumulative Count'
+                },
+                series: [
+                    {
+                        name: 'Content Published',
+                        type: 'line',
+                        smooth: true,
+                        data: [3, 6, 10, 15, 21, 28, 36, 45],
+                        itemStyle: { color: '#5b6cef' }
+                    },
+                    {
+                        name: 'AI Citations',
+                        type: 'line',
+                        smooth: true,
+                        data: [0, 1, 3, 6, 10, 15, 22, 30],
+                        itemStyle: { color: '#06d6a0' }
+                    },
+                    {
+                        name: 'Brand Mentions',
+                        type: 'line',
+                        smooth: true,
+                        data: [2, 5, 9, 14, 20, 28, 38, 50],
+                        itemStyle: { color: '#ffd166' }
+                    },
+                    {
+                        name: 'Conversions',
+                        type: 'line',
+                        smooth: true,
+                        data: [0, 2, 5, 9, 15, 23, 33, 45],
+                        itemStyle: { color: '#ef476f' }
+                    }
+                ]
+            };
+            
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        // Time Allocation Chart
+        function initTimeChart() {
+            const chart = echarts.init(document.getElementById('timeChart'));
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                legend: {
+                    data: ['Content Creation', 'Channel Management', 'Analysis', 'Strategy'],
+                    top: 0
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value',
+                    name: 'Hours per Week'
+                },
+                yAxis: {
+                    type: 'category',
+                    data: ['Strategy Lead', 'Content Manager', 'Channel Spec 1', 'Channel Spec 2', 'Data Analyst']
+                },
+                series: [
+                    {
+                        name: 'Content Creation',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [5, 30, 10, 10, 2],
+                        itemStyle: { color: '#5b6cef' }
+                    },
+                    {
+                        name: 'Channel Management',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [10, 5, 25, 25, 3],
+                        itemStyle: { color: '#06d6a0' }
+                    },
+                    {
+                        name: 'Analysis',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [15, 3, 3, 3, 12],
+                        itemStyle: { color: '#ffd166' }
+                    },
+                    {
+                        name: 'Strategy',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [10, 2, 2, 2, 3],
+                        itemStyle: { color: '#ef476f' }
+                    }
+                ]
+            };
+            
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        // Success Metrics Chart
+        function initSuccessChart() {
+            const chart = echarts.init(document.getElementById('successChart'));
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                radar: {
+                    indicator: [
+                        { name: 'AI Citations', max: 100 },
+                        { name: 'Search Visibility', max: 100 },
+                        { name: 'Brand Authority', max: 100 },
+                        { name: 'Conversion Rate', max: 100 },
+                        { name: 'Community Engagement', max: 100 },
+                        { name: 'Content Quality', max: 100 }
+                    ]
+                },
+                series: [{
+                    type: 'radar',
+                    data: [
+                        {
+                            value: [15, 20, 10, 35, 5, 85],
+                            name: 'Current State',
+                            itemStyle: { color: '#ef476f' },
+                            areaStyle: { opacity: 0.3 }
+                        },
+                        {
+                            value: [45, 65, 40, 55, 35, 90],
+                            name: '3-Month Target',
+                            itemStyle: { color: '#ffd166' },
+                            areaStyle: { opacity: 0.3 }
+                        },
+                        {
+                            value: [75, 85, 70, 75, 65, 95],
+                            name: '6-Month Target',
+                            itemStyle: { color: '#06d6a0' },
+                            areaStyle: { opacity: 0.3 }
+                        }
+                    ]
+                }]
+            };
+            
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka GEO - 登录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary-color: #64748b;
+            --success-color: #22c55e;
+            --error-color: #ef4444;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(120, 119, 198, 0.05) 0%, transparent 50%);
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--surface);
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo {
+            width: 64px;
+            height: 64px;
+            background: var(--gradient-primary);
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .login-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--surface);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-input.error {
+            border-color: var(--error-color);
+        }
+
+        .error-message {
+            display: none;
+            color: var(--error-color);
+            font-size: 12px;
+            margin-top: 6px;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        .remember-me label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 500;
+            color: white;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        .login-button.loading {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .login-button.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+            border: 2px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 2px solid var(--primary-dark);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+
+        .footer {
+            text-align: center;
+            margin-top: 32px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo-section">
+                <div class="logo">GEO</div>
+                <h1 class="login-title">Eureka GEO 系统</h1>
+                <p class="login-subtitle">生成式引擎优化管理平台</p>
+            </div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label" for="username">用户名</label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        class="form-input" 
+                        placeholder="请输入用户名"
+                        required
+                        autocomplete="username"
+                    >
+                    <div class="error-message" id="usernameError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">密码</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        class="form-input" 
+                        placeholder="请输入密码"
+                        required
+                        autocomplete="current-password"
+                    >
+                    <div class="error-message" id="passwordError"></div>
+                </div>
+
+                <div class="remember-me">
+                    <input type="checkbox" id="remember" checked>
+                    <label for="remember">记住我</label>
+                </div>
+
+                <button type="submit" class="login-button" id="loginButton">
+                    登录
+                </button>
+            </form>
+
+        </div>
+
+        <div class="footer">
+            &copy; 2025 Eureka GEO System. All rights reserved.
+        </div>
+    </div>
+
+    <script>
+        // 预定义的用户账号（实际项目中应该通过后端API验证）
+        const validUsers = [
+            { username: 'admin', password: 'eurekageo@leap', role: 'admin' },
+            { username: 'demo', password: 'eurekageo@leap', role: 'user' },
+            { username: 'eureka', password: 'eureka2025', role: 'admin' }
+        ];
+
+        // 检查是否已登录
+        function checkAuth() {
+            const authToken = sessionStorage.getItem('authToken') || localStorage.getItem('authToken');
+            if (authToken) {
+                // 如果已登录，直接跳转到主页
+                window.location.href = 'index.html';
+            }
+        }
+
+        // 页面加载时检查
+        checkAuth();
+
+        // 处理登录
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const remember = document.getElementById('remember').checked;
+            const loginButton = document.getElementById('loginButton');
+            
+            // 清除之前的错误
+            clearErrors();
+            
+            // 显示加载状态
+            loginButton.classList.add('loading');
+            loginButton.textContent = '';
+            
+            // 模拟网络延迟
+            setTimeout(() => {
+                // 验证用户
+                const user = validUsers.find(u => u.username === username && u.password === password);
+                
+                if (user) {
+                    // 登录成功
+                    const authToken = btoa(JSON.stringify({
+                        username: user.username,
+                        role: user.role,
+                        timestamp: Date.now()
+                    }));
+                    
+                    // 存储认证信息
+                    if (remember) {
+                        localStorage.setItem('authToken', authToken);
+                        localStorage.setItem('userInfo', JSON.stringify({
+                            username: user.username,
+                            role: user.role
+                        }));
+                    } else {
+                        sessionStorage.setItem('authToken', authToken);
+                        sessionStorage.setItem('userInfo', JSON.stringify({
+                            username: user.username,
+                            role: user.role
+                        }));
+                    }
+                    
+                    // 跳转到主页
+                    window.location.href = 'index.html';
+                } else {
+                    // 登录失败
+                    loginButton.classList.remove('loading');
+                    loginButton.textContent = '登录';
+                    
+                    // 显示错误信息
+                    showError('usernameError', '用户名或密码错误');
+                    document.getElementById('username').classList.add('error');
+                    document.getElementById('password').classList.add('error');
+                }
+            }, 800);
+        }
+
+        // 显示错误信息
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.classList.add('show');
+        }
+
+        // 清除错误信息
+        function clearErrors() {
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.classList.remove('show');
+                el.textContent = '';
+            });
+            document.querySelectorAll('.form-input').forEach(el => {
+                el.classList.remove('error');
+            });
+        }
+
+        // 输入时清除错误状态
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('input', () => {
+                input.classList.remove('error');
+                const errorElement = input.nextElementSibling;
+                if (errorElement && errorElement.classList.contains('error-message')) {
+                    errorElement.classList.remove('show');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka GEO Optimization Strategy - 3-Step Methodology</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1890ff;
+            --primary-dark: #0050b3;
+            --primary-light: #e6f4ff;
+            --success: #52c41a;
+            --warning: #faad14;
+            --error: #f5222d;
+            --purple: #722ed1;
+            --cyan: #13c2c2;
+            --orange: #fa8c16;
+            --gold: #fadb14;
+            --text-primary: #262626;
+            --text-secondary: #8c8c8c;
+            --border: #d9d9d9;
+            --background: #f0f2f5;
+            --card-bg: #ffffff;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.15);
+            --gradient-primary: linear-gradient(135deg, #1890ff 0%, #0050b3 100%);
+            --gradient-success: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+            --gradient-purple: linear-gradient(135deg, #722ed1 0%, #531dab 100%);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 32px 0;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .header-subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 24px;
+        }
+
+        /* Step Navigation */
+        .step-nav {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255,255,255,0.2);
+            padding: 12px 24px;
+            border-radius: 32px;
+            backdrop-filter: blur(10px);
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            background: white;
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .step-label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 48px 24px;
+        }
+
+        /* Step Sections */
+        .step-section {
+            margin-bottom: 64px;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .step-badge {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .step1 .step-badge { background: var(--gradient-primary); }
+        .step2 .step-badge { background: var(--gradient-success); }
+        .step3 .step-badge { background: var(--gradient-purple); }
+
+        .step-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .step-description {
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Card Layouts */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-badge {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Chart Containers */
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 32px;
+        }
+
+        .chart-header {
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .chart-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .chart-box {
+            width: 100%;
+            height: 400px;
+        }
+
+        /* Keyword Tables */
+        .keyword-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        .keyword-table th {
+            background: var(--background);
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border);
+        }
+
+        .keyword-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .keyword-table tr:hover {
+            background: var(--background);
+        }
+
+        .ai-potential {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .ai-potential.high {
+            background: #f6ffed;
+            color: var(--success);
+        }
+
+        .ai-potential.medium {
+            background: #fff7e6;
+            color: var(--warning);
+        }
+
+        .ai-potential.low {
+            background: #ffebe6;
+            color: var(--error);
+        }
+
+        /* Content Templates */
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .template-card {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .template-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        .template-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--primary-light);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+
+        .template-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .template-description {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Channel Strategy */
+        .channel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 24px;
+        }
+
+        .channel-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .channel-card.high-priority {
+            border-color: var(--success);
+        }
+
+        .channel-card.medium-priority {
+            border-color: var(--warning);
+        }
+
+        .channel-score {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 12px 0;
+        }
+
+        .channel-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .channel-metrics {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .metric-item {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Action Items */
+        .action-box {
+            background: var(--primary-light);
+            border-left: 4px solid var(--primary);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 24px;
+        }
+
+        .action-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 12px;
+        }
+
+        .action-list {
+            list-style: none;
+        }
+
+        .action-list li {
+            padding: 8px 0;
+            color: var(--text-primary);
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .action-list li:before {
+            content: "→";
+            color: var(--primary);
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 28px;
+            }
+            
+            .step-nav {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .card-grid,
+            .template-grid,
+            .channel-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-box {
+                height: 300px;
+            }
+        }
+
+        /* Interactive Elements */
+        .tab-container {
+            margin-top: 24px;
+        }
+
+        .tab-header {
+            display: flex;
+            gap: 4px;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .tab-button {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button:hover {
+            color: var(--primary);
+        }
+
+        .tab-button.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1>GEO Optimization Strategy</h1>
+            <p class="header-subtitle">Systematic 3-Step Methodology for Eureka Robot Vacuum US Market</p>
+            
+            <div class="step-nav">
+                <div class="step-indicator">
+                    <div class="step-number">1</div>
+                    <span class="step-label">Keyword & Intent Analysis</span>
+                </div>
+                <div class="step-indicator">
+                    <div class="step-number">2</div>
+                    <span class="step-label">Content Strategy & Structure</span>
+                </div>
+                <div class="step-indicator">
+                    <div class="step-number">3</div>
+                    <span class="step-label">Reverse Engineering & Channels</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Step 1: Keyword & Intent Analysis -->
+        <section class="step-section step1">
+            <div class="step-header">
+                <div class="step-badge">1</div>
+                <div>
+                    <h2 class="step-title">Keyword & User Intent Deep Analysis</h2>
+                    <p class="step-description">TOP 50 keywords categorized by intent with AI mention potential</p>
+                </div>
+            </div>
+
+            <!-- Keyword Categories -->
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Product Features</h3>
+                        <span class="card-badge">15 Keywords</span>
+                    </div>
+                    <table class="keyword-table">
+                        <thead>
+                            <tr>
+                                <th>Keyword</th>
+                                <th>Volume</th>
+                                <th>AI Potential</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>self-emptying robot vacuum</td>
+                                <td>12K/mo</td>
+                                <td><span class="ai-potential high">High</span></td>
+                            </tr>
+                            <tr>
+                                <td>robot vacuum with mapping</td>
+                                <td>8K/mo</td>
+                                <td><span class="ai-potential high">High</span></td>
+                            </tr>
+                            <tr>
+                                <td>lidar navigation robot vacuum</td>
+                                <td>5K/mo</td>
+                                <td><span class="ai-potential medium">Medium</span></td>
+                            </tr>
+                            <tr>
+                                <td>robot vacuum mopping function</td>
+                                <td>6K/mo</td>
+                                <td><span class="ai-potential high">High</span></td>
+                            </tr>
+                            <tr>
+                                <td>quiet robot vacuum</td>
+                                <td>4K/mo</td>
+                                <td><span class="ai-potential medium">Medium</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Use Scenarios</h3>
+                        <span class="card-badge">12 Keywords</span>
+                    </div>
+                    <table class="keyword-table">
+                        <thead>
+                            <tr>
+                                <th>Keyword</th>
+                                <th>Volume</th>
+                                <th>AI Potential</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>robot vacuum for pet hair</td>
+                                <td>15K/mo</td>
+                                <td><span class="ai-potential high">High</span></td>
+                            </tr>
+                            <tr>
+                                <td>robot vacuum hardwood floors</td>
+                                <td>10K/mo</td>
+                                <td><span class="ai-potential high">High</span></td>
+                            </tr>
+                            <tr>
+                                <td>robot vacuum for carpets</td>
+                                <td>8K/mo</td>
+                                <td><span class="ai-potential high">High</span></td>
+                            </tr>
+                            <tr>
+                                <td>robot vacuum small apartment</td>
+                                <td>5K/mo</td>
+                                <td><span class="ai-potential medium">Medium</span></td>
+                            </tr>
+                            <tr>
+                                <td>robot vacuum multiple floors</td>
+                                <td>3K/mo</td>
+                                <td><span class="ai-potential medium">Medium</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Comparison & Reviews</h3>
+                        <span class="card-badge">13 Keywords</span>
+                    </div>
+                    <table class="keyword-table">
+                        <thead>
+                            <tr>
+                                <th>Keyword</th>
+                                <th>Volume</th>
+                                <th>AI Potential</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Eureka vs Roomba</td>
+                                <td>3K/mo</td>
+                                <td><span class="ai-potential high">High</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eureka vs Shark robot</td>
+                                <td>2K/mo</td>
+                                <td><span class="ai-potential high">High</span></td>
+                            </tr>
+                            <tr>
+                                <td>best robot vacuum 2024</td>
+                                <td>20K/mo</td>
+                                <td><span class="ai-potential high">High</span></td>
+                            </tr>
+                            <tr>
+                                <td>robot vacuum comparison</td>
+                                <td>7K/mo</td>
+                                <td><span class="ai-potential high">High</span></td>
+                            </tr>
+                            <tr>
+                                <td>robot vacuum reviews</td>
+                                <td>12K/mo</td>
+                                <td><span class="ai-potential medium">Medium</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Purchase Decision</h3>
+                        <span class="card-badge">10 Keywords</span>
+                    </div>
+                    <table class="keyword-table">
+                        <thead>
+                            <tr>
+                                <th>Keyword</th>
+                                <th>Volume</th>
+                                <th>AI Potential</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>best budget robot vacuum</td>
+                                <td>10K/mo</td>
+                                <td><span class="ai-potential high">High</span></td>
+                            </tr>
+                            <tr>
+                                <td>robot vacuum under $300</td>
+                                <td>8K/mo</td>
+                                <td><span class="ai-potential high">High</span></td>
+                            </tr>
+                            <tr>
+                                <td>robot vacuum deals</td>
+                                <td>6K/mo</td>
+                                <td><span class="ai-potential medium">Medium</span></td>
+                            </tr>
+                            <tr>
+                                <td>robot vacuum Black Friday</td>
+                                <td>15K/mo</td>
+                                <td><span class="ai-potential low">Low</span></td>
+                            </tr>
+                            <tr>
+                                <td>robot vacuum worth it</td>
+                                <td>4K/mo</td>
+                                <td><span class="ai-potential high">High</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- AI Mention Potential Chart -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">AI Mention Potential Index by Category</h3>
+                    <p class="chart-subtitle">Likelihood of content being referenced by AI search engines</p>
+                </div>
+                <div id="aiPotentialChart" class="chart-box"></div>
+            </div>
+
+            <!-- Action Items -->
+            <div class="action-box">
+                <h3 class="action-title">Priority Actions for Step 1</h3>
+                <ul class="action-list">
+                    <li>Focus on high-volume, high-AI-potential keywords like "robot vacuum for pet hair" and "best budget robot vacuum"</li>
+                    <li>Create comprehensive content clusters around product features with technical depth</li>
+                    <li>Develop scenario-based content that addresses specific use cases</li>
+                    <li>Build comparison frameworks that position Eureka favorably against competitors</li>
+                    <li>Target long-tail keywords with low competition but high purchase intent</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Step 2: Content Strategy & Structure -->
+        <section class="step-section step2">
+            <div class="step-header">
+                <div class="step-badge">2</div>
+                <div>
+                    <h2 class="step-title">Content Strategy & Structured Optimization</h2>
+                    <p class="step-description">AI-friendly content frameworks and implementation calendar</p>
+                </div>
+            </div>
+
+            <!-- Content Templates -->
+            <div class="template-grid">
+                <div class="template-card">
+                    <div class="template-icon">📋</div>
+                    <h3 class="template-title">FAQ Structure Template</h3>
+                    <p class="template-description">
+                        Optimized Q&A format with schema markup for maximum AI visibility. 
+                        Includes question variations, comprehensive answers, and related topics.
+                    </p>
+                </div>
+
+                <div class="template-card">
+                    <div class="template-icon">📊</div>
+                    <h3 class="template-title">Comparison Table Framework</h3>
+                    <p class="template-description">
+                        Structured data tables comparing Eureka with competitors across key metrics. 
+                        Designed for easy AI parsing and extraction.
+                    </p>
+                </div>
+
+                <div class="template-card">
+                    <div class="template-icon">📝</div>
+                    <h3 class="template-title">How-To Guide Format</h3>
+                    <p class="template-description">
+                        Step-by-step instructional content with numbered lists, time estimates, 
+                        and difficulty ratings for AI comprehension.
+                    </p>
+                </div>
+
+                <div class="template-card">
+                    <div class="template-icon">⭐</div>
+                    <h3 class="template-title">Review & Rating Schema</h3>
+                    <p class="template-description">
+                        Structured review format with pros/cons, ratings, and user testimonials 
+                        optimized for AI credibility signals.
+                    </p>
+                </div>
+
+                <div class="template-card">
+                    <div class="template-icon">🔍</div>
+                    <h3 class="template-title">Problem-Solution Articles</h3>
+                    <p class="template-description">
+                        Clear problem identification followed by detailed solutions, troubleshooting 
+                        steps, and preventive measures.
+                    </p>
+                </div>
+
+                <div class="template-card">
+                    <div class="template-icon">📈</div>
+                    <h3 class="template-title">Data-Driven Content</h3>
+                    <p class="template-description">
+                        Performance metrics, test results, and statistical comparisons with 
+                        clear data visualization and citations.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Content Calendar -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">12-Week Content Implementation Calendar</h3>
+                    <p class="chart-subtitle">Phased rollout of optimized content by priority and impact</p>
+                </div>
+                <div id="contentCalendarChart" class="chart-box"></div>
+            </div>
+
+            <!-- Schema Implementation -->
+            <div class="card-grid">
+                <div class="card">
+                    <h3 class="card-title">Schema Markup Implementation</h3>
+                    <div class="tab-container">
+                        <div class="tab-header">
+                            <button class="tab-button active" onclick="switchTab('schema', 0)">Product Schema</button>
+                            <button class="tab-button" onclick="switchTab('schema', 1)">FAQ Schema</button>
+                            <button class="tab-button" onclick="switchTab('schema', 2)">Review Schema</button>
+                        </div>
+                        <div class="tab-content active" id="schema-0">
+                            <pre style="background: #f5f5f5; padding: 16px; border-radius: 8px; overflow-x: auto;">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": "Eureka E10s Robot Vacuum",
+  "description": "Self-emptying robot vacuum with LiDAR navigation",
+  "brand": {
+    "@type": "Brand",
+    "name": "Eureka"
+  },
+  "offers": {
+    "@type": "Offer",
+    "price": "299.99",
+    "priceCurrency": "USD"
+  }
+}</pre>
+                        </div>
+                        <div class="tab-content" id="schema-1">
+                            <pre style="background: #f5f5f5; padding: 16px; border-radius: 8px; overflow-x: auto;">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [{
+    "@type": "Question",
+    "name": "How does Eureka handle pet hair?",
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Eureka's powerful suction and tangle-free brush..."
+    }
+  }]
+}</pre>
+                        </div>
+                        <div class="tab-content" id="schema-2">
+                            <pre style="background: #f5f5f5; padding: 16px; border-radius: 8px; overflow-x: auto;">
+{
+  "@context": "https://schema.org/",
+  "@type": "Review",
+  "itemReviewed": {
+    "@type": "Product",
+    "name": "Eureka E10s"
+  },
+  "reviewRating": {
+    "@type": "Rating",
+    "ratingValue": "4.5",
+    "bestRating": "5"
+  }
+}</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Authority Building Strategy</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 8px 0; border-bottom: 1px solid var(--border);">
+                            <strong>Expert Contributors:</strong> Partner with cleaning professionals and tech reviewers
+                        </li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid var(--border);">
+                            <strong>Original Research:</strong> Conduct and publish performance tests and comparisons
+                        </li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid var(--border);">
+                            <strong>Industry Citations:</strong> Reference authoritative sources and studies
+                        </li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid var(--border);">
+                            <strong>User Generated Content:</strong> Incorporate verified customer experiences
+                        </li>
+                        <li style="padding: 8px 0;">
+                            <strong>Technical Documentation:</strong> Provide detailed specs and engineering insights
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Action Items -->
+            <div class="action-box">
+                <h3 class="action-title">Priority Actions for Step 2</h3>
+                <ul class="action-list">
+                    <li>Implement comprehensive schema markup across all content types</li>
+                    <li>Create 50+ pieces of structured content using AI-optimized templates</li>
+                    <li>Establish content update cycles to maintain freshness signals</li>
+                    <li>Build topical authority through comprehensive content clusters</li>
+                    <li>Develop multimedia content (videos, infographics) for enhanced engagement</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Step 3: Reverse Engineering & Channel Strategy -->
+        <section class="step-section step3">
+            <div class="step-header">
+                <div class="step-badge">3</div>
+                <div>
+                    <h2 class="step-title">Reverse Engineering & Channel Strategy</h2>
+                    <p class="step-description">Information source analysis and strategic channel positioning</p>
+                </div>
+            </div>
+
+            <!-- Information Source Distribution -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">AI Search Result Source Distribution</h3>
+                    <p class="chart-subtitle">Where AI engines pull robot vacuum information from</p>
+                </div>
+                <div id="sourceDistributionChart" class="chart-box"></div>
+            </div>
+
+            <!-- High-Weight Platforms -->
+            <div class="channel-grid">
+                <div class="channel-card high-priority">
+                    <h4 class="channel-name">Reddit</h4>
+                    <div class="channel-score" style="color: var(--success);">92</div>
+                    <p style="color: var(--text-secondary); font-size: 14px;">Authority Score</p>
+                    <div class="channel-metrics">
+                        <div class="metric-item">
+                            <div class="metric-value">85%</div>
+                            <div class="metric-label">AI Citation Rate</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">High</div>
+                            <div class="metric-label">Trust Signal</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="channel-card high-priority">
+                    <h4 class="channel-name">YouTube</h4>
+                    <div class="channel-score" style="color: var(--success);">88</div>
+                    <p style="color: var(--text-secondary); font-size: 14px;">Authority Score</p>
+                    <div class="channel-metrics">
+                        <div class="metric-item">
+                            <div class="metric-value">78%</div>
+                            <div class="metric-label">AI Citation Rate</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">High</div>
+                            <div class="metric-label">Visual Content</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="channel-card medium-priority">
+                    <h4 class="channel-name">Amazon Reviews</h4>
+                    <div class="channel-score" style="color: var(--warning);">75</div>
+                    <p style="color: var(--text-secondary); font-size: 14px;">Authority Score</p>
+                    <div class="channel-metrics">
+                        <div class="metric-item">
+                            <div class="metric-value">65%</div>
+                            <div class="metric-label">AI Citation Rate</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">Med</div>
+                            <div class="metric-label">Purchase Data</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="channel-card medium-priority">
+                    <h4 class="channel-name">Tech Blogs</h4>
+                    <div class="channel-score" style="color: var(--warning);">70</div>
+                    <p style="color: var(--text-secondary); font-size: 14px;">Authority Score</p>
+                    <div class="channel-metrics">
+                        <div class="metric-item">
+                            <div class="metric-value">58%</div>
+                            <div class="metric-label">AI Citation Rate</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">Med</div>
+                            <div class="metric-label">Expert Reviews</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="channel-card">
+                    <h4 class="channel-name">Forums</h4>
+                    <div class="channel-score" style="color: var(--text-secondary);">62</div>
+                    <p style="color: var(--text-secondary); font-size: 14px;">Authority Score</p>
+                    <div class="channel-metrics">
+                        <div class="metric-item">
+                            <div class="metric-value">45%</div>
+                            <div class="metric-label">AI Citation Rate</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">Low</div>
+                            <div class="metric-label">User Discussion</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="channel-card">
+                    <h4 class="channel-name">Brand Sites</h4>
+                    <div class="channel-score" style="color: var(--text-secondary);">55</div>
+                    <p style="color: var(--text-secondary); font-size: 14px;">Authority Score</p>
+                    <div class="channel-metrics">
+                        <div class="metric-item">
+                            <div class="metric-value">38%</div>
+                            <div class="metric-label">AI Citation Rate</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">Low</div>
+                            <div class="metric-label">Direct Traffic</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Competitive Gap Analysis -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">Competitive Channel Presence Gap Analysis</h3>
+                    <p class="chart-subtitle">Eureka vs. major competitors across high-value channels</p>
+                </div>
+                <div id="competitiveGapChart" class="chart-box"></div>
+            </div>
+
+            <!-- Channel Strategy Matrix -->
+            <div class="card">
+                <h3 class="card-title">Channel Occupation Strategy</h3>
+                <div class="tab-container">
+                    <div class="tab-header">
+                        <button class="tab-button active" onclick="switchTab('channel', 0)">Reddit Strategy</button>
+                        <button class="tab-button" onclick="switchTab('channel', 1)">YouTube Strategy</button>
+                        <button class="tab-button" onclick="switchTab('channel', 2)">Review Platforms</button>
+                        <button class="tab-button" onclick="switchTab('channel', 3)">Tech Media</button>
+                    </div>
+                    <div class="tab-content active" id="channel-0">
+                        <h4>Reddit Engagement Plan</h4>
+                        <ul>
+                            <li><strong>Target Subreddits:</strong> r/VacuumCleaners, r/RobotVacuums, r/HomeImprovement</li>
+                            <li><strong>Content Strategy:</strong> Authentic user experiences, troubleshooting help, comparison discussions</li>
+                            <li><strong>Engagement Tactics:</strong> AMA sessions, product feedback threads, helpful responses</li>
+                            <li><strong>Success Metrics:</strong> Upvotes, saves, cross-references in other threads</li>
+                        </ul>
+                    </div>
+                    <div class="tab-content" id="channel-1">
+                        <h4>YouTube Content Plan</h4>
+                        <ul>
+                            <li><strong>Video Types:</strong> Unboxing, long-term reviews, comparison tests, maintenance guides</li>
+                            <li><strong>Collaboration:</strong> Partner with home tech channels and cleaning enthusiasts</li>
+                            <li><strong>SEO Optimization:</strong> Detailed descriptions, timestamps, closed captions</li>
+                            <li><strong>Engagement:</strong> Respond to comments, create video responses to FAQs</li>
+                        </ul>
+                    </div>
+                    <div class="tab-content" id="channel-2">
+                        <h4>Review Platform Strategy</h4>
+                        <ul>
+                            <li><strong>Platforms:</strong> Amazon, Best Buy, Home Depot, Walmart</li>
+                            <li><strong>Review Management:</strong> Encourage detailed reviews, respond to all feedback</li>
+                            <li><strong>Content Enhancement:</strong> Add photos, videos, and helpful tips in responses</li>
+                            <li><strong>Incentives:</strong> Review campaigns for verified purchasers</li>
+                        </ul>
+                    </div>
+                    <div class="tab-content" id="channel-3">
+                        <h4>Tech Media Outreach</h4>
+                        <ul>
+                            <li><strong>Target Publications:</strong> Wirecutter, TechRadar, Digital Trends, Tom's Guide</li>
+                            <li><strong>Press Kit:</strong> High-res images, spec sheets, test data, review units</li>
+                            <li><strong>Story Angles:</strong> Innovation features, value proposition, comparison studies</li>
+                            <li><strong>Relationship Building:</strong> Regular updates, exclusive previews, responsive PR</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Items -->
+            <div class="action-box">
+                <h3 class="action-title">Priority Actions for Step 3</h3>
+                <ul class="action-list">
+                    <li>Establish strong presence on Reddit with authentic engagement and helpful content</li>
+                    <li>Create comprehensive YouTube video library covering all aspects of Eureka products</li>
+                    <li>Implement review generation campaign to increase volume on key platforms</li>
+                    <li>Develop relationships with tech media for earned coverage opportunities</li>
+                    <li>Monitor competitor activities and identify gaps for strategic positioning</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Initialize all charts when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initAIPotentialChart();
+            initContentCalendarChart();
+            initSourceDistributionChart();
+            initCompetitiveGapChart();
+        });
+
+        // AI Potential Index Chart
+        function initAIPotentialChart() {
+            const chart = echarts.init(document.getElementById('aiPotentialChart'));
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                legend: {
+                    data: ['High Potential', 'Medium Potential', 'Low Potential'],
+                    bottom: 0
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '15%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['Product Features', 'Use Scenarios', 'Comparisons', 'Purchase Decision']
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Number of Keywords'
+                },
+                series: [
+                    {
+                        name: 'High Potential',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [8, 10, 9, 6],
+                        itemStyle: { color: '#52c41a' }
+                    },
+                    {
+                        name: 'Medium Potential',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [5, 2, 3, 3],
+                        itemStyle: { color: '#faad14' }
+                    },
+                    {
+                        name: 'Low Potential',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [2, 0, 1, 1],
+                        itemStyle: { color: '#f5222d' }
+                    }
+                ]
+            };
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        // Content Calendar Chart
+        function initContentCalendarChart() {
+            const chart = echarts.init(document.getElementById('contentCalendarChart'));
+            
+            const weeks = [];
+            for (let i = 1; i <= 12; i++) {
+                weeks.push(`Week ${i}`);
+            }
+
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross'
+                    }
+                },
+                legend: {
+                    data: ['FAQ Content', 'Comparison Articles', 'How-To Guides', 'Product Reviews', 'Video Content'],
+                    bottom: 0
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '15%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: weeks
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Content Pieces'
+                },
+                series: [
+                    {
+                        name: 'FAQ Content',
+                        type: 'line',
+                        stack: 'Total',
+                        areaStyle: {},
+                        data: [2, 2, 3, 3, 2, 2, 1, 1, 1, 1, 1, 1],
+                        itemStyle: { color: '#1890ff' }
+                    },
+                    {
+                        name: 'Comparison Articles',
+                        type: 'line',
+                        stack: 'Total',
+                        areaStyle: {},
+                        data: [1, 1, 2, 2, 2, 1, 1, 1, 0, 0, 1, 1],
+                        itemStyle: { color: '#722ed1' }
+                    },
+                    {
+                        name: 'How-To Guides',
+                        type: 'line',
+                        stack: 'Total',
+                        areaStyle: {},
+                        data: [1, 2, 2, 1, 1, 2, 2, 1, 1, 1, 0, 0],
+                        itemStyle: { color: '#52c41a' }
+                    },
+                    {
+                        name: 'Product Reviews',
+                        type: 'line',
+                        stack: 'Total',
+                        areaStyle: {},
+                        data: [0, 1, 1, 2, 2, 2, 1, 1, 1, 0, 0, 0],
+                        itemStyle: { color: '#fa8c16' }
+                    },
+                    {
+                        name: 'Video Content',
+                        type: 'line',
+                        stack: 'Total',
+                        areaStyle: {},
+                        data: [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1],
+                        itemStyle: { color: '#13c2c2' }
+                    }
+                ]
+            };
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        // Source Distribution Chart
+        function initSourceDistributionChart() {
+            const chart = echarts.init(document.getElementById('sourceDistributionChart'));
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c}%'
+                },
+                legend: {
+                    orient: 'vertical',
+                    left: 'left'
+                },
+                series: [
+                    {
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        avoidLabelOverlap: false,
+                        itemStyle: {
+                            borderRadius: 10,
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        },
+                        label: {
+                            show: true,
+                            formatter: '{b}\n{c}%'
+                        },
+                        emphasis: {
+                            label: {
+                                show: true,
+                                fontSize: '16',
+                                fontWeight: 'bold'
+                            }
+                        },
+                        data: [
+                            { value: 28, name: 'Reddit', itemStyle: { color: '#ff4500' } },
+                            { value: 22, name: 'YouTube', itemStyle: { color: '#ff0000' } },
+                            { value: 18, name: 'Amazon Reviews', itemStyle: { color: '#ff9900' } },
+                            { value: 15, name: 'Tech Blogs', itemStyle: { color: '#1890ff' } },
+                            { value: 10, name: 'Forums', itemStyle: { color: '#722ed1' } },
+                            { value: 7, name: 'Brand Sites', itemStyle: { color: '#52c41a' } }
+                        ]
+                    }
+                ]
+            };
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        // Competitive Gap Chart
+        function initCompetitiveGapChart() {
+            const chart = echarts.init(document.getElementById('competitiveGapChart'));
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                legend: {
+                    data: ['Eureka', 'Roomba', 'Shark', 'Roborock'],
+                    bottom: 0
+                },
+                radar: {
+                    indicator: [
+                        { name: 'Reddit Presence', max: 100 },
+                        { name: 'YouTube Coverage', max: 100 },
+                        { name: 'Review Volume', max: 100 },
+                        { name: 'Tech Media', max: 100 },
+                        { name: 'Forum Activity', max: 100 },
+                        { name: 'Social Media', max: 100 }
+                    ]
+                },
+                series: [{
+                    type: 'radar',
+                    data: [
+                        {
+                            value: [35, 40, 45, 30, 25, 35],
+                            name: 'Eureka',
+                            areaStyle: { opacity: 0.3 },
+                            itemStyle: { color: '#1890ff' }
+                        },
+                        {
+                            value: [85, 90, 95, 85, 70, 80],
+                            name: 'Roomba',
+                            areaStyle: { opacity: 0.3 },
+                            itemStyle: { color: '#52c41a' }
+                        },
+                        {
+                            value: [70, 75, 80, 65, 60, 70],
+                            name: 'Shark',
+                            areaStyle: { opacity: 0.3 },
+                            itemStyle: { color: '#722ed1' }
+                        },
+                        {
+                            value: [60, 70, 70, 60, 50, 65],
+                            name: 'Roborock',
+                            areaStyle: { opacity: 0.3 },
+                            itemStyle: { color: '#fa8c16' }
+                        }
+                    ]
+                }]
+            };
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        // Tab switching function
+        function switchTab(group, index) {
+            const buttons = document.querySelectorAll(`#${group}-${index}`).closest('.tab-container').querySelectorAll('.tab-button');
+            const contents = document.querySelectorAll(`[id^="${group}-"]`);
+            
+            buttons.forEach((btn, i) => {
+                btn.classList.toggle('active', i === index);
+            });
+            
+            contents.forEach((content, i) => {
+                content.classList.toggle('active', i === index);
+            });
+        }
+    </script>
+</body>
+</html>
